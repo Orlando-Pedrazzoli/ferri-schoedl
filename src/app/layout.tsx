@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { CartProvider } from '@/components/CartProvider';
+import { CartDrawer } from '@/components/CartDrawer';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -63,9 +65,12 @@ export default function RootLayout({
       </head>
       <body className='min-h-screen bg-navy-950 text-txt antialiased'>
         <ThemeProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
+          <CartProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+            <CartDrawer />
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>

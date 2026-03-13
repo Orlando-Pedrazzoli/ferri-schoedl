@@ -21,11 +21,11 @@ export default function SobrePage() {
             <div className='relative'>
               <div className='aspect-[3/4] w-full overflow-hidden border border-gold-500/12'>
                 <Image
-                  src='/images/thales-perfil.png'
-                  alt='Dr. Thales Ferri Schoedl'
+                  src='/images/professor.jpg'
+                  alt='Dr. Thales Ferri Schoedl — Professor e Advogado'
                   width={400}
                   height={533}
-                  className='h-full w-full object-cover'
+                  className='h-full w-full object-cover object-top'
                   priority
                 />
               </div>

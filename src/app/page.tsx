@@ -26,7 +26,7 @@ export default function Home() {
         />
 
         <div className='relative mx-auto w-full max-w-7xl px-6 pb-20 pt-32 lg:px-8'>
-          <div className='grid items-center gap-12 lg:grid-cols-2 lg:gap-16'>
+          <div className='grid items-end gap-12 lg:grid-cols-2 lg:gap-16'>
             {/* Text side */}
             <div>
               <motion.p
@@ -98,23 +98,26 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className='relative mx-auto hidden w-full max-w-md lg:block'
+              className='relative mx-auto hidden w-full max-w-xs lg:block'
             >
               {/* Gold corner accents */}
-              <div className='absolute -left-4 -top-4 h-24 w-24 border-l border-t border-gold-500/30' />
-              <div className='absolute -bottom-4 -right-4 h-24 w-24 border-b border-r border-gold-500/30' />
+              <div className='absolute -left-3 -top-3 h-16 w-16 border-l border-t border-gold-500/30' />
+              <div className='absolute -bottom-3 -right-3 h-16 w-16 border-b border-r border-gold-500/30' />
 
               {/* Photo container */}
-              <div className='relative overflow-hidden'>
+              <div
+                className='relative overflow-hidden'
+                style={{ maxHeight: '420px' }}
+              >
                 <Image
                   src='/images/thales-perfil.png'
                   alt='Dr. Thales Ferri Schoedl — Advogado'
-                  width={480}
-                  height={580}
-                  className='h-auto w-full object-cover grayscale-[20%] transition-all duration-700 hover:grayscale-0'
+                  width={320}
+                  height={420}
+                  className='h-auto w-full object-cover object-top grayscale-[20%] transition-all duration-700 hover:grayscale-0'
                   priority
                 />
-                {/* Subtle gold overlay on bottom */}
+                {/* Subtle overlay on bottom */}
                 <div className='absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-navy-950/80 to-transparent' />
               </div>
 
@@ -140,14 +143,14 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.9 }}
-            className='mt-20 flex gap-12 border-t border-gold-500/10 pt-10 md:gap-20'
+            className='mt-20 flex justify-center gap-12 border-t border-gold-500/10 pt-10 md:gap-20'
           >
             {[
               { n: '20+', label: 'Anos de experiencia' },
               { n: '4', label: 'Livros publicados' },
               { n: '6', label: 'Areas de atuacao' },
             ].map(stat => (
-              <div key={stat.label}>
+              <div key={stat.label} className='text-center'>
                 <p className='font-[family-name:var(--font-cormorant)] text-4xl font-light text-gold-500'>
                   {stat.n}
                 </p>
@@ -158,25 +161,6 @@ export default function Home() {
             ))}
           </motion.div>
         </div>
-
-        {/* Scroll indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className='absolute bottom-8 left-1/2 -translate-x-1/2'
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-            className='flex flex-col items-center gap-2'
-          >
-            <span className='text-[10px] uppercase tracking-[2px] text-txt-muted'>
-              Scroll
-            </span>
-            <div className='h-8 w-px bg-gradient-to-b from-gold-500/40 to-transparent' />
-          </motion.div>
-        </motion.div>
       </section>
 
       {/* AREAS DE ATUACAO */}
@@ -228,11 +212,11 @@ export default function Home() {
               <div className='relative'>
                 <div className='aspect-[4/5] w-full max-w-md overflow-hidden border border-gold-500/12'>
                   <Image
-                    src='/images/thales-perfil.png'
-                    alt='Dr. Thales Ferri Schoedl'
+                    src='/images/professor.jpg'
+                    alt='Dr. Thales Ferri Schoedl — Professor e Advogado'
                     width={400}
                     height={500}
-                    className='h-full w-full object-cover'
+                    className='h-full w-full object-cover object-top'
                   />
                 </div>
                 {/* Decorative corner */}

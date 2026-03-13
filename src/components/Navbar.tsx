@@ -4,22 +4,24 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ShoppingBag } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { useCart } from './CartProvider';
 
 const links = [
   { href: '/', label: 'Home' },
   { href: '/sobre', label: 'Sobre' },
   { href: '/areas-de-atuacao', label: 'Areas de Atuacao' },
+  { href: '/livros', label: 'Livros' },
   { href: '/publicacoes', label: 'Publicacoes' },
   { href: '/cursos', label: 'Cursos' },
-  { href: '/contato', label: 'Contato' },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { totalItems, setIsOpen: setCartOpen } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32);
@@ -45,13 +47,16 @@ export function Navbar() {
           <Image
             src='/images/thales-logo.png'
             alt='Ferri Schoedl Advocacia'
-            width={40}
-            height={40}
-            className='h-10 w-auto transition-opacity duration-300 group-hover:opacity-80'
+            width={52}
+            height={52}
+            className='h-13 w-auto transition-opacity duration-300 group-hover:opacity-80'
             priority
           />
           <div className='hidden sm:block'>
-            <span className='font-[family-name:var(--font-cormorant)] text-lg tracking-wide text-cream-100'>
+            <span className='font-[family-name:var(--font-cormorant)] text-xl tracking-wide text-cream-100'>
+              Ferri Schoedl
+            </span>
+            <span className='ml-2 font-[family-name:var(--font-cormorant)] text-xl tracking-wide text-gold-500'>
               Advocacia
             </span>
           </div>
@@ -83,14 +88,26 @@ export function Navbar() {
           })}
         </div>
 
-        {/* CTA + Theme + Mobile toggle */}
+        {/* CTA + Cart + Theme + Mobile toggle */}
         <div className='flex items-center gap-3'>
           <ThemeToggle />
+          <button
+            onClick={() => setCartOpen(true)}
+            className='relative flex h-9 w-9 items-center justify-center border border-gold-500/20 text-gold-500 transition-all duration-300 hover:border-gold-500/50 hover:bg-gold-500/5'
+            aria-label='Carrinho'
+          >
+            <ShoppingBag size={15} strokeWidth={1.5} />
+            {totalItems > 0 && (
+              <span className='absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center bg-gold-500 text-[9px] font-medium text-navy-950'>
+                {totalItems}
+              </span>
+            )}
+          </button>
           <Link
             href='/contato'
             className='hidden border border-gold-500/50 px-5 py-2 text-[11px] font-medium uppercase tracking-[2px] text-gold-500 transition-all duration-300 hover:border-gold-500 hover:bg-gold-500 hover:text-navy-950 sm:block'
           >
-            Fale conosco
+            Contato
           </Link>
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -127,7 +144,7 @@ export function Navbar() {
               href='/contato'
               className='mt-4 border border-gold-500/50 py-3 text-center text-[11px] font-medium uppercase tracking-[2px] text-gold-500'
             >
-              Fale conosco
+              Contato
             </Link>
           </div>
         </div>
