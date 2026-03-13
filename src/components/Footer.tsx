@@ -16,8 +16,8 @@ export function Footer() {
               </span>
             </Link>
             <p className='mt-3 text-[13px] leading-relaxed text-txt-muted'>
-              Advocacia especializada com sede em Sao Paulo e atuacao em todo o
-              territorio nacional.
+              Advocacia especializada com sede em São Paulo e atuação em todo o
+              território nacional.
             </p>
             <p className='mt-4 text-[11px] uppercase tracking-[1.5px] text-gold-600'>
               {siteConfig.oab}
@@ -27,7 +27,7 @@ export function Footer() {
           {/* Areas column */}
           <div>
             <h4 className='mb-4 text-[11px] font-medium uppercase tracking-[2px] text-gold-500'>
-              Areas de atuacao
+              Áreas de atuação
             </h4>
             <ul className='space-y-2'>
               {areasDeAtuacao.map(area => (
@@ -46,13 +46,13 @@ export function Footer() {
           {/* Navigation column */}
           <div>
             <h4 className='mb-4 text-[11px] font-medium uppercase tracking-[2px] text-gold-500'>
-              Navegacao
+              Navegação
             </h4>
             <ul className='space-y-2'>
               {[
                 { href: '/sobre', label: 'Sobre' },
                 { href: '/livros', label: 'Livros' },
-                { href: '/publicacoes', label: 'Publicacoes' },
+                { href: '/publicacoes', label: 'Publicações' },
                 { href: '/cursos', label: 'Cursos' },
                 { href: '/faq', label: 'Perguntas frequentes' },
                 { href: '/contato', label: 'Contato' },
@@ -103,8 +103,8 @@ export function Footer() {
         {/* Bottom bar */}
         <div className='flex flex-col items-center justify-between gap-4 border-t border-gold-500/8 py-6 sm:flex-row'>
           <p className='text-[11px] text-txt-muted'>
-            Ferri Schoedl Advocacia — Pagina institucional em observancia ao
-            Codigo de Etica da OAB
+            Ferri Schoedl Advocacia — Página institucional em observância ao
+            Código de Ética da OAB
           </p>
           <p className='text-[11px] text-txt-muted'>
             Desenvolvido por{' '}

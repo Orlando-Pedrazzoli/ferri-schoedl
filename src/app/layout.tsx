@@ -8,17 +8,17 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ferri Schoedl Advocacia | Direito Criminal, Juri e Improbidade',
+    default: 'Ferri Schoedl Advocacia | Direito Criminal, Júri e Improbidade',
     template: '%s | Ferri Schoedl Advocacia',
   },
   description:
-    'Escritorio de advocacia com sede em Sao Paulo e atuacao nacional. Especializado em Direito Criminal, Tribunal do Juri, Improbidade Administrativa, Imobiliario, Civel e Disciplinar.',
+    'Escritório de advocacia com sede em São Paulo e atuação nacional. Especializado em Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar.',
   keywords: [
-    'advogado criminal Sao Paulo',
-    'tribunal do juri',
+    'advogado criminal São Paulo',
+    'tribunal do júri',
     'improbidade administrativa',
-    'advogado imobiliario',
-    'defesa servidor publico',
+    'advogado imobiliário',
+    'defesa servidor público',
     'Thales Ferri Schoedl',
     'Ferri Schoedl Advocacia',
   ],
@@ -27,6 +27,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     siteName: 'Ferri Schoedl Advocacia',
+    images: [
+      {
+        url: '/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Ferri Schoedl Advocacia — Defesa técnica com rigor e experiência',
+      },
+    ],
   },
   icons: {
     icon: [

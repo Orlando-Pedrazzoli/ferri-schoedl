@@ -17,7 +17,7 @@ export default function LivrosPage() {
         <SectionHeading
           label=''
           title='Livros'
-          description='Obras autorais sobre Direito Penal, Constitucional, Improbidade Administrativa e preparacao para concursos publicos.'
+          description='Obras autorais sobre Direito Penal, Constitucional, Improbidade Administrativa e preparação para concursos públicos.'
         />
 
         <RevealStagger className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>

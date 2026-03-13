@@ -28,7 +28,7 @@ export default function LivroDetailPage() {
       <section className='flex min-h-screen items-center justify-center pb-24 pt-32'>
         <div className='text-center'>
           <h1 className='font-[family-name:var(--font-cormorant)] text-3xl text-cream-100'>
-            Livro nao encontrado
+            Livro não encontrado
           </h1>
           <Link
             href='/livros'
@@ -127,7 +127,7 @@ export default function LivroDetailPage() {
                     <span className='text-green-400'>Em estoque</span>
                   </>
                 ) : (
-                  <span className='text-red-400'>Indisponivel</span>
+                  <span className='text-red-400'>Indisponível</span>
                 )}
               </div>
 
@@ -182,7 +182,7 @@ export default function LivroDetailPage() {
                     className='mb-2 text-gold-600'
                   />
                   <p className='text-[11px] uppercase tracking-[1px] text-gold-600'>
-                    Paginas
+                    Páginas
                   </p>
                   <p className='mt-1 text-[16px] text-cream-100'>
                     {livro.pages}
@@ -195,7 +195,7 @@ export default function LivroDetailPage() {
                     className='mb-2 text-gold-600'
                   />
                   <p className='text-[11px] uppercase tracking-[1px] text-gold-600'>
-                    Dimensoes
+                    Dimensões
                   </p>
                   <p className='mt-1 text-[14px] text-cream-100'>
                     {livro.dimensions.width} x {livro.dimensions.height} x{' '}
@@ -236,7 +236,7 @@ export default function LivroDetailPage() {
               <div className='mt-6 border-l border-gold-500/20 pl-5'>
                 <div className='space-y-2 text-[13px]'>
                   <p>
-                    <span className='text-txt-muted'>Edicao:</span>{' '}
+                    <span className='text-txt-muted'>Edição:</span>{' '}
                     <span className='text-cream-100'>{livro.edition}</span>
                   </p>
                   {livro.isbn && (

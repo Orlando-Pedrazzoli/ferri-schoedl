@@ -11,9 +11,9 @@ import { useCart } from './CartProvider';
 const links = [
   { href: '/', label: 'Home' },
   { href: '/sobre', label: 'Sobre' },
-  { href: '/areas-de-atuacao', label: 'Areas de Atuacao' },
+  { href: '/areas-de-atuacao', label: 'Áreas de Atuação' },
   { href: '/livros', label: 'Livros' },
-  { href: '/publicacoes', label: 'Publicacoes' },
+  { href: '/publicacoes', label: 'Publicações' },
   { href: '/cursos', label: 'Cursos' },
 ];
 

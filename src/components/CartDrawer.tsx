@@ -7,22 +7,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from './CartProvider';
 
 const FRETE_FAIXAS = [
-  { maxWeight: 500, label: 'PAC', price: 18.9, days: '8-12 dias uteis' },
-  { maxWeight: 500, label: 'SEDEX', price: 32.5, days: '3-5 dias uteis' },
-  { maxWeight: 1500, label: 'PAC', price: 24.9, days: '8-12 dias uteis' },
-  { maxWeight: 1500, label: 'SEDEX', price: 42.9, days: '3-5 dias uteis' },
-  { maxWeight: 5000, label: 'PAC', price: 34.9, days: '10-15 dias uteis' },
-  { maxWeight: 5000, label: 'SEDEX', price: 58.9, days: '4-6 dias uteis' },
+  { maxWeight: 500, label: 'PAC', price: 18.9, days: '8-12 dias úteis' },
+  { maxWeight: 500, label: 'SEDEX', price: 32.5, days: '3-5 dias úteis' },
+  { maxWeight: 1500, label: 'PAC', price: 24.9, days: '8-12 dias úteis' },
+  { maxWeight: 1500, label: 'SEDEX', price: 42.9, days: '3-5 dias úteis' },
+  { maxWeight: 5000, label: 'PAC', price: 34.9, days: '10-15 dias úteis' },
+  { maxWeight: 5000, label: 'SEDEX', price: 58.9, days: '4-6 dias úteis' },
 ];
 
 function calcularFrete(weightG: number) {
   const pac = FRETE_FAIXAS.filter(
     f => f.label === 'PAC' && weightG <= f.maxWeight,
-  )[0] || { price: 34.9, days: '10-15 dias uteis' };
+  )[0] || { price: 34.9, days: '10-15 dias úteis' };
 
   const sedex = FRETE_FAIXAS.filter(
     f => f.label === 'SEDEX' && weightG <= f.maxWeight,
-  )[0] || { price: 58.9, days: '4-6 dias uteis' };
+  )[0] || { price: 58.9, days: '4-6 dias úteis' };
 
   return [
     { label: 'PAC', price: pac.price, days: pac.days },
@@ -107,7 +107,7 @@ export function CartDrawer() {
                     strokeWidth={1}
                     className='text-gold-600/30'
                   />
-                  <p className='text-[14px]'>Seu carrinho esta vazio</p>
+                  <p className='text-[14px]'>Seu carrinho está vazio</p>
                 </div>
               ) : (
                 <div className='space-y-4'>

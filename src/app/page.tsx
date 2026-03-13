@@ -49,11 +49,11 @@ export default function Home() {
                 }}
                 className='font-[family-name:var(--font-cormorant)] text-5xl font-light leading-[1.1] text-cream-100 md:text-6xl lg:text-7xl'
               >
-                Defesa tecnica
+                Defesa técnica
                 <br />
                 com{' '}
                 <em className='font-normal italic text-gold-400'>
-                  rigor e experiencia
+                  rigor e experiência
                 </em>
               </motion.h1>
 
@@ -63,9 +63,9 @@ export default function Home() {
                 transition={{ duration: 0.7, delay: 0.5 }}
                 className='mt-8 max-w-xl text-[16px] leading-relaxed text-txt-muted'
               >
-                Atuacao estrategica nas areas criminal, tribunal do juri,
-                improbidade administrativa, imobiliario e civeis. Escritorio com
-                sede em Sao Paulo e atuacao em todo o territorio nacional.
+                Atuação estratégica nas áreas criminal, tribunal do júri,
+                improbidade administrativa, imobiliário e cíveis. Escritório com
+                sede em São Paulo e atuação em todo o território nacional.
               </motion.p>
 
               <motion.div
@@ -78,7 +78,7 @@ export default function Home() {
                   href='/areas-de-atuacao'
                   className='group inline-flex items-center gap-2 bg-gold-500 px-8 py-3.5 text-[12px] font-medium uppercase tracking-[2px] text-navy-950 transition-all duration-300 hover:bg-gold-400'
                 >
-                  Areas de atuacao
+                  Áreas de atuação
                   <ArrowRight
                     size={14}
                     className='transition-transform group-hover:translate-x-1'
@@ -146,9 +146,9 @@ export default function Home() {
             className='mt-20 flex justify-center gap-12 border-t border-gold-500/10 pt-10 md:gap-20'
           >
             {[
-              { n: '20+', label: 'Anos de experiencia' },
+              { n: '20+', label: 'Anos de experiência' },
               { n: '4', label: 'Livros publicados' },
-              { n: '6', label: 'Areas de atuacao' },
+              { n: '6', label: 'Áreas de atuação' },
             ].map(stat => (
               <div key={stat.label} className='text-center'>
                 <p className='font-[family-name:var(--font-cormorant)] text-4xl font-light text-gold-500'>
@@ -163,13 +163,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* AREAS DE ATUACAO */}
+      {/* ÁREAS DE ATUAÇÃO */}
       <section className='border-t border-gold-500/8 py-24 lg:py-32'>
         <div className='mx-auto max-w-7xl px-6 lg:px-8'>
           <SectionHeading
-            label='Especializacoes'
-            title='Areas de atuacao'
-            description='Atuacao abrangente em areas estrategicas do Direito, com enfase na defesa tecnica em causas de alta complexidade.'
+            label='Especializações'
+            title='Áreas de atuação'
+            description='Atuação abrangente em áreas estratégicas do Direito, com ênfase na defesa técnica em causas de alta complexidade.'
           />
 
           <RevealStagger className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
@@ -233,21 +233,21 @@ export default function Home() {
               </h2>
               <div className='mt-4 h-px w-12 bg-gold-500/40' />
               <p className='mt-6 text-[15px] leading-relaxed text-txt-muted'>
-                Ex-promotor de justica do Estado de Sao Paulo (2003-2016), com
-                formacao pela Universidade Presbiteriana Mackenzie e Mestrado
-                pela UFBA. Autor de 4 livros e diversos artigos juridicos.
+                Ex-promotor de justiça do Estado de São Paulo (2003-2016), com
+                formação pela Universidade Presbiteriana Mackenzie e Mestrado
+                pela UFBA. Autor de 4 livros e diversos artigos jurídicos.
                 Professor na Academia Del Guercio SPCM.
               </p>
               <p className='mt-4 text-[15px] leading-relaxed text-txt-muted'>
-                Sua trajetoria une a experiencia da magistratura com a advocacia
-                estrategica, resultando em uma atuacao tecnica diferenciada na
-                defesa de servidores publicos e em causas de alta complexidade.
+                Sua trajetória une a experiência da magistratura com a advocacia
+                estratégica, resultando em uma atuação técnica diferenciada na
+                defesa de servidores públicos e em causas de alta complexidade.
               </p>
               <Link
                 href='/sobre'
                 className='group mt-8 inline-flex items-center gap-2 text-[12px] uppercase tracking-[2px] text-gold-500 transition-colors hover:text-gold-400'
               >
-                Conheca a trajetoria completa
+                Conheça a trajetória completa
                 <ArrowRight
                   size={14}
                   className='transition-transform group-hover:translate-x-1'
@@ -258,13 +258,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PUBLICACOES PREVIEW */}
+      {/* PUBLICAÇÕES PREVIEW */}
       <section className='border-t border-gold-500/8 py-24 lg:py-32'>
         <div className='mx-auto max-w-7xl px-6 lg:px-8'>
           <SectionHeading
             label='Obras publicadas'
-            title='Publicacoes'
-            description='Producao academica e editorial que reflete decadas de experiencia na pratica e no ensino do Direito.'
+            title='Publicações'
+            description='Produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.'
           />
 
           <RevealStagger className='grid gap-4 md:grid-cols-2'>
@@ -300,7 +300,7 @@ export default function Home() {
               href='/publicacoes'
               className='group inline-flex items-center gap-2 text-[12px] uppercase tracking-[2px] text-gold-500 transition-colors hover:text-gold-400'
             >
-              Ver todas as publicacoes
+              Ver todas as publicações
               <ArrowRight
                 size={14}
                 className='transition-transform group-hover:translate-x-1'
@@ -318,13 +318,13 @@ export default function Home() {
               Em breve
             </p>
             <h2 className='font-[family-name:var(--font-cormorant)] text-3xl font-normal text-cream-100 md:text-4xl'>
-              Cursos e preparatorios
+              Cursos e preparatórios
             </h2>
             <div className='mx-auto mt-4 h-px w-12 bg-gold-500/40' />
             <p className='mt-6 text-[15px] leading-relaxed text-txt-muted'>
-              Coaching juridico, preparatorio para concursos de magistratura,
-              ministerio publico, procuradorias, defensorias e Exame de Ordem.
-              Com a experiencia de quem viveu a magistratura e a advocacia.
+              Coaching jurídico, preparatório para concursos de magistratura,
+              ministério público, procuradorias, defensorias e Exame de Ordem.
+              Com a experiência de quem viveu a magistratura e a advocacia.
             </p>
           </Reveal>
 
@@ -332,7 +332,7 @@ export default function Home() {
             {[
               { title: 'Direito Penal', desc: 'Parte geral e especial' },
               { title: 'Concursos', desc: 'Magistratura e MP' },
-              { title: 'Exame OAB', desc: 'Preparatorio completo' },
+              { title: 'Exame OAB', desc: 'Preparatório completo' },
             ].map(curso => (
               <RevealItem key={curso.title}>
                 <div className='border border-gold-500/10 bg-navy-800/30 p-5 text-center'>
@@ -368,10 +368,10 @@ export default function Home() {
         <div className='mx-auto max-w-7xl px-6 lg:px-8'>
           <Reveal className='mx-auto max-w-2xl text-center'>
             <h2 className='font-[family-name:var(--font-cormorant)] text-3xl font-normal text-cream-100 md:text-4xl'>
-              Cada caso exige uma estrategia unica
+              Cada caso exige uma estratégia única
             </h2>
             <p className='mt-6 text-[15px] leading-relaxed text-txt-muted'>
-              Entre em contato para uma analise preliminar do seu caso. Atuamos
+              Entre em contato para uma análise preliminar do seu caso. Atuamos
               em todo o Brasil com atendimento presencial e online.
             </p>
             <div className='mt-10 flex flex-wrap justify-center gap-4'>
@@ -388,7 +388,7 @@ export default function Home() {
             </div>
             <div className='mt-8 flex items-center justify-center gap-2 text-[13px] text-txt-muted'>
               <MapPin size={14} className='text-gold-600' />
-              Sao Paulo — Atuacao em todo o Brasil
+              São Paulo — Atuação em todo o Brasil
             </div>
           </Reveal>
         </div>

@@ -12,7 +12,7 @@ export default function SobrePage() {
         <SectionHeading
           label='Quem somos'
           title='Thales Ferri Schoedl'
-          description='Advogado, jurista, professor, palestrante e ex-promotor de justica do Estado de Sao Paulo.'
+          description='Advogado, jurista, professor, palestrante e ex-promotor de justiça do Estado de São Paulo.'
         />
 
         <div className='grid items-start gap-16 lg:grid-cols-5'>
@@ -33,20 +33,20 @@ export default function SobrePage() {
             </div>
             <div className='mt-6 border-l border-gold-500/20 pl-5'>
               <p className='text-[11px] uppercase tracking-[2px] text-gold-600'>
-                Formacao
+                Formação
               </p>
               <p className='mt-2 text-[13px] text-cream-100'>
                 Universidade Presbiteriana Mackenzie
               </p>
               <p className='text-[12px] text-txt-muted'>
-                Graduacao em Direito (2001)
+                Graduação em Direito (2001)
               </p>
               <p className='mt-3 text-[13px] text-cream-100'>
-                Especializacao em Direito Penal e Processual Penal
+                Especialização em Direito Penal e Processual Penal
               </p>
               <p className='text-[12px] text-txt-muted'>Mackenzie (2007)</p>
               <p className='mt-3 text-[13px] text-cream-100'>
-                Mestrado em Desenvolvimento e Gestao Social
+                Mestrado em Desenvolvimento e Gestão Social
               </p>
               <p className='text-[12px] text-txt-muted'>UFBA (2017)</p>
             </div>
@@ -64,31 +64,31 @@ export default function SobrePage() {
             <Reveal delay={0.1}>
               <div className='mt-8 space-y-5 text-[15px] leading-relaxed text-txt-muted'>
                 <p>
-                  Thales Ferri Schoedl e advogado, jurista, professor,
-                  palestrante e ex-promotor de justica do Estado de Sao Paulo,
-                  autor de diversas obras e artigos juridicos, com trajetoria
-                  dedicada a defesa de servidores publicos e causas de alta
+                  Thales Ferri Schoedl é advogado, jurista, professor,
+                  palestrante e ex-promotor de justiça do Estado de São Paulo,
+                  autor de diversas obras e artigos jurídicos, com trajetória
+                  dedicada à defesa de servidores públicos e causas de alta
                   complexidade.
                 </p>
                 <p>
                   Graduado em Direito pela Universidade Presbiteriana Mackenzie
                   (2001), Especialista em Direito Penal e Processual Penal pela
-                  Mackenzie (2007) e Mestre em Desenvolvimento e Gestao Social
-                  pela Escola de Administracao da Universidade Federal da Bahia
+                  Mackenzie (2007) e Mestre em Desenvolvimento e Gestão Social
+                  pela Escola de Administração da Universidade Federal da Bahia
                   — UFBA (2017).
                 </p>
                 <p>
-                  Atualmente e Professor de Direito Penal, Processual Penal,
+                  Atualmente é Professor de Direito Penal, Processual Penal,
                   Constitucional e Administrativo da Academia Del Guercio SPCM,
                   e coordenador das bancas de exame oral simulado na mesma
-                  instituicao. Palestrante e Coach nas areas de Direito
+                  instituição. Palestrante e Coach nas áreas de Direito
                   Constitucional, Administrativo, Penal e Processual Penal, com
-                  enfoque nos concursos publicos e exame de Ordem.
+                  enfoque nos concursos públicos e exame de Ordem.
                 </p>
                 <p>
-                  Foi professor voluntario da Associacao Cruz Verde, destinada a
+                  Foi professor voluntário da Associação Cruz Verde, destinada a
                   pessoas com paralisia cerebral grave, entre 2007 e 2014 — uma
-                  atuacao que reflete seu compromisso com a responsabilidade
+                  atuação que reflete seu compromisso com a responsabilidade
                   social e a dignidade humana.
                 </p>
               </div>
@@ -97,7 +97,7 @@ export default function SobrePage() {
             {/* Timeline */}
             <Reveal delay={0.2}>
               <h3 className='mt-14 font-[family-name:var(--font-cormorant)] text-xl text-cream-100'>
-                Trajetoria
+                Trajetória
               </h3>
               <div className='mt-2 h-px w-12 bg-gold-500/40' />
             </Reveal>
