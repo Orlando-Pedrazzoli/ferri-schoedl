@@ -1,0 +1,120 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-navy-950: #070f18;
+  --color-navy-900: #0b1d2e;
+  --color-navy-800: #112840;
+  --color-navy-700: #183552;
+  --color-navy-600: #1f4264;
+  --color-gold-500: #b8965a;
+  --color-gold-400: #d4b27a;
+  --color-gold-300: #e2c99a;
+  --color-gold-600: #8a6f3e;
+  --color-cream-100: #f5f0e8;
+  --color-cream-200: #e8e0d0;
+  --color-cream-300: #d5cfc3;
+  --color-txt: #c8c4bc;
+  --color-txt-muted: #8a8680;
+
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Söhne', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-cormorant: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-navy-950);
+    color: var(--color-txt);
+    font-family: var(--font-sans);
+    transition:
+      background-color 0.4s ease,
+      color 0.4s ease;
+  }
+
+  ::selection {
+    background-color: rgba(184, 150, 90, 0.3);
+    color: var(--color-cream-100);
+  }
+
+  [data-theme='light'] {
+    --color-navy-950: #faf7f2;
+    --color-navy-900: #f3eee6;
+    --color-navy-800: #ffffff;
+    --color-navy-700: #f7f3ec;
+    --color-navy-600: #ede7dd;
+    --color-gold-500: #8b6e3a;
+    --color-gold-400: #76602f;
+    --color-gold-300: #65522a;
+    --color-gold-600: #a6894d;
+    --color-cream-100: #1a1a18;
+    --color-cream-200: #2c2c2a;
+    --color-cream-300: #444441;
+    --color-txt: #3d3a35;
+    --color-txt-muted: #7a756e;
+  }
+
+  [data-theme='light'] ::selection {
+    background-color: rgba(139, 110, 58, 0.2);
+    color: #1a1a18;
+  }
+
+  [data-theme='light'] select option {
+    background-color: #ffffff;
+    color: #3d3a35;
+  }
+}
+
+@utility animate-fade-up {
+  animation: fadeUp 0.7s ease-out both;
+}
+
+@utility animate-fade-in {
+  animation: fadeIn 0.6s ease-out both;
+}
+
+@utility text-gold-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-gold-400),
+    var(--color-gold-500),
+    var(--color-gold-600)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@utility line-gold {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 1px;
+  background-color: var(--color-gold-500);
+  margin: 0 auto;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
