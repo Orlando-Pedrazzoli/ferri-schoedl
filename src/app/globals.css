@@ -46,30 +46,30 @@
   }
 
   [data-theme='light'] {
-    --color-navy-950: #faf7f2;
-    --color-navy-900: #f3eee6;
-    --color-navy-800: #ffffff;
-    --color-navy-700: #f7f3ec;
-    --color-navy-600: #ede7dd;
-    --color-gold-500: #8b6e3a;
-    --color-gold-400: #76602f;
-    --color-gold-300: #65522a;
-    --color-gold-600: #a6894d;
-    --color-cream-100: #1a1a18;
-    --color-cream-200: #2c2c2a;
-    --color-cream-300: #444441;
-    --color-txt: #3d3a35;
-    --color-txt-muted: #7a756e;
+    --color-navy-950: #f8f5f0;
+    --color-navy-900: #f0ebe3;
+    --color-navy-800: #e8e2d8;
+    --color-navy-700: #ddd6ca;
+    --color-navy-600: #d2cabe;
+    --color-gold-500: #7a5c2a;
+    --color-gold-400: #6b4f22;
+    --color-gold-300: #5c431c;
+    --color-gold-600: #96783e;
+    --color-cream-100: #1a1714;
+    --color-cream-200: #2e2a25;
+    --color-cream-300: #433e38;
+    --color-txt: #352f28;
+    --color-txt-muted: #5e574e;
   }
 
   [data-theme='light'] ::selection {
-    background-color: rgba(139, 110, 58, 0.2);
-    color: #1a1a18;
+    background-color: rgba(122, 92, 42, 0.2);
+    color: #1a1714;
   }
 
   [data-theme='light'] select option {
-    background-color: #ffffff;
-    color: #3d3a35;
+    background-color: #f8f5f0;
+    color: #352f28;
   }
 }
 
