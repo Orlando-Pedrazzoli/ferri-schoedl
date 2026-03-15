@@ -7,22 +7,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from './CartProvider';
 
 const FRETE_FAIXAS = [
-  { maxWeight: 500, label: 'PAC', price: 18.9, days: '8-12 dias úteis' },
-  { maxWeight: 500, label: 'SEDEX', price: 32.5, days: '3-5 dias úteis' },
-  { maxWeight: 1500, label: 'PAC', price: 24.9, days: '8-12 dias úteis' },
-  { maxWeight: 1500, label: 'SEDEX', price: 42.9, days: '3-5 dias úteis' },
-  { maxWeight: 5000, label: 'PAC', price: 34.9, days: '10-15 dias úteis' },
-  { maxWeight: 5000, label: 'SEDEX', price: 58.9, days: '4-6 dias úteis' },
+  { maxWeight: 500, label: 'PAC', price: 18.9, days: '8-12 dias uteis' },
+  { maxWeight: 500, label: 'SEDEX', price: 32.5, days: '3-5 dias uteis' },
+  { maxWeight: 1500, label: 'PAC', price: 24.9, days: '8-12 dias uteis' },
+  { maxWeight: 1500, label: 'SEDEX', price: 42.9, days: '3-5 dias uteis' },
+  { maxWeight: 5000, label: 'PAC', price: 34.9, days: '10-15 dias uteis' },
+  { maxWeight: 5000, label: 'SEDEX', price: 58.9, days: '4-6 dias uteis' },
 ];
 
 function calcularFrete(weightG: number) {
   const pac = FRETE_FAIXAS.filter(
     f => f.label === 'PAC' && weightG <= f.maxWeight,
-  )[0] || { price: 34.9, days: '10-15 dias úteis' };
+  )[0] || { price: 34.9, days: '10-15 dias uteis' };
 
   const sedex = FRETE_FAIXAS.filter(
     f => f.label === 'SEDEX' && weightG <= f.maxWeight,
-  )[0] || { price: 58.9, days: '4-6 dias úteis' };
+  )[0] || { price: 58.9, days: '4-6 dias uteis' };
 
   return [
     { label: 'PAC', price: pac.price, days: pac.days },
@@ -79,14 +79,14 @@ export function CartDrawer() {
             className='fixed right-0 top-0 z-50 flex h-full w-full max-w-md flex-col border-l border-gold-500/10 bg-navy-950'
           >
             {/* Header */}
-            <div className='flex items-center justify-between border-b border-gold-500/10 px-6 py-4'>
+            <div className='flex items-center justify-between border-b border-gold-500/10 px-5 py-4 sm:px-6'>
               <div className='flex items-center gap-3'>
                 <ShoppingBag
                   size={18}
                   strokeWidth={1.5}
                   className='text-gold-500'
                 />
-                <span className='text-[14px] text-cream-100'>
+                <span className='text-sm text-cream-100'>
                   Carrinho ({totalItems})
                 </span>
               </div>
@@ -99,7 +99,7 @@ export function CartDrawer() {
             </div>
 
             {/* Items */}
-            <div className='flex-1 overflow-y-auto px-6 py-4'>
+            <div className='flex-1 overflow-y-auto px-5 py-4 sm:px-6'>
               {items.length === 0 ? (
                 <div className='flex h-full flex-col items-center justify-center gap-3 text-txt-muted'>
                   <ShoppingBag
@@ -107,7 +107,7 @@ export function CartDrawer() {
                     strokeWidth={1}
                     className='text-gold-600/30'
                   />
-                  <p className='text-[14px]'>Seu carrinho está vazio</p>
+                  <p className='text-sm'>Seu carrinho esta vazio</p>
                 </div>
               ) : (
                 <div className='space-y-4'>
@@ -116,21 +116,21 @@ export function CartDrawer() {
                       key={item.livro.slug}
                       className='flex gap-4 border-b border-gold-500/8 pb-4'
                     >
-                      <div className='h-24 w-16 shrink-0 bg-navy-800/60 border border-gold-500/10 flex items-center justify-center'>
+                      <div className='flex h-24 w-16 shrink-0 items-center justify-center border border-gold-500/10 bg-navy-800/60'>
                         <ShoppingBag
                           size={16}
                           strokeWidth={1}
                           className='text-gold-600/30'
                         />
                       </div>
-                      <div className='flex-1 min-w-0'>
-                        <h4 className='truncate font-[family-name:var(--font-cormorant)] text-[14px] text-cream-100'>
+                      <div className='min-w-0 flex-1'>
+                        <h4 className='truncate font-[family-name:var(--font-cormorant)] text-sm text-cream-100'>
                           {item.livro.title}
                         </h4>
-                        <p className='text-[12px] text-txt-muted'>
+                        <p className='text-[13px] text-txt-muted'>
                           {item.livro.publisher}, {item.livro.year}
                         </p>
-                        <p className='mt-1 text-[14px] text-gold-500'>
+                        <p className='mt-1 text-sm text-gold-500'>
                           R$ {item.livro.price.toFixed(2).replace('.', ',')}
                         </p>
                         <div className='mt-2 flex items-center gap-3'>
@@ -177,12 +177,12 @@ export function CartDrawer() {
 
             {/* Footer: shipping + total */}
             {items.length > 0 && (
-              <div className='border-t border-gold-500/10 px-6 py-4'>
+              <div className='border-t border-gold-500/10 px-5 py-4 sm:px-6'>
                 {/* Shipping calculator */}
                 <div className='mb-4'>
-                  <div className='flex items-center gap-2 mb-2'>
+                  <div className='mb-2 flex items-center gap-2'>
                     <Truck size={14} className='text-gold-600' />
-                    <span className='text-[11px] uppercase tracking-[1.5px] text-gold-600'>
+                    <span className='text-xs uppercase tracking-[1.5px] text-gold-600'>
                       Calcular frete
                     </span>
                   </div>
@@ -197,12 +197,12 @@ export function CartDrawer() {
                     />
                     <button
                       onClick={handleCalcFrete}
-                      className='border border-gold-500/30 px-4 py-2 text-[11px] uppercase tracking-[1px] text-gold-500 transition-colors hover:bg-gold-500/5'
+                      className='border border-gold-500/30 px-4 py-2 text-xs uppercase tracking-[1px] text-gold-500 transition-colors hover:bg-gold-500/5'
                     >
                       Calcular
                     </button>
                   </div>
-                  <p className='mt-1 text-[11px] text-txt-muted'>
+                  <p className='mt-1 text-xs text-txt-muted'>
                     Peso total:{' '}
                     {totalWeight >= 1000
                       ? `${(totalWeight / 1000).toFixed(1).replace('.', ',')}kg`
@@ -225,7 +225,7 @@ export function CartDrawer() {
                             <span className='text-[13px] text-cream-100'>
                               {opt.label}
                             </span>
-                            <span className='ml-2 text-[11px] text-txt-muted'>
+                            <span className='ml-2 text-xs text-txt-muted'>
                               {opt.days}
                             </span>
                           </div>
@@ -257,7 +257,7 @@ export function CartDrawer() {
                     </div>
                   )}
                   <div className='flex justify-between border-t border-gold-500/8 pt-2'>
-                    <span className='text-[14px] text-cream-100'>Total</span>
+                    <span className='text-sm text-cream-100'>Total</span>
                     <span className='font-[family-name:var(--font-cormorant)] text-xl text-gold-500'>
                       R${' '}
                       {(totalPrice + fretePrice).toFixed(2).replace('.', ',')}
@@ -265,7 +265,7 @@ export function CartDrawer() {
                   </div>
                 </div>
 
-                <button className='mt-4 w-full bg-gold-500 py-3 text-[12px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'>
+                <button className='mt-4 w-full bg-gold-500 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'>
                   Finalizar compra
                 </button>
               </div>

@@ -12,22 +12,22 @@ export default function LivrosPage() {
   const { addItem } = useCart();
 
   return (
-    <section className='pb-24 pt-32 lg:pb-32'>
-      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+    <section className='pb-16 pt-28 sm:pb-24 sm:pt-32 lg:pb-32'>
+      <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <SectionHeading
           label=''
           title='Livros'
           description='Obras autorais sobre Direito Penal, Constitucional, Improbidade Administrativa e preparação para concursos públicos.'
         />
 
-        <RevealStagger className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+        <RevealStagger className='grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3'>
           {livros.map(livro => (
             <RevealItem key={livro.slug}>
               <div className='group flex h-full flex-col border border-gold-500/8 bg-navy-800/20 transition-all duration-300 hover:border-gold-500/20'>
-                {/* Cover placeholder */}
+                {/* Cover */}
                 <Link
                   href={`/livros/${livro.slug}`}
-                  className='relative flex h-80 items-center justify-center bg-navy-800/40 overflow-hidden p-4'
+                  className='relative flex h-72 items-center justify-center overflow-hidden bg-navy-800/40 p-4 sm:h-80'
                 >
                   <Image
                     src={livro.image}
@@ -49,8 +49,8 @@ export default function LivrosPage() {
                 </Link>
 
                 {/* Info */}
-                <div className='flex flex-1 flex-col p-6'>
-                  <p className='mb-1 text-[11px] text-txt-muted'>
+                <div className='flex flex-1 flex-col p-5 sm:p-6'>
+                  <p className='mb-1 text-xs text-txt-muted'>
                     {livro.publisher}, {livro.year}
                   </p>
                   <Link href={`/livros/${livro.slug}`}>
@@ -59,11 +59,11 @@ export default function LivrosPage() {
                     </h3>
                   </Link>
                   {livro.subtitle && (
-                    <p className='mt-1 text-[12px] italic text-gold-600'>
+                    <p className='mt-1 text-[13px] italic text-gold-600'>
                       {livro.subtitle}
                     </p>
                   )}
-                  <p className='mt-3 flex-1 text-[12px] leading-relaxed text-txt-muted'>
+                  <p className='mt-3 flex-1 text-[13px] leading-relaxed text-txt-muted'>
                     {livro.description}
                   </p>
 
@@ -71,7 +71,7 @@ export default function LivrosPage() {
                   <div className='mt-5 flex items-end justify-between border-t border-gold-500/8 pt-4'>
                     <div>
                       {livro.originalPrice && (
-                        <p className='text-[12px] text-txt-muted line-through'>
+                        <p className='text-[13px] text-txt-muted line-through'>
                           R$ {livro.originalPrice.toFixed(2).replace('.', ',')}
                         </p>
                       )}
@@ -81,7 +81,7 @@ export default function LivrosPage() {
                     </div>
                     <button
                       onClick={() => addItem(livro)}
-                      className='flex items-center gap-2 bg-gold-500 px-4 py-2.5 text-[11px] font-medium uppercase tracking-[1.5px] text-navy-950 transition-colors hover:bg-gold-400'
+                      className='flex items-center gap-2 bg-gold-500 px-3 py-2 text-xs font-medium uppercase tracking-[1.5px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-4 sm:py-2.5'
                     >
                       <ShoppingCart size={14} />
                       Comprar

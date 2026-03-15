@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { CartProvider } from '@/components/CartProvider';
 import { CartDrawer } from '@/components/CartDrawer';
+import { CookieConsent } from '@/components/CookieConsent';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -78,6 +79,7 @@ export default function RootLayout({
             <main>{children}</main>
             <Footer />
             <CartDrawer />
+            <CookieConsent />
           </CartProvider>
         </ThemeProvider>
       </body>
