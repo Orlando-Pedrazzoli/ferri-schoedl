@@ -29,6 +29,21 @@ export default function Home() {
           <div className='grid items-end gap-10 lg:grid-cols-2 lg:gap-16'>
             {/* Text side */}
             <div>
+              {/* Firm name — mobile only (hidden on lg where the navbar shows it) */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.15 }}
+                className='mb-5 lg:hidden'
+              >
+                <span className='font-[family-name:var(--font-cormorant)] text-2xl tracking-wide text-cream-100'>
+                  Ferri Schoedl
+                </span>
+                <span className='ml-2 font-[family-name:var(--font-cormorant)] text-2xl tracking-wide text-gold-500'>
+                  Advocacia
+                </span>
+              </motion.p>
+
               <motion.p
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
