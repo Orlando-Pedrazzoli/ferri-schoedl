@@ -39,11 +39,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/images/favicon.ico', sizes: 'any' },
-      { url: '/images/favicon.svg', type: 'image/svg+xml' },
-      { url: '/images/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/images/favicon.svg?v=2', type: 'image/svg+xml' },
+      {
+        url: '/images/favicon-96x96.png?v=2',
+        sizes: '96x96',
+        type: 'image/png',
+      },
+      { url: '/images/favicon.ico?v=2', sizes: 'any' },
     ],
-    apple: '/images/apple-touch-icon.png',
+    apple: '/images/apple-touch-icon.png?v=2',
   },
   manifest: '/images/site.webmanifest',
 };
@@ -66,6 +70,16 @@ export default function RootLayout({
           href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap'
           rel='stylesheet'
         />
+        {/* Force favicon refresh — SVG first (modern browsers), then PNG, then ICO fallback */}
+        <link rel='icon' type='image/svg+xml' href='/images/favicon.svg?v=2' />
+        <link
+          rel='icon'
+          type='image/png'
+          sizes='96x96'
+          href='/images/favicon-96x96.png?v=2'
+        />
+        <link rel='icon' sizes='any' href='/images/favicon.ico?v=2' />
+        <link rel='apple-touch-icon' href='/images/apple-touch-icon.png?v=2' />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('fs-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
