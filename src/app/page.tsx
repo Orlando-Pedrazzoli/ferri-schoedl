@@ -158,7 +158,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.9 }}
-            className='mt-16 flex justify-center gap-8 border-t border-gold-500/10 pt-8 sm:mt-20 sm:gap-12 sm:pt-10 md:gap-20'
+            className='mt-16 flex justify-center gap-8 pt-8 sm:mt-20 sm:gap-12 sm:pt-10 md:gap-20'
           >
             {[
               { n: '20+', label: 'Anos de experiência' },
