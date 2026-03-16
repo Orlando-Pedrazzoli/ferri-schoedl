@@ -34,7 +34,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.15 }}
-                className='mb-5 lg:hidden'
+                className='mb-10 sm:mb-12 lg:hidden'
               >
                 <span className='font-[family-name:var(--font-cormorant)] text-2xl tracking-wide text-cream-100'>
                   Ferri Schoedl
