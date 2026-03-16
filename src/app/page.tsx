@@ -7,15 +7,23 @@ import { ArrowRight, BookOpen, MapPin, ChevronRight } from 'lucide-react';
 import { Reveal, RevealStagger, RevealItem } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
 import { areasDeAtuacao, publicacoes } from '@/lib/data';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function Home() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   return (
     <>
       {/* HERO */}
       <section className='relative flex min-h-screen items-center overflow-hidden'>
-        {/* Background texture — dark mode only */}
-        <div className='absolute inset-0 hidden bg-[radial-gradient(ellipse_at_top_right,_rgba(184,150,90,0.04)_0%,_transparent_60%)] dark:block' />
-        <div className='absolute inset-0 hidden bg-[radial-gradient(ellipse_at_bottom_left,_rgba(17,40,64,0.5)_0%,_transparent_60%)] dark:block' />
+        {/* Background texture — dark mode only (JS-controlled, not Tailwind dark:) */}
+        {isDark && (
+          <>
+            <div className='absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(184,150,90,0.04)_0%,_transparent_60%)]' />
+            <div className='absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(17,40,64,0.5)_0%,_transparent_60%)]' />
+          </>
+        )}
 
         {/* Decorative vertical line */}
         <motion.div
@@ -133,7 +141,9 @@ export default function Home() {
                   priority
                 />
                 {/* Subtle overlay on bottom — dark mode only */}
-                <div className='absolute inset-x-0 bottom-0 hidden h-1/3 bg-gradient-to-t from-navy-950/80 to-transparent dark:block' />
+                {isDark && (
+                  <div className='absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-navy-950/80 to-transparent' />
+                )}
               </div>
 
               {/* Name tag */}
@@ -158,7 +168,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.9 }}
-            className='mt-16 flex justify-center gap-8 pt-8 sm:mt-20 sm:gap-12 sm:pt-10 md:gap-20'
+            className='mt-16 flex justify-center gap-8 border-t border-gold-500/10 pt-8 sm:mt-20 sm:gap-12 sm:pt-10 md:gap-20'
           >
             {[
               { n: '20+', label: 'Anos de experiência' },
@@ -179,7 +189,7 @@ export default function Home() {
       </section>
 
       {/* ÁREAS DE ATUAÇÃO */}
-      <section className='py-16 sm:py-24 lg:py-32'>
+      <section className='border-t border-gold-500/8 py-16 sm:py-24 lg:py-32'>
         <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
           <SectionHeading
             label='Especializações'
