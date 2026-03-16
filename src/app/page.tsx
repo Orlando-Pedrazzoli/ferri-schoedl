@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <>
       {/* HERO */}
-      <section className='relative flex min-h-screen items-center overflow-hidden bg-navy-950'>
+      <section className='relative flex min-h-screen items-center overflow-hidden'>
         {/* Background texture — dark mode only */}
         <div className='absolute inset-0 hidden bg-[radial-gradient(ellipse_at_top_right,_rgba(184,150,90,0.04)_0%,_transparent_60%)] dark:block' />
         <div className='absolute inset-0 hidden bg-[radial-gradient(ellipse_at_bottom_left,_rgba(17,40,64,0.5)_0%,_transparent_60%)] dark:block' />
@@ -133,7 +133,7 @@ export default function Home() {
                   priority
                 />
                 {/* Subtle overlay on bottom — dark mode only */}
-                <div className='absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-navy-950/80 to-transparent dark:block' />
+                <div className='absolute inset-x-0 bottom-0 hidden h-1/3 bg-gradient-to-t from-navy-950/80 to-transparent dark:block' />
               </div>
 
               {/* Name tag */}
