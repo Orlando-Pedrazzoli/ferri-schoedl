@@ -179,7 +179,7 @@ export default function Home() {
       </section>
 
       {/* ÁREAS DE ATUAÇÃO */}
-      <section className='border-t border-gold-500/8 py-16 sm:py-24 lg:py-32'>
+      <section className='py-16 sm:py-24 lg:py-32'>
         <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
           <SectionHeading
             label='Especializações'
