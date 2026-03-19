@@ -1,8 +1,11 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { siteConfig, areasDeAtuacao } from '@/lib/data';
-import { MapPin, Phone, Mail } from 'lucide-react';
+import { MapPin, Phone, Mail, MessageCircle } from 'lucide-react';
 
 export function Footer() {
+  const whatsappLink = `https://wa.me/${siteConfig.whatsapp}`;
+
   return (
     <footer className='border-t border-gold-500/8 bg-navy-950'>
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
@@ -10,14 +13,29 @@ export function Footer() {
         <div className='grid gap-10 py-12 sm:gap-12 sm:py-16 md:grid-cols-4'>
           {/* Brand column */}
           <div className='md:col-span-1'>
-            <Link href='/' className='inline-block'>
-              <span className='font-[family-name:var(--font-cormorant)] text-xl tracking-wide text-cream-100'>
-                Ferri Schoedl
-              </span>
+            <Link href='/' className='inline-flex items-center gap-3'>
+              <Image
+                src='/images/thales-logo.png'
+                alt='Ferri Schoedl Advocacia'
+                width={48}
+                height={48}
+                className='h-12 w-auto'
+                style={{
+                  filter: 'drop-shadow(0 0 4px rgba(184, 150, 90, 0.2))',
+                }}
+              />
+              <div>
+                <span className='font-[family-name:var(--font-cormorant)] text-xl tracking-wide text-cream-100'>
+                  Ferri Schoedl
+                </span>
+                <span className='ml-1.5 font-[family-name:var(--font-cormorant)] text-xl tracking-wide text-gold-500'>
+                  Advocacia
+                </span>
+              </div>
             </Link>
             <p className='mt-3 text-sm leading-relaxed text-txt-muted'>
               Advocacia especializada com sede em São Paulo e atuação em todo o
-              território nacional.
+              território nacional, com ênfase na defesa de servidores públicos.
             </p>
             <p className='mt-4 text-xs uppercase tracking-[1.5px] text-gold-600'>
               {siteConfig.oab}
@@ -26,7 +44,7 @@ export function Footer() {
             {/* Social links */}
             <div className='mt-5 flex items-center gap-3'>
               <a
-                href='https://www.linkedin.com/in/thales-ferri-schoedl-00517816b/'
+                href={siteConfig.social.linkedin}
                 target='_blank'
                 rel='noopener noreferrer'
                 className='flex h-8 w-8 items-center justify-center border border-gold-500/15 text-txt-muted transition-all duration-300 hover:border-gold-500/40 hover:text-gold-500'
@@ -49,7 +67,7 @@ export function Footer() {
                 </svg>
               </a>
               <a
-                href='https://www.instagram.com/ferrischoedladvocacia/'
+                href={siteConfig.social.instagram}
                 target='_blank'
                 rel='noopener noreferrer'
                 className='flex h-8 w-8 items-center justify-center border border-gold-500/15 text-txt-muted transition-all duration-300 hover:border-gold-500/40 hover:text-gold-500'
@@ -72,7 +90,7 @@ export function Footer() {
                 </svg>
               </a>
               <a
-                href='https://www.facebook.com/profile.php?id=61581144217079'
+                href={siteConfig.social.facebook}
                 target='_blank'
                 rel='noopener noreferrer'
                 className='flex h-8 w-8 items-center justify-center border border-gold-500/15 text-txt-muted transition-all duration-300 hover:border-gold-500/40 hover:text-gold-500'
@@ -91,6 +109,15 @@ export function Footer() {
                 >
                   <path d='M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z' />
                 </svg>
+              </a>
+              <a
+                href={whatsappLink}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='flex h-8 w-8 items-center justify-center border border-gold-500/15 text-txt-muted transition-all duration-300 hover:border-gold-500/40 hover:text-gold-500'
+                aria-label='WhatsApp'
+              >
+                <MessageCircle size={14} strokeWidth={1.5} />
               </a>
             </div>
           </div>
@@ -179,9 +206,20 @@ export function Footer() {
                 </span>
               </li>
               <li className='flex items-center gap-3'>
+                <MessageCircle size={14} className='shrink-0 text-gold-600' />
+                <a
+                  href={whatsappLink}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-sm text-txt-muted transition-colors hover:text-cream-100'
+                >
+                  {siteConfig.phone}
+                </a>
+              </li>
+              <li className='flex items-center gap-3'>
                 <Phone size={14} className='shrink-0 text-gold-600' />
                 <span className='text-sm text-txt-muted'>
-                  {siteConfig.phone}
+                  {siteConfig.phoneLandline}
                 </span>
               </li>
               <li className='flex items-center gap-3'>

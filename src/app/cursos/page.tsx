@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Reveal, RevealStagger, RevealItem } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
+import { siteConfig } from '@/lib/data';
 
 const cursos = [
   {
@@ -62,7 +63,7 @@ export default function CursosPage() {
         <SectionHeading
           label='Formação jurídica'
           title='Cursos e preparatórios'
-          description='Coaching jurídico e preparatórios com a experiência de quem viveu a magistratura, o ensino e a advocacia estratégica.'
+          description='Coaching jurídico e preparatórios com a experiência de quem atuou na Promotoria de Justiça, no ensino e na advocacia criminal de alta complexidade.'
         />
 
         {/* Course grid */}
@@ -97,7 +98,7 @@ export default function CursosPage() {
                 <p className='mt-3 text-sm text-txt-muted'>
                   Professor na Academia Del Guercio SPCM, ex-professor no VFK
                   Educação e UNIESP. Coordenador de bancas de exame oral
-                  simulado.
+                  simulado para concursos de cartórios.
                 </p>
               </div>
               <div>
@@ -105,9 +106,10 @@ export default function CursosPage() {
                   Material didático
                 </p>
                 <p className='mt-3 text-sm text-txt-muted'>
-                  Autor de &quot;2243 Questões para Concursos Públicos&quot;
-                  (938p.) e coautor de &quot;Questões Comentadas do Exame
-                  Oral&quot; — obras de referência na preparação para concursos.
+                  Autor de {siteConfig.stats.livrosPublicados} livros, incluindo
+                  &quot;2243 Questões para Concursos Públicos&quot; (938p.) e
+                  coautor de &quot;Questões Comentadas do Exame Oral&quot; —
+                  obras de referência na preparação para concursos.
                 </p>
               </div>
               <div>
@@ -116,8 +118,9 @@ export default function CursosPage() {
                 </p>
                 <p className='mt-3 text-sm text-txt-muted'>
                   Abordagem prática que conecta teoria, jurisprudência e
-                  questões de prova, resultado de mais de 20 anos de experiência
-                  na área jurídica.
+                  questões de prova, resultado de mais de{' '}
+                  {siteConfig.stats.anosExperiencia} anos de experiência na área
+                  jurídica.
                 </p>
               </div>
             </div>

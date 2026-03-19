@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen, MapPin, ChevronRight } from 'lucide-react';
 import { Reveal, RevealStagger, RevealItem } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
-import { areasDeAtuacao, publicacoes } from '@/lib/data';
+import { areasDeAtuacao, publicacoes, siteConfig } from '@/lib/data';
 import { useTheme } from '@/components/ThemeProvider';
 
 export default function Home() {
@@ -87,8 +87,9 @@ export default function Home() {
                 className='mt-6 max-w-xl text-base leading-relaxed text-txt-muted sm:mt-8'
               >
                 Atuação estratégica nas áreas criminal, tribunal do júri,
-                improbidade administrativa, imobiliário e cíveis. Escritório com
-                sede em São Paulo e atuação em todo o território nacional.
+                improbidade administrativa, imobiliário, cível e disciplinar,
+                com ênfase na defesa de servidores públicos. Escritório com sede
+                em São Paulo e atuação em todo o território nacional.
               </motion.p>
 
               <motion.div
@@ -157,13 +158,13 @@ export default function Home() {
                   Thales Ferri Schoedl
                 </p>
                 <p className='text-xs uppercase tracking-[2px] text-gold-600'>
-                  OAB/SP 196.377
+                  {siteConfig.oab}
                 </p>
               </motion.div>
             </motion.div>
           </div>
 
-          {/* Stats row */}
+          {/* Stats row — dados dinâmicos do siteConfig */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -171,8 +172,18 @@ export default function Home() {
             className='mt-16 flex justify-center gap-8 border-t border-gold-500/10 pt-8 sm:mt-20 sm:gap-12 sm:pt-10 md:gap-20'
           >
             {[
-              { n: '20+', label: 'Anos de experiência' },
-              { n: '4', label: 'Livros publicados' },
+              {
+                n: `${siteConfig.stats.anosExperiencia}+`,
+                label: 'Anos de experiência',
+              },
+              {
+                n: `${siteConfig.stats.livrosPublicados}`,
+                label: 'Livros publicados',
+              },
+              {
+                n: `${siteConfig.stats.artigosPublicados}+`,
+                label: 'Artigos publicados',
+              },
               { n: '6', label: 'Áreas de atuação' },
             ].map(stat => (
               <div key={stat.label} className='text-center'>
@@ -194,7 +205,7 @@ export default function Home() {
           <SectionHeading
             label='Especializações'
             title='Áreas de atuação'
-            description='Atuação abrangente em áreas estratégicas do Direito, com ênfase na defesa técnica em causas de alta complexidade.'
+            description='Atuação abrangente em áreas estratégicas do Direito, com ênfase na defesa técnica de servidores públicos em causas de alta complexidade.'
           />
 
           <RevealStagger className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
@@ -254,19 +265,23 @@ export default function Home() {
                 Thales Ferri Schoedl
               </p>
               <h2 className='font-[family-name:var(--font-cormorant)] text-2xl font-normal text-cream-100 sm:text-3xl md:text-4xl'>
-                Advogado, jurista e professor
+                Advogado, jurista, professor e palestrante
               </h2>
               <div className='mt-4 h-px w-12 bg-gold-500/40' />
               <p className='mt-6 text-base leading-relaxed text-txt-muted'>
-                Ex-promotor de justiça do Estado de São Paulo (2003-2016), com
-                formação pela Universidade Presbiteriana Mackenzie e Mestrado
-                pela UFBA. Autor de 4 livros e diversos artigos jurídicos.
-                Professor na Academia Del Guercio SPCM.
+                Ex-Promotor de Justiça do Estado de São Paulo (2003–2016), com
+                formação pela Universidade Presbiteriana Mackenzie,
+                especialização em Direito Penal e Processual Penal e Mestrado
+                pela UFBA. Autor de {siteConfig.stats.livrosPublicados} livros e
+                mais de {siteConfig.stats.artigosPublicados} artigos jurídicos
+                publicados. Professor na Academia Del Guercio SPCM.
               </p>
               <p className='mt-4 text-base leading-relaxed text-txt-muted'>
-                Sua trajetória une a experiência da magistratura com a advocacia
-                estratégica, resultando em uma atuação técnica diferenciada na
-                defesa de servidores públicos e em causas de alta complexidade.
+                Sua trajetória une a experiência na Promotoria de Justiça com a
+                advocacia estratégica, oferecendo uma perspectiva única — a
+                visão de quem já esteve do lado da acusação — resultando em uma
+                atuação técnica diferenciada na defesa de servidores públicos e
+                em causas de alta complexidade.
               </p>
               <Link
                 href='/sobre'
@@ -289,12 +304,12 @@ export default function Home() {
           <SectionHeading
             label='Obras publicadas'
             title='Publicações'
-            description='Produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.'
+            description={`Autor de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.`}
           />
 
           <RevealStagger className='grid gap-4 md:grid-cols-2'>
             {publicacoes.slice(0, 4).map(pub => (
-              <RevealItem key={pub.title}>
+              <RevealItem key={pub.title + pub.year}>
                 <div className='group flex gap-4 border border-gold-500/8 bg-navy-800/20 p-5 transition-all duration-300 hover:border-gold-500/15 sm:gap-6 sm:p-6'>
                   <div className='shrink-0'>
                     <span className='font-[family-name:var(--font-cormorant)] text-3xl font-light text-gold-500/30 sm:text-4xl'>
@@ -314,6 +329,11 @@ export default function Home() {
                       {pub.publisher}, {pub.year}
                       {pub.pages ? ` — ${pub.pages}p.` : ''}
                     </p>
+                    {pub.type === 'solo' && (
+                      <span className='mt-2 inline-block text-[11px] uppercase tracking-[1.5px] text-gold-600'>
+                        Autoria própria
+                      </span>
+                    )}
                   </div>
                 </div>
               </RevealItem>
@@ -348,8 +368,9 @@ export default function Home() {
             <div className='mx-auto mt-4 h-px w-12 bg-gold-500/40' />
             <p className='mt-6 text-base leading-relaxed text-txt-muted'>
               Coaching jurídico, preparatório para concursos de magistratura,
-              ministério público, procuradorias, defensorias e Exame de Ordem.
-              Com a experiência de quem viveu a magistratura e a advocacia.
+              Ministério Público, procuradorias, defensorias e Exame de Ordem.
+              Com a experiência de quem atuou na Promotoria de Justiça e na
+              advocacia criminal de alta complexidade.
             </p>
           </Reveal>
 

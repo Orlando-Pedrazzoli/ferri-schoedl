@@ -13,13 +13,20 @@ export const metadata: Metadata = {
     template: '%s | Ferri Schoedl Advocacia',
   },
   description:
-    'Escritório de advocacia com sede em São Paulo e atuação nacional. Especializado em Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar.',
+    'Escritório de advocacia com sede em São Paulo e atuação nacional, especializado em Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar. Ênfase na defesa de servidores públicos, com a experiência de um ex-Promotor de Justiça. Autor de 10 livros e mais de 23 artigos jurídicos.',
   keywords: [
     'advogado criminal São Paulo',
     'tribunal do júri',
     'improbidade administrativa',
     'advogado imobiliário',
     'defesa servidor público',
+    'advogado disciplinar',
+    'processo administrativo disciplinar',
+    'ex-promotor de justiça',
+    'livros jurídicos',
+    'artigos jurídicos',
+    'reintegração servidor público',
+    'advogado defesa criminal',
     'Thales Ferri Schoedl',
     'Ferri Schoedl Advocacia',
   ],
@@ -70,7 +77,6 @@ export default function RootLayout({
           href='https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap'
           rel='stylesheet'
         />
-        {/* Force favicon refresh — SVG first (modern browsers), then PNG, then ICO fallback */}
         <link rel='icon' type='image/svg+xml' href='/images/favicon.svg?v=2' />
         <link
           rel='icon'

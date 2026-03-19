@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, ExternalLink } from 'lucide-react';
 import { Reveal, RevealStagger, RevealItem } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
 import { useCart } from '@/components/CartProvider';
-import { livros } from '@/lib/data';
+import { livros, siteConfig } from '@/lib/data';
 
 export default function LivrosPage() {
   const { addItem } = useCart();
@@ -15,9 +15,9 @@ export default function LivrosPage() {
     <section className='pb-16 pt-28 sm:pb-24 sm:pt-32 lg:pb-32'>
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
         <SectionHeading
-          label=''
+          label='Loja'
           title='Livros'
-          description='Obras autorais sobre Direito Penal, Constitucional, Improbidade Administrativa e preparação para concursos públicos.'
+          description={`${siteConfig.stats.livrosPublicados} obras publicadas sobre Direito Penal, Constitucional, Notarial, Improbidade Administrativa e preparação para concursos públicos.`}
         />
 
         <RevealStagger className='grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3'>
@@ -50,9 +50,17 @@ export default function LivrosPage() {
 
                 {/* Info */}
                 <div className='flex flex-1 flex-col p-5 sm:p-6'>
-                  <p className='mb-1 text-xs text-txt-muted'>
-                    {livro.publisher}, {livro.year}
-                  </p>
+                  <div className='mb-2 flex flex-wrap items-center gap-2'>
+                    <p className='text-xs text-txt-muted'>
+                      {livro.publisher}, {livro.year}
+                    </p>
+                    {livro.coauthor && (
+                      <span className='border border-gold-500/15 px-2 py-0.5 text-[10px] uppercase tracking-[1px] text-gold-600/60'>
+                        Coautoria
+                      </span>
+                    )}
+                  </div>
+
                   <Link href={`/livros/${livro.slug}`}>
                     <h3 className='font-[family-name:var(--font-cormorant)] text-lg leading-tight text-cream-100 transition-colors group-hover:text-gold-400'>
                       {livro.title}
@@ -67,8 +75,13 @@ export default function LivrosPage() {
                     {livro.description}
                   </p>
 
+                  {/* Sale type indicator */}
+                  <p className='mt-3 text-[11px] uppercase tracking-[1px] text-txt-muted'>
+                    {livro.saleNote}
+                  </p>
+
                   {/* Price + CTA */}
-                  <div className='mt-5 flex items-end justify-between border-t border-gold-500/8 pt-4'>
+                  <div className='mt-4 flex items-end justify-between border-t border-gold-500/8 pt-4'>
                     <div>
                       {livro.originalPrice && (
                         <p className='text-[13px] text-txt-muted line-through'>
@@ -79,13 +92,24 @@ export default function LivrosPage() {
                         R$ {livro.price.toFixed(2).replace('.', ',')}
                       </p>
                     </div>
-                    <button
-                      onClick={() => addItem(livro)}
-                      className='flex items-center gap-2 bg-gold-500 px-3 py-2 text-xs font-medium uppercase tracking-[1.5px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-4 sm:py-2.5'
-                    >
-                      <ShoppingCart size={14} />
-                      Comprar
-                    </button>
+
+                    {livro.saleType === 'direto' ? (
+                      <button
+                        onClick={() => addItem(livro)}
+                        className='flex items-center gap-2 bg-gold-500 px-3 py-2 text-xs font-medium uppercase tracking-[1.5px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-4 sm:py-2.5'
+                      >
+                        <ShoppingCart size={14} />
+                        Comprar
+                      </button>
+                    ) : (
+                      <Link
+                        href={`/livros/${livro.slug}`}
+                        className='flex items-center gap-2 border border-gold-500/30 px-3 py-2 text-xs font-medium uppercase tracking-[1.5px] text-gold-500 transition-colors hover:border-gold-500 hover:bg-gold-500/5 sm:px-4 sm:py-2.5'
+                      >
+                        <ExternalLink size={14} />
+                        Ver mais
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

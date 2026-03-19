@@ -1,7 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, ArrowRight } from 'lucide-react';
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Clock,
+  ArrowRight,
+  MessageCircle,
+  Building2,
+} from 'lucide-react';
 import { Reveal } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
 import { siteConfig } from '@/lib/data';
@@ -13,6 +21,8 @@ export default function ContatoPage() {
     e.preventDefault();
     setSubmitted(true);
   };
+
+  const whatsappLink = `https://wa.me/${siteConfig.whatsapp}?text=${encodeURIComponent('Olá, Dr. Thales! Gostaria de agendar uma consulta.')}`;
 
   return (
     <section className='pb-16 pt-28 sm:pb-24 sm:pt-32 lg:pb-32'>
@@ -47,6 +57,33 @@ export default function ContatoPage() {
                   <p className='text-sm text-txt-muted'>
                     {siteConfig.address.city} — {siteConfig.address.state}
                   </p>
+                  {siteConfig.address.building && (
+                    <p className='mt-1 flex items-center gap-1.5 text-xs text-txt-muted'>
+                      <Building2 size={12} className='text-gold-600/50' />
+                      {siteConfig.address.building}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className='flex gap-4'>
+                <MessageCircle
+                  size={18}
+                  strokeWidth={1.2}
+                  className='mt-1 shrink-0 text-gold-500'
+                />
+                <div>
+                  <p className='mb-1 text-xs uppercase tracking-[1.5px] text-gold-600'>
+                    WhatsApp / Celular
+                  </p>
+                  <a
+                    href={whatsappLink}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='text-sm text-cream-100 transition-colors hover:text-gold-400'
+                  >
+                    {siteConfig.phone}
+                  </a>
                 </div>
               </div>
 
@@ -58,9 +95,11 @@ export default function ContatoPage() {
                 />
                 <div>
                   <p className='mb-1 text-xs uppercase tracking-[1.5px] text-gold-600'>
-                    Telefone
+                    Telefone fixo
                   </p>
-                  <p className='text-sm text-cream-100'>{siteConfig.phone}</p>
+                  <p className='text-sm text-cream-100'>
+                    {siteConfig.phoneLandline}
+                  </p>
                 </div>
               </div>
 
@@ -92,8 +131,19 @@ export default function ContatoPage() {
                 </div>
               </div>
 
+              {/* WhatsApp CTA */}
+              <a
+                href={whatsappLink}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='flex items-center justify-center gap-2 bg-gold-500 px-6 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-all duration-300 hover:bg-gold-400 sm:py-3.5'
+              >
+                <MessageCircle size={16} />
+                Falar pelo WhatsApp
+              </a>
+
               {/* OAB note */}
-              <div className='mt-8 border border-gold-500/10 bg-navy-800/30 p-5 sm:p-6'>
+              <div className='border border-gold-500/10 bg-navy-800/30 p-5 sm:p-6'>
                 <p className='text-xs uppercase tracking-[1.5px] text-gold-600'>
                   Registro profissional
                 </p>
