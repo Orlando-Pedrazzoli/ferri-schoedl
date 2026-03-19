@@ -33,7 +33,7 @@ export default function Home() {
           className='absolute left-4 top-0 h-full w-px origin-top bg-gradient-to-b from-transparent via-gold-500/20 to-transparent sm:left-8 lg:left-16'
         />
 
-        <div className='relative mx-auto w-full max-w-7xl px-4 pb-16 pt-28 sm:px-6 lg:px-8 lg:pb-20 lg:pt-32'>
+        <div className='relative mx-auto w-full max-w-7xl px-4 pb-16 pt-36 sm:px-6 lg:px-8 lg:pb-20 lg:pt-44'>
           <div className='grid items-end gap-10 lg:grid-cols-2 lg:gap-16'>
             {/* Text side */}
             <div>
@@ -169,7 +169,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.9 }}
-            className='mt-16 flex justify-center gap-8 border-t border-gold-500/10 pt-8 sm:mt-20 sm:gap-12 sm:pt-10 md:gap-20'
+            className='mt-16 grid grid-cols-2 gap-6 border-t border-gold-500/10 pt-8 sm:mt-20 sm:grid-cols-4 sm:gap-8 sm:pt-10'
           >
             {[
               {
@@ -190,7 +190,7 @@ export default function Home() {
                 <p className='font-[family-name:var(--font-cormorant)] text-3xl font-light text-gold-500 sm:text-4xl'>
                   {stat.n}
                 </p>
-                <p className='mt-1 text-xs uppercase tracking-[1.5px] text-txt-muted'>
+                <p className='mt-1 text-[11px] uppercase tracking-[1.5px] text-txt-muted sm:text-xs'>
                   {stat.label}
                 </p>
               </div>

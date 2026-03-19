@@ -71,7 +71,7 @@ function DropdownMenu({ link, pathname }: { link: NavLink; pathname: string }) {
     return (
       <Link
         href={link.href}
-        className={`relative px-4 py-2 text-[13px] tracking-wide transition-colors duration-200 ${
+        className={`relative px-4 py-2 text-sm tracking-wide transition-colors duration-200 ${
           isActive ? 'text-gold-500' : 'text-txt-muted hover:text-cream-100'
         }`}
       >
@@ -90,13 +90,13 @@ function DropdownMenu({ link, pathname }: { link: NavLink; pathname: string }) {
       onMouseLeave={handleLeave}
     >
       <button
-        className={`flex items-center gap-1 px-4 py-2 text-[13px] tracking-wide transition-colors duration-200 ${
+        className={`flex items-center gap-1 px-4 py-2 text-sm tracking-wide transition-colors duration-200 ${
           isActive ? 'text-gold-500' : 'text-txt-muted hover:text-cream-100'
         }`}
       >
         {link.label}
         <ChevronDown
-          size={12}
+          size={14}
           className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
         {isActive && (
@@ -117,7 +117,7 @@ function DropdownMenu({ link, pathname }: { link: NavLink; pathname: string }) {
                 key={child.href}
                 href={child.href}
                 onClick={() => setOpen(false)}
-                className={`block px-5 py-2.5 text-[13px] tracking-wide transition-colors duration-150 ${
+                className={`block px-5 py-3 text-sm tracking-wide transition-colors duration-150 ${
                   childActive
                     ? 'bg-gold-500/5 text-gold-500'
                     : 'text-txt-muted hover:bg-gold-500/5 hover:text-cream-100'
@@ -158,16 +158,16 @@ export function Navbar() {
       }`}
     >
       {/* ========== DESKTOP NAV (lg+) ========== */}
-      <nav className='mx-auto hidden max-w-7xl items-center justify-between px-6 py-3 lg:flex lg:px-8'>
+      <nav className='mx-auto hidden max-w-7xl items-center justify-between px-6 py-4 lg:flex lg:px-8'>
         {/* Logo — larger with golden glow */}
-        <Link href='/' className='group flex items-center gap-3'>
+        <Link href='/' className='group flex items-center gap-4'>
           <div className='relative'>
             <Image
               src='/images/thales-logo.png'
               alt='Ferri Schoedl Advocacia'
-              width={64}
-              height={64}
-              className='relative z-10 h-16 w-auto transition-all duration-300 group-hover:brightness-110'
+              width={72}
+              height={72}
+              className='relative z-10 h-[72px] w-auto transition-all duration-300 group-hover:brightness-110'
               style={{
                 filter: 'drop-shadow(0 0 6px rgba(184, 150, 90, 0.25))',
               }}
@@ -175,10 +175,10 @@ export function Navbar() {
             />
           </div>
           <div>
-            <span className='font-[family-name:var(--font-cormorant)] text-2xl tracking-wide text-cream-100'>
+            <span className='font-[family-name:var(--font-cormorant)] text-[26px] tracking-wide text-cream-100'>
               Ferri Schoedl
             </span>
-            <span className='ml-2 font-[family-name:var(--font-cormorant)] text-2xl tracking-wide text-gold-500'>
+            <span className='ml-2 font-[family-name:var(--font-cormorant)] text-[26px] tracking-wide text-gold-500'>
               Advocacia
             </span>
           </div>
