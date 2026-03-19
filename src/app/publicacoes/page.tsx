@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   BookOpen,
   FileText,
@@ -38,6 +39,7 @@ type ArtigoFilter = 'todos' | 'Carta Forense' | 'Migalhas' | 'Outros';
 
 export default function PublicacoesPage() {
   const [filtro, setFiltro] = useState<ArtigoFilter>('todos');
+  const [mostrarTodos, setMostrarTodos] = useState(false);
 
   const artigosFiltrados =
     filtro === 'todos'
@@ -49,6 +51,12 @@ export default function PublicacoesPage() {
               !a.publisher.includes('Migalhas'),
           )
         : artigos.filter(a => a.publisher.includes(filtro));
+
+  const ARTIGOS_LIMIT = 6;
+  const artigosVisiveis = mostrarTodos
+    ? artigosFiltrados
+    : artigosFiltrados.slice(0, ARTIGOS_LIMIT);
+  const temMais = artigosFiltrados.length > ARTIGOS_LIMIT;
 
   const publicacoesSolo = publicacoes.filter(p => p.type === 'solo');
   const publicacoesCoautoria = publicacoes.filter(p => p.type === 'coautoria');
@@ -62,37 +70,30 @@ export default function PublicacoesPage() {
           description={`Autor de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.`}
         />
 
-        {/* ───── OBRA PRINCIPAL (compacta) ───── */}
+        {/* ───── OBRA PRINCIPAL ───── */}
         <Reveal>
           <div className='mb-10 border border-gold-500/15 bg-navy-800/30 p-5 sm:mb-12 sm:p-6 lg:p-8'>
-            <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6'>
-              <div className='shrink-0'>
-                <span className='inline-block border border-gold-500/15 bg-navy-800/40 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[2px] text-gold-500'>
-                  Obra principal
-                </span>
-              </div>
-              <div className='flex-1'>
-                <h2 className='font-[family-name:var(--font-cormorant)] text-xl text-cream-100 sm:text-2xl'>
-                  Liberdade de Imprensa e Direitos da Personalidade
-                </h2>
-                <p className='mt-1 text-sm italic text-gold-600'>
-                  Uma abordagem interdisciplinar — Letras Jurídicas, 2019 —
-                  Prefácio de Fernando Capez
-                </p>
-                <p className='mt-3 text-sm leading-relaxed text-txt-muted'>
-                  Resultante do Mestrado Interdisciplinar na UFBA, a obra
-                  examina a relação entre o Judiciário e a Mídia. Propõe a
-                  aplicação da Teoria da Ponderação (Robert Alexy) para resolver
-                  conflitos onde a liberdade de informar colide com o direito à
-                  honra e à imagem. Destaque na Promoção Natal Migalhas em 2018
-                  e 2019.
-                </p>
-              </div>
-            </div>
+            <span className='mb-4 inline-block border border-gold-500/15 bg-navy-800/40 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[2px] text-gold-500'>
+              Obra principal
+            </span>
+            <h2 className='font-[family-name:var(--font-cormorant)] text-xl text-cream-100 sm:text-2xl'>
+              Liberdade de Imprensa e Direitos da Personalidade
+            </h2>
+            <p className='mt-1 text-[13px] italic text-gold-600 sm:text-sm'>
+              Uma abordagem interdisciplinar — Letras Jurídicas, 2019 — Prefácio
+              de Fernando Capez
+            </p>
+            <p className='mt-3 text-[13px] leading-relaxed text-txt-muted sm:text-sm'>
+              Resultante do Mestrado Interdisciplinar na UFBA, a obra examina a
+              relação entre o Judiciário e a Mídia. Propõe a aplicação da Teoria
+              da Ponderação (Robert Alexy) para resolver conflitos onde a
+              liberdade de informar colide com o direito à honra e à imagem.
+              Destaque na Promoção Natal Migalhas em 2018 e 2019.
+            </p>
           </div>
         </Reveal>
 
-        {/* ───── LIVROS — AUTORIA PRÓPRIA (grid 2 colunas) ───── */}
+        {/* ───── LIVROS — AUTORIA PRÓPRIA ───── */}
         <Reveal>
           <p className='mb-4 flex items-center gap-3 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
             <span className='h-px w-8 bg-gold-500/40' />
@@ -100,32 +101,32 @@ export default function PublicacoesPage() {
           </p>
         </Reveal>
 
-        <RevealStagger className='grid gap-3 sm:grid-cols-2'>
+        <RevealStagger className='grid gap-3 md:grid-cols-2'>
           {publicacoesSolo.map((pub, i) => (
             <RevealItem key={`solo-${i}`}>
-              <div className='group flex gap-4 border border-gold-500/8 bg-navy-800/20 p-4 transition-all duration-300 hover:border-gold-500/15 sm:p-5'>
+              <div className='group flex gap-3 border border-gold-500/8 bg-navy-800/20 p-4 transition-all duration-300 hover:border-gold-500/15 sm:gap-4 sm:p-5'>
                 <div className='shrink-0'>
-                  <div className='flex h-14 w-14 items-center justify-center border border-gold-500/15 bg-navy-800/40'>
-                    <span className='font-[family-name:var(--font-cormorant)] text-xl font-light text-gold-500'>
+                  <div className='flex h-11 w-11 items-center justify-center border border-gold-500/15 bg-navy-800/40 sm:h-14 sm:w-14'>
+                    <span className='font-[family-name:var(--font-cormorant)] text-base font-light text-gold-500 sm:text-xl'>
                       {pub.year}
                     </span>
                   </div>
                 </div>
-                <div className='min-w-0'>
+                <div className='min-w-0 flex-1'>
                   <h3 className='font-[family-name:var(--font-cormorant)] text-base leading-tight text-cream-100 sm:text-lg'>
                     {pub.title}
                   </h3>
                   {pub.subtitle && (
-                    <p className='mt-0.5 truncate text-[13px] italic text-gold-600'>
+                    <p className='mt-0.5 text-[12px] italic leading-snug text-gold-600 sm:text-[13px]'>
                       {pub.subtitle}
                     </p>
                   )}
-                  <p className='mt-2 text-[13px] text-txt-muted'>
+                  <p className='mt-1.5 text-[12px] text-txt-muted sm:text-[13px]'>
                     {pub.publisher}
                     {pub.pages ? ` — ${pub.pages}p.` : ''}
                   </p>
                   {pub.description && (
-                    <p className='mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-txt-muted/70'>
+                    <p className='mt-1.5 hidden text-[13px] leading-relaxed text-txt-muted/70 sm:line-clamp-2 sm:block'>
                       {pub.description}
                     </p>
                   )}
@@ -135,7 +136,7 @@ export default function PublicacoesPage() {
           ))}
         </RevealStagger>
 
-        {/* ───── LIVROS — COAUTORIA (grid 2 colunas) ───── */}
+        {/* ───── LIVROS — COAUTORIA ───── */}
         <Reveal className='mt-10 sm:mt-12'>
           <p className='mb-4 flex items-center gap-3 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
             <span className='h-px w-8 bg-gold-500/40' />
@@ -143,27 +144,27 @@ export default function PublicacoesPage() {
           </p>
         </Reveal>
 
-        <RevealStagger className='grid gap-3 sm:grid-cols-2'>
+        <RevealStagger className='grid gap-3 md:grid-cols-2'>
           {publicacoesCoautoria.map((pub, i) => (
             <RevealItem key={`co-${i}`}>
-              <div className='group flex gap-4 border border-gold-500/8 bg-navy-800/20 p-4 transition-all duration-300 hover:border-gold-500/15 sm:p-5'>
+              <div className='group flex gap-3 border border-gold-500/8 bg-navy-800/20 p-4 transition-all duration-300 hover:border-gold-500/15 sm:gap-4 sm:p-5'>
                 <div className='shrink-0'>
-                  <div className='flex h-14 w-14 items-center justify-center border border-gold-500/15 bg-navy-800/40'>
-                    <span className='font-[family-name:var(--font-cormorant)] text-xl font-light text-gold-500'>
+                  <div className='flex h-11 w-11 items-center justify-center border border-gold-500/15 bg-navy-800/40 sm:h-14 sm:w-14'>
+                    <span className='font-[family-name:var(--font-cormorant)] text-base font-light text-gold-500 sm:text-xl'>
                       {pub.year}
                     </span>
                   </div>
                 </div>
-                <div className='min-w-0'>
+                <div className='min-w-0 flex-1'>
                   <h3 className='font-[family-name:var(--font-cormorant)] text-base leading-tight text-cream-100 sm:text-lg'>
                     {pub.title}
                   </h3>
                   {pub.subtitle && (
-                    <p className='mt-0.5 truncate text-[13px] italic text-gold-600'>
+                    <p className='mt-0.5 text-[12px] italic leading-snug text-gold-600 sm:text-[13px]'>
                       {pub.subtitle}
                     </p>
                   )}
-                  <div className='mt-2 flex flex-wrap items-center gap-2 text-[13px] text-txt-muted'>
+                  <div className='mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-txt-muted sm:text-[13px]'>
                     <span>{pub.publisher}</span>
                     {pub.pages && (
                       <>
@@ -183,20 +184,17 @@ export default function PublicacoesPage() {
 
         {/* ───── ARTIGOS PUBLICADOS ───── */}
         <Reveal className='mt-12 sm:mt-16'>
-          <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
-            <div>
-              <p className='mb-2 flex items-center gap-3 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
-                <span className='h-px w-8 bg-gold-500/40' />
-                Artigos publicados ({artigos.length})
-              </p>
-              <p className='max-w-xl text-sm text-txt-muted'>
-                Textos técnicos e doutrinários em portais jurídicos de
-                referência.
-              </p>
-            </div>
+          <div>
+            <p className='mb-2 flex items-center gap-3 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
+              <span className='h-px w-8 bg-gold-500/40' />
+              Artigos publicados ({artigos.length})
+            </p>
+            <p className='mb-6 max-w-xl text-[13px] text-txt-muted sm:text-sm'>
+              Textos técnicos e doutrinários em portais jurídicos de referência.
+            </p>
 
-            {/* Filtros inline */}
-            <div className='flex flex-wrap gap-1.5'>
+            {/* Filtros — scroll horizontal em mobile */}
+            <div className='-mx-4 mb-6 flex gap-1.5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0'>
               {(
                 [
                   { key: 'todos', label: 'Todos' },
@@ -207,8 +205,11 @@ export default function PublicacoesPage() {
               ).map(f => (
                 <button
                   key={f.key}
-                  onClick={() => setFiltro(f.key)}
-                  className={`px-3 py-1.5 text-[11px] uppercase tracking-[1.5px] transition-all duration-300 ${
+                  onClick={() => {
+                    setFiltro(f.key);
+                    setMostrarTodos(false);
+                  }}
+                  className={`shrink-0 px-3 py-1.5 text-[11px] uppercase tracking-[1.5px] transition-all duration-300 ${
                     filtro === f.key
                       ? 'border border-gold-500 bg-gold-500/10 text-gold-500'
                       : 'border border-gold-500/10 text-txt-muted hover:border-gold-500/30 hover:text-gold-500'
@@ -221,37 +222,58 @@ export default function PublicacoesPage() {
           </div>
         </Reveal>
 
-        <RevealStagger className='mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
-          {artigosFiltrados.map((artigo, i) => (
-            <RevealItem key={`art-${i}`}>
-              <div className='flex h-full flex-col border border-gold-500/8 bg-navy-800/20 p-4 transition-all duration-300 hover:border-gold-500/15 sm:p-5'>
-                <div className='mb-2 flex items-start justify-between gap-2'>
-                  <FileText
-                    size={16}
-                    strokeWidth={1.2}
-                    className='mt-0.5 shrink-0 text-gold-500/60'
-                  />
-                  <span className='text-[11px] tabular-nums text-gold-600/50'>
-                    {artigo.year}
-                  </span>
-                </div>
-                <h3 className='font-[family-name:var(--font-cormorant)] text-base leading-snug text-cream-100'>
-                  {artigo.title}
-                </h3>
-                <p className='mt-1 text-[11px] uppercase tracking-[1px] text-gold-600'>
-                  {artigo.publisher}
-                </p>
-                {artigo.coauthors && artigo.coauthors.length > 0 && (
-                  <p className='mt-1.5 text-[11px] text-gold-600/40'>
-                    c/ {artigo.coauthors.join(', ')}
-                  </p>
-                )}
+        <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
+          {artigosVisiveis.map((artigo, i) => (
+            <motion.div
+              key={`art-${artigo.title}-${artigo.year}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.3,
+                delay: i < ARTIGOS_LIMIT ? i * 0.05 : 0,
+              }}
+              className='flex h-full flex-col border border-gold-500/8 bg-navy-800/20 p-4 transition-all duration-300 hover:border-gold-500/15'
+            >
+              <div className='mb-2 flex items-start justify-between gap-2'>
+                <FileText
+                  size={16}
+                  strokeWidth={1.2}
+                  className='mt-0.5 shrink-0 text-gold-500/60'
+                />
+                <span className='shrink-0 text-[11px] tabular-nums text-gold-600/50'>
+                  {artigo.year}
+                </span>
               </div>
-            </RevealItem>
+              <h3 className='font-[family-name:var(--font-cormorant)] text-[15px] leading-snug text-cream-100 sm:text-base'>
+                {artigo.title}
+              </h3>
+              <p className='mt-1 text-[11px] uppercase tracking-[1px] text-gold-600'>
+                {artigo.publisher}
+              </p>
+              {artigo.coauthors && artigo.coauthors.length > 0 && (
+                <p className='mt-1.5 text-[11px] text-gold-600/40'>
+                  c/ {artigo.coauthors.join(', ')}
+                </p>
+              )}
+            </motion.div>
           ))}
-        </RevealStagger>
+        </div>
 
-        {/* ───── VITÓRIAS JURÍDICAS (compactas) ───── */}
+        {/* Botão ver mais / ver menos */}
+        {temMais && (
+          <div className='mt-6 text-center'>
+            <button
+              onClick={() => setMostrarTodos(!mostrarTodos)}
+              className='inline-flex items-center gap-2 border border-gold-500/20 px-5 py-2 text-[12px] uppercase tracking-[1.5px] text-gold-500 transition-all duration-300 hover:border-gold-500/40 hover:bg-gold-500/5'
+            >
+              {mostrarTodos
+                ? 'Ver menos'
+                : `Ver todos os ${artigosFiltrados.length} artigos`}
+            </button>
+          </div>
+        )}
+
+        {/* ───── VITÓRIAS JURÍDICAS ───── */}
         <Reveal className='mt-12 sm:mt-16'>
           <p className='mb-4 flex items-center gap-3 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
             <span className='h-px w-8 bg-gold-500/40' />
@@ -259,7 +281,7 @@ export default function PublicacoesPage() {
           </p>
         </Reveal>
 
-        <RevealStagger className='grid gap-3 sm:grid-cols-3'>
+        <RevealStagger className='grid gap-3 md:grid-cols-3'>
           {vitorias.map((vitoria, i) => (
             <RevealItem key={`vit-${i}`}>
               <div className='border border-gold-500/8 bg-navy-800/20 p-4 transition-all duration-300 hover:border-gold-500/15 sm:p-5'>
@@ -268,13 +290,13 @@ export default function PublicacoesPage() {
                   strokeWidth={1}
                   className='mb-3 text-gold-500/50'
                 />
-                <h3 className='font-[family-name:var(--font-cormorant)] text-base text-cream-100'>
+                <h3 className='font-[family-name:var(--font-cormorant)] text-[15px] text-cream-100 sm:text-base'>
                   {vitoria.titulo}
                 </h3>
                 <p className='mt-1 text-[11px] uppercase tracking-[1.5px] text-gold-600'>
                   {vitoria.instancia}
                 </p>
-                <p className='mt-2 text-[13px] leading-relaxed text-txt-muted'>
+                <p className='mt-2 text-[12px] leading-relaxed text-txt-muted sm:text-[13px]'>
                   {vitoria.descricao}
                 </p>
               </div>
@@ -282,13 +304,13 @@ export default function PublicacoesPage() {
           ))}
         </RevealStagger>
 
-        {/* ───── ONDE ENCONTRAR (compacto) ───── */}
+        {/* ───── ONDE ENCONTRAR ───── */}
         <Reveal className='mt-12 sm:mt-16'>
           <div className='border border-gold-500/10 bg-navy-900/40 p-5 sm:p-6'>
             <p className='mb-4 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
               Onde encontrar
             </p>
-            <div className='grid gap-4 sm:grid-cols-3'>
+            <div className='grid gap-4 md:grid-cols-3'>
               {[
                 {
                   name: 'Migalhas',
@@ -313,7 +335,7 @@ export default function PublicacoesPage() {
                     <p className='text-sm font-medium text-cream-100'>
                       {item.name}
                     </p>
-                    <p className='mt-0.5 text-[13px] text-txt-muted'>
+                    <p className='mt-0.5 text-[12px] text-txt-muted sm:text-[13px]'>
                       {item.desc}
                     </p>
                   </div>
