@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { siteConfig, areasDeAtuacao } from '@/lib/data';
-import { MapPin, Phone, Mail, MessageCircle } from 'lucide-react';
+import { MapPin, Phone, Mail, MessageCircle, Lock } from 'lucide-react';
 
 export function Footer() {
   const whatsappLink = `https://wa.me/${siteConfig.whatsapp}`;
@@ -238,17 +238,28 @@ export function Footer() {
             Ferri Schoedl Advocacia — Página institucional em observância ao
             Código de Ética da OAB
           </p>
-          <p className='text-xs text-txt-muted'>
-            Desenvolvido por{' '}
-            <a
-              href='https://pedrazzolidigital.com'
-              target='_blank'
-              rel='noopener noreferrer'
-              className='text-gold-600 transition-colors hover:text-gold-500'
+
+          <div className='flex items-center gap-3'>
+            <p className='text-xs text-txt-muted'>
+              Desenvolvido por{' '}
+              <a
+                href='https://pedrazzolidigital.com'
+                target='_blank'
+                rel='noopener noreferrer'
+                className='text-gold-600 transition-colors hover:text-gold-500'
+              >
+                Pedrazzoli Digital
+              </a>
+            </p>
+
+            <Link
+              href='/admin'
+              className='text-txt-muted/20 transition-colors hover:text-txt-muted/50'
+              aria-label='Painel Administrativo'
             >
-              Pedrazzoli Digital
-            </a>
-          </p>
+              <Lock size={12} />
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
