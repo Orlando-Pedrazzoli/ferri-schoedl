@@ -1,31 +1,35 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+'use client';
+
+import { useSession } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/components/AuthProvider';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 
-export const metadata = {
-  title: 'Admin | Ferri Schoedl Advocacia',
-  robots: { index: false, follow: false },
-};
+function AdminLayoutInner({ children }: { children: React.ReactNode }) {
+  const { status } = useSession();
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/admin/login';
 
-export default async function AdminLayout({
+  if (isLoginPage || status !== 'authenticated') {
+    return <>{children}</>;
+  }
+
+  return (
+    <div className='flex min-h-screen bg-[#0a0f1c]'>
+      <AdminSidebar />
+      <div className='flex-1 flex flex-col overflow-hidden'>{children}</div>
+    </div>
+  );
+}
+
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-
-  // Login page renders without sidebar
-  if (!session) {
-    return <AuthProvider>{children}</AuthProvider>;
-  }
-
   return (
     <AuthProvider>
-      <div className='flex min-h-screen bg-[#0a0f1c]'>
-        <AdminSidebar />
-        <div className='flex-1 flex flex-col overflow-hidden'>{children}</div>
-      </div>
+      <AdminLayoutInner>{children}</AdminLayoutInner>
     </AuthProvider>
   );
 }
