@@ -1,15 +1,45 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getToken } from 'next-auth/jwt';
+import { cookies, headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function getAdminSession() {
-  const session = await getServerSession(authOptions);
+  try {
+    // Build a minimal request object from headers and cookies
+    // so getToken can read the JWT from the cookie
+    const cookieStore = await cookies();
+    const headerStore = await headers();
 
-  if (!session?.user || !(session.user as { role: string }).role) {
+    const req = {
+      headers: {
+        get: (name: string) => headerStore.get(name),
+      },
+      cookies: {
+        get: (name: string) => cookieStore.get(name),
+        getAll: () => cookieStore.getAll(),
+      },
+    };
+
+    const token = await getToken({
+      req: req as any,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token || !token.role) {
+      return null;
+    }
+
+    return {
+      user: {
+        id: token.id as string,
+        name: token.name as string,
+        email: token.email as string,
+        role: token.role as string,
+      },
+    };
+  } catch (err) {
+    console.error('Error getting admin session:', err);
     return null;
   }
-
-  return session;
 }
 
 export async function requireAdmin() {
