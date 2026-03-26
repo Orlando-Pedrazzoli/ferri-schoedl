@@ -1,31 +1,27 @@
 import type { Metadata } from 'next';
-import { Navbar } from '@/components/Navbar';
-import { Footer } from '@/components/Footer';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { CartProvider } from '@/components/CartProvider';
-import { CartDrawer } from '@/components/CartDrawer';
-import { CookieConsent } from '@/components/CookieConsent';
+import { AuthProvider } from '@/components/AuthProvider';
+import { LayoutShell } from '@/components/LayoutShell';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ferri Schoedl Advocacia | Direito Criminal, Júri e Improbidade',
+    default: 'Ferri Schoedl Advocacia | Direito Criminal, Juri e Improbidade',
     template: '%s | Ferri Schoedl Advocacia',
   },
   description:
-    'Escritório de advocacia com sede em São Paulo e atuação nacional, especializado em Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar. Ênfase na defesa de servidores públicos, com a experiência de um ex-Promotor de Justiça. Autor de 10 livros e mais de 23 artigos jurídicos.',
+    'Escritorio de advocacia com sede em Sao Paulo e atuacao nacional, especializado em Direito Criminal, Tribunal do Juri, Improbidade Administrativa, Imobiliario, Civel e Disciplinar. Enfase na defesa de servidores publicos, com a experiencia de um ex-Promotor de Justica. Autor de 10 livros e mais de 23 artigos juridicos.',
   keywords: [
-    'advogado criminal São Paulo',
-    'tribunal do júri',
+    'advogado criminal Sao Paulo',
+    'tribunal do juri',
     'improbidade administrativa',
-    'advogado imobiliário',
-    'defesa servidor público',
+    'advogado imobiliario',
+    'defesa servidor publico',
     'advogado disciplinar',
     'processo administrativo disciplinar',
-    'ex-promotor de justiça',
-    'livros jurídicos',
-    'artigos jurídicos',
-    'reintegração servidor público',
+    'ex-promotor de justica',
+    'livros juridicos',
+    'artigos juridicos',
+    'reintegracao servidor publico',
     'advogado defesa criminal',
     'Thales Ferri Schoedl',
     'Ferri Schoedl Advocacia',
@@ -40,7 +36,7 @@ export const metadata: Metadata = {
         url: '/images/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Ferri Schoedl Advocacia — Defesa técnica com rigor e experiência',
+        alt: 'Ferri Schoedl Advocacia — Defesa tecnica com rigor e experiencia',
       },
     ],
   },
@@ -93,15 +89,9 @@ export default function RootLayout({
         />
       </head>
       <body className='min-h-screen bg-navy-950 text-txt antialiased'>
-        <ThemeProvider>
-          <CartProvider>
-            <Navbar />
-            <main>{children}</main>
-            <Footer />
-            <CartDrawer />
-            <CookieConsent />
-          </CartProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <LayoutShell>{children}</LayoutShell>
+        </AuthProvider>
       </body>
     </html>
   );
