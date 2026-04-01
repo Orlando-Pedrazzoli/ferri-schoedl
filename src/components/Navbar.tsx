@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Menu, X, ShoppingBag, ChevronDown } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useCart } from './CartProvider';
+import { useTheme } from './ThemeProvider';
 
 interface NavLink {
   href: string;
@@ -135,9 +136,15 @@ function DropdownMenu({ link, pathname }: { link: NavLink; pathname: string }) {
 
 export function Navbar() {
   const pathname = usePathname();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { totalItems, setIsOpen: setCartOpen } = useCart();
+
+  const logoSrc = isDark
+    ? '/images/thales-logo1.png'
+    : '/images/thales-logo.png';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32);
@@ -163,7 +170,7 @@ export function Navbar() {
         <Link href='/' className='group flex items-center gap-4'>
           <div className='relative'>
             <Image
-              src='/images/thales-logo.png'
+              src={logoSrc}
               alt='Ferri Schoedl Advocacia'
               width={72}
               height={72}
@@ -232,7 +239,7 @@ export function Navbar() {
           className='absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'
         >
           <Image
-            src='/images/thales-logo.png'
+            src={logoSrc}
             alt='Ferri Schoedl Advocacia'
             width={52}
             height={52}
