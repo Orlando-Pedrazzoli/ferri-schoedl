@@ -66,29 +66,6 @@ export function PublicacoesContent({
 
   return (
     <>
-      {/* OBRA PRINCIPAL */}
-      <Reveal>
-        <div className='mb-10 border border-gold-500/15 bg-navy-800/30 p-5 sm:mb-12 sm:p-6 lg:p-8'>
-          <span className='mb-4 inline-block border border-gold-500/15 bg-navy-800/40 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[2px] text-gold-500'>
-            Obra principal
-          </span>
-          <h2 className='font-[family-name:var(--font-cormorant)] text-xl text-cream-100 sm:text-2xl'>
-            Liberdade de Imprensa e Direitos da Personalidade
-          </h2>
-          <p className='mt-1 text-[13px] italic text-gold-600 sm:text-sm'>
-            Uma abordagem interdisciplinar — Letras Jurídicas, 2019 — Prefácio
-            de Fernando Capez
-          </p>
-          <p className='mt-3 text-[13px] leading-relaxed text-txt-muted sm:text-sm'>
-            Resultante do Mestrado Interdisciplinar na UFBA, a obra examina a
-            relação entre o Judiciário e a Mídia. Propõe a aplicação da Teoria
-            da Ponderação (Robert Alexy) para resolver conflitos onde a
-            liberdade de informar colide com o direito à honra e à imagem.
-            Destaque na Promoção Natal Migalhas em 2018 e 2019.
-          </p>
-        </div>
-      </Reveal>
-
       {/* LIVROS — AUTORIA PRÓPRIA */}
       <Reveal>
         <p className='mb-4 flex items-center gap-3 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
@@ -249,6 +226,38 @@ export function PublicacoesContent({
             {artigo.coauthors && artigo.coauthors.length > 0 && (
               <p className='mt-1.5 text-[11px] text-gold-600/40'>
                 c/ {artigo.coauthors.join(', ')}
+              </p>
+            )}
+
+            {/* Link para artigo externo ou PDF local */}
+            <div className='mt-auto pt-2'>
+              {artigo.url ? (
+                <a
+                  href={artigo.url}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-1 text-[11px] uppercase tracking-[1px] text-gold-500 transition-colors hover:text-gold-400'
+                >
+                  <ExternalLink size={10} />
+                  Ler artigo
+                </a>
+              ) : artigo.pdfUrl ? (
+                <a
+                  href={artigo.pdfUrl}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-1 text-[11px] uppercase tracking-[1px] text-gold-500 transition-colors hover:text-gold-400'
+                >
+                  <FileText size={10} />
+                  Ver PDF
+                </a>
+              ) : null}
+            </div>
+
+            {/* Nota de publicação original */}
+            {artigo.originalPublisher && (
+              <p className='mt-1.5 text-[10px] italic leading-snug text-txt-muted/50'>
+                {artigo.originalPublisher}
               </p>
             )}
           </motion.div>

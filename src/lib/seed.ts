@@ -14,13 +14,20 @@ import {
 } from '@/lib/data';
 
 // ===== SEED BOOKS =====
-export async function seedBooks() {
+export async function seedBooks(force = false) {
   await dbConnect();
 
   const existingCount = await Book.countDocuments();
-  if (existingCount > 0) {
-    console.log(`⏭️  Livros já existem (${existingCount}). Pulando seed.`);
+  if (existingCount > 0 && !force) {
+    console.log(
+      `⏭️  Livros já existem (${existingCount}). Pulando seed. Use force=true para recriar.`,
+    );
     return { skipped: true, count: existingCount };
+  }
+
+  if (force && existingCount > 0) {
+    await Book.deleteMany({});
+    console.log(`🗑️  ${existingCount} livros removidos para reseed.`);
   }
 
   const booksData = livros.map((livro, index) => ({
@@ -57,13 +64,20 @@ export async function seedBooks() {
 }
 
 // ===== SEED ARTICLES =====
-export async function seedArticles() {
+export async function seedArticles(force = false) {
   await dbConnect();
 
   const existingCount = await Article.countDocuments();
-  if (existingCount > 0) {
-    console.log(`⏭️  Artigos já existem (${existingCount}). Pulando seed.`);
+  if (existingCount > 0 && !force) {
+    console.log(
+      `⏭️  Artigos já existem (${existingCount}). Pulando seed. Use force=true para recriar.`,
+    );
     return { skipped: true, count: existingCount };
+  }
+
+  if (force && existingCount > 0) {
+    await Article.deleteMany({});
+    console.log(`🗑️  ${existingCount} artigos removidos para reseed.`);
   }
 
   const articlesData = artigos.map((artigo, index) => ({
@@ -71,6 +85,8 @@ export async function seedArticles() {
     year: artigo.year,
     publisher: artigo.publisher,
     url: artigo.url || '',
+    pdfUrl: artigo.pdfUrl || '',
+    originalPublisher: artigo.originalPublisher || '',
     coauthors: artigo.coauthors || [],
     description: artigo.description || '',
     type: 'artigo' as const,
@@ -84,15 +100,20 @@ export async function seedArticles() {
 }
 
 // ===== SEED SITE CONTENT =====
-export async function seedSiteContent() {
+export async function seedSiteContent(force = false) {
   await dbConnect();
 
   const existingCount = await SiteContent.countDocuments();
-  if (existingCount > 0) {
+  if (existingCount > 0 && !force) {
     console.log(
-      `⏭️  Conteúdo do site já existe (${existingCount}). Pulando seed.`,
+      `⏭️  Conteúdo do site já existe (${existingCount}). Pulando seed. Use force=true para recriar.`,
     );
     return { skipped: true, count: existingCount };
+  }
+
+  if (force && existingCount > 0) {
+    await SiteContent.deleteMany({});
+    console.log(`🗑️  ${existingCount} conteúdos removidos para reseed.`);
   }
 
   const contentItems = [
@@ -351,13 +372,17 @@ export async function seedAdminUser() {
 }
 
 // ===== RUN ALL SEEDS =====
-export async function seedAll() {
-  console.log('🌱 Iniciando seed completo...\n');
+export async function seedAll(force = false) {
+  console.log(
+    force
+      ? '🌱 Iniciando RESEED FORÇADO...\n'
+      : '🌱 Iniciando seed completo...\n',
+  );
 
   const admin = await seedAdminUser();
-  const books = await seedBooks();
-  const articles = await seedArticles();
-  const content = await seedSiteContent();
+  const books = await seedBooks(force);
+  const articles = await seedArticles(force);
+  const content = await seedSiteContent(force);
 
   console.log('\n🎉 Seed completo!');
   return { admin, books, articles, content };

@@ -1,44 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { seedAll } from '@/lib/seed';
-import { requireAdmin } from '@/lib/auth-helpers';
 
-// POST protegido (para uso no dashboard depois do primeiro login)
-export async function POST() {
-  const { error } = await requireAdmin();
-  if (error) return error;
-
+export async function POST(request: NextRequest) {
   try {
-    const results = await seedAll();
-    return NextResponse.json({ success: true, data: results });
-  } catch (err) {
-    console.error('Seed error:', err);
-    return NextResponse.json(
-      { success: false, error: 'Erro ao executar seed' },
-      { status: 500 },
-    );
-  }
-}
+    // Verificar autenticação admin
+    const token = await getToken({ req: request });
+    if (!token || token.role !== 'admin') {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
 
-// GET publico temporario — usar uma unica vez para criar o admin
-// APAGAR ESTE METODO DEPOIS DO PRIMEIRO SEED
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const secret = searchParams.get('secret');
+    // Ler parâmetro force da URL
+    const { searchParams } = new URL(request.url);
+    const force = searchParams.get('force') === 'true';
 
-  if (secret !== process.env.NEXTAUTH_SECRET) {
-    return NextResponse.json(
-      { success: false, error: 'Secret invalido' },
-      { status: 401 },
-    );
-  }
+    if (force) {
+      console.log('⚠️  RESEED FORÇADO — dados existentes serão substituídos.');
+    }
 
-  try {
-    const results = await seedAll();
-    return NextResponse.json({ success: true, data: results });
-  } catch (err) {
-    console.error('Seed error:', err);
+    const result = await seedAll(force);
+
+    return NextResponse.json({
+      success: true,
+      forced: force,
+      result,
+    });
+  } catch (error) {
+    console.error('Erro no seed:', error);
     return NextResponse.json(
-      { success: false, error: 'Erro ao executar seed' },
+      { error: 'Erro ao executar seed' },
       { status: 500 },
     );
   }

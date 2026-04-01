@@ -33,6 +33,8 @@ export interface Artigo {
   year: number;
   publisher: string;
   url?: string;
+  pdfUrl?: string;
+  originalPublisher?: string;
   coauthors?: string[];
   description?: string;
 }
@@ -68,8 +70,8 @@ export const siteConfig = {
     facebook: 'https://www.facebook.com/thalesferrischoedladvocacia',
   },
   stats: {
-    livrosPublicados: 10,
-    artigosPublicados: 23,
+    livrosPublicados: '+10',
+    artigosPublicados: 22,
     anosExperiencia: 22,
   },
 };
@@ -175,6 +177,7 @@ export const areasDeAtuacao: AreaDeAtuacao[] = [
 ];
 
 // ===== PUBLICAÇÕES (LIVROS — Seção Acadêmica) =====
+// Ordem: mais recentes primeiro, priorizando autoria solo
 
 export const publicacoes: Publicacao[] = [
   {
@@ -183,7 +186,7 @@ export const publicacoes: Publicacao[] = [
     publisher: 'Editora Letras Jurídicas',
     pages: 228,
     description:
-      'Análise crítica de cinco decisões específicas do Supremo Tribunal Federal consideradas inconstitucionais pelo autor, abordando temas como a criminalização da homofobia, ativismo judicial e neoconstitucionalismo. Propõe mecanismos para combater decisões inconstitucionais dentro do Estado de Direito.',
+      'Prefaciada pelo jurista, professor e advogado Dr. José Cretella Neto, a obra contém um estudo crítico acerca do atual papel desempenhado pela Corte Suprema Brasileira (Supremo Tribunal Federal), com enfoque exclusivamente jurídico, abordando a criminalização da homofobia, interferência nas nomeações presidenciais, levantamento do sigilo de reuniões presidenciais, investigação de fake news de ofício e prisão de parlamentares federais. Nas Considerações Finais foram elencados os possíveis métodos de controle de constitucionalidade de decisões das próprias Cortes Supremas, sob a ótica do Estado Democrático de Direito.',
     type: 'solo',
   },
   {
@@ -193,7 +196,7 @@ export const publicacoes: Publicacao[] = [
     publisher: 'Editora Letras Jurídicas',
     pages: 284,
     description:
-      'Obra resultante do Mestrado Interdisciplinar na UFBA, com abordagem que cruza Direito Constitucional, Civil, Processual Penal e Análise Econômica do Direito, intersectando com Jornalismo e Gestão Social. Prefácio de Fernando Capez.',
+      'Prefaciada pelo jurista, professor e ex-procurador de justiça Dr. Fernando Capez, esta obra é fruto da dissertação de Mestrado do autor na UFBA. Inicia-se com um estudo crítico sobre o papel da imprensa no processo penal, tendo como premissa a desmistificação da ideia de "quarto poder". Em seguida, trata das teorias que procuram solucionar a colisão entre direitos fundamentais, passando ao conflito específico entre a liberdade de imprensa e os direitos da personalidade, tratando ainda das tutelas previstas em lei.',
     type: 'solo',
   },
   {
@@ -203,7 +206,7 @@ export const publicacoes: Publicacao[] = [
     publisher: 'YK Editora',
     pages: 206,
     description:
-      'Estudo pioneiro sobre os tipos disciplinares da Lei dos Notários e Registradores e suas implicações penais, examinando a interface entre Direito Administrativo e Direito Penal.',
+      'Prefaciada pelo jurista, professor e desembargador Dr. Vitor Frederico Kümpel, a obra integra a Coleção "Noções Elementares de Direito Notarial e Registral", tratando, mediante abordagem interdisciplinar, da classificação dos agentes públicos e dos notários e registradores, responsabilidade e imputabilidade, relação entre as esferas de responsabilidade e dos delitos funcionais, concluindo com um ensaio sobre as repercussões penais da paternidade socioafetiva e das novas modalidades de família.',
     type: 'solo',
   },
   {
@@ -212,17 +215,17 @@ export const publicacoes: Publicacao[] = [
     publisher: 'YK Editora',
     pages: 938,
     description:
-      'Questões respondidas com fundamento e pesquisa minuciosos, cobrindo Direito Constitucional, Administrativo, Tributário, Penal, Processual Penal, Civil, Processual Civil, Empresarial e Legislação Especial. Ferramenta indispensável para concursos de magistratura, Ministério Público, procuradorias, defensorias e exame de ordem.',
+      'Prefaciada pelo jurista, tabelião e professor Arthur Del Guércio Neto, a obra, nas palavras de seu apresentador Dr. Vitor Frederico Kümpel, se vale da maiêutica para fins de aprendizado nas mais diversas áreas do direito. O leitor está diante de questões respondidas com fundamento e pesquisa sérios e minuciosos, abrangendo Direito Constitucional, Administrativo, Tributário, Penal, Processual Penal, Civil, Processual Civil, Empresarial e Legislação Especial.',
     type: 'solo',
   },
   {
     title: 'Questões Comentadas do Exame Oral: Concursos de Cartórios',
     subtitle:
-      'Capítulos de Direito Constitucional, Administrativo, Penal e Processual Penal',
+      'Capítulos de Direito Penal, Processual Penal, Constitucional e Administrativo',
     year: 2017,
     publisher: 'YK Editora',
     description:
-      'Coordenação de Alberto Gentil de Almeida Pedroso. Capítulos sobre Direito Constitucional, Administrativo, Penal e Processual Penal.',
+      'Em obra coordenada pelo jurista, professor e juiz de direito Alberto Gentil de Almeida Pedroso, coube ao autor a elaboração dos Capítulos de Direito Penal, Processual Penal, Constitucional e Administrativo, os dois últimos em coautoria com o jurista, professor e tabelião Milton Fernando Lamanauskas, valendo-se da mesma metodologia do livro "2243 Questões para Concursos Públicos".',
     type: 'coautoria',
   },
   {
@@ -232,7 +235,7 @@ export const publicacoes: Publicacao[] = [
     publisher: 'YK Editora',
     pages: 509,
     description:
-      'Coletânea com artigos de tabeliães, oficiais de registro, juiz, promotor e advogado sobre institutos fundamentais do Direito Notarial e Registral. Coordenação de Arthur Del Guercio Neto e Lucas Barelli Del Guercio. Capítulo sobre discriminação em razão de deficiência (art. 88 da Lei 13.146/15).',
+      'Em obra coordenada pelos juristas, professores e tabeliães Arthur Del Guércio Neto e Lucas Barelli Del Guércio, coube ao autor tecer considerações sobre o tema "Discriminação em razão de deficiência (art. 88 da Lei 13.146/15): análise da constitucionalidade do delito em face dos princípios da legalidade e lesividade, quando praticado por tabelião de notas no exercício da função".',
     type: 'coautoria',
   },
   {
@@ -241,7 +244,7 @@ export const publicacoes: Publicacao[] = [
     year: 2017,
     publisher: 'YK Editora',
     description:
-      'Segundo volume da coletânea. Capítulo sobre tipos disciplinares da Lei dos Notários e Registradores. Coordenação de Arthur Del Guercio Neto e Lucas Barelli Del Guercio.',
+      'No Volume II da obra coordenada pelos juristas, professores e tabeliães Arthur Del Guércio Neto e Lucas Barelli Del Guércio, o autor trata do tema "Tipos disciplinares da Lei dos Notários e Registradores (art. 31, incisos I a V, da Lei 8.935/94): uma abordagem interdisciplinar sob a ótica do Direito Penal e Administrativo".',
     type: 'coautoria',
   },
   {
@@ -250,224 +253,246 @@ export const publicacoes: Publicacao[] = [
     publisher: 'GZ Editora',
     pages: 350,
     description:
-      'Obra coletiva organizada por Alexandre Veronese, André Correia Lima Bastos e Luiz Otávio Figueiredo. Capítulo sobre a compensatória produção de danos morais por veículos de comunicação.',
+      'Em obra coordenada pelos juristas Alexandre Coutinho Pagliarini e Zelma Tomaz Tolentino, o Capítulo elaborado pelo autor é dedicado ao tema "A compensatória produção de danos morais por veículos de comunicação", versando sobre os aspectos jurídicos e econômicos relacionados às ofensas produzidas por veículos de comunicação aos direitos da personalidade.',
     type: 'coautoria',
   },
   {
     title: 'Reflexiones sobre Derecho Latinoamericano',
-    subtitle: 'Volumen 11 — Estudios en Homenaje al Profesor Ignacio Tedesco',
-    year: 2014,
+    subtitle: 'Volumen 11',
+    year: 2013,
     publisher: 'Editorial Derecho Latino (Buenos Aires)',
     pages: 400,
     description:
-      'Obra coletiva internacional. Capítulo sobre o crime de tortura: características gerais e análise de caso. Organização de José Marco Taylah, Letícia Danielle Romano e Paulo Aragão.',
+      'No Volume 11 da obra coordenada pelos juristas e professores Paulo Aragão, José Marco Tayah e Letícia Danielle Romano, publicada no Brasil e na Argentina, o autor aborda o tema "Controle de constitucionalidade dos tipos penais sob o aspecto material", iniciando pelas modalidades de controle de constitucionalidade, passando pela tipicidade material e seus princípios informadores.',
     type: 'coautoria',
   },
   {
     title: 'Reflexiones sobre Derecho Latinoamericano',
-    subtitle:
-      'Volumen 15 — Estudios en Homenaje al Profesor Enrique Del Percio',
-    year: 2023,
+    subtitle: 'Volumen 15',
+    year: 2014,
     publisher: 'Editorial Derecho Latino (Buenos Aires)',
     pages: 420,
     description:
-      'Obra coletiva internacional. Capítulo sobre controle de constitucionalidade dos tipos penais sob o aspecto material. Organização de Paulo Aragão, José Marco Taylah e Letícia Danielle Romano.',
+      'No Volume 15 da obra coordenada pelos juristas e professores Paulo Aragão, José Marco Tayah e Letícia Danielle Romano, igualmente publicada no Brasil e na Argentina, o Capítulo de responsabilidade do autor trata do tema "Do crime de tortura: características gerais e análise de caso", tendo por objeto estudo de caso sobre o delito de tortura, no qual figura como denunciado um agente público.',
     type: 'coautoria',
   },
 ];
 
-// ===== ARTIGOS PUBLICADOS (23 identificados) =====
+// ===== ARTIGOS PUBLICADOS (22 artigos reais — lista fornecida pelo Dr. Thales) =====
 
 export const artigos: Artigo[] = [
-  // --- Carta Forense ---
   {
-    title:
-      'O fenômeno "Baleia Azul" e as implicações penais do desafio virtual',
-    year: 2018,
-    publisher: 'Carta Forense',
-    description:
-      'Análise jurídico-penal do jogo "Baleia Azul" e os desafios legais dos fenômenos virtuais.',
-  },
-  {
-    title: 'O direito de resposta e a liberdade de imprensa',
-    year: 2017,
-    publisher: 'Carta Forense',
-    description:
-      'Exame do direito de resposta frente à liberdade de imprensa no ordenamento brasileiro.',
-  },
-  {
-    title:
-      'A proposta de descriminalização do porte de drogas para consumo pessoal',
-    year: 2017,
-    publisher: 'Carta Forense',
-    description:
-      'Análise das propostas legislativas de descriminalização do porte de drogas para uso pessoal.',
-  },
-  {
-    title: 'Análise do tipo penal do roubo e suas qualificadoras',
-    year: 2016,
-    publisher: 'Carta Forense',
-    description:
-      'Estudo dogmático do crime de roubo e as circunstâncias qualificadoras no Código Penal brasileiro.',
-  },
-  {
-    title:
-      'Controle de constitucionalidade dos tipos penais sob o aspecto material',
-    year: 2015,
-    publisher: 'Carta Forense',
-    description:
-      'Artigo sobre o controle material de constitucionalidade aplicado aos tipos penais.',
-  },
-  {
-    title:
-      'A tipificação penal e seus aspectos constitucionais: uma análise crítica',
-    year: 2014,
-    publisher: 'Carta Forense',
-    description:
-      'Reflexão sobre os fundamentos constitucionais da tipificação penal.',
-  },
-  {
-    title:
-      'As garantias fundamentais do processo penal e o sistema acusatório brasileiro',
+    title: 'A normatização da tipicidade material no Projeto de Código Penal',
     year: 2013,
     publisher: 'Carta Forense',
+    pdfUrl:
+      '/artigos/A_normatizacao_da_tipicidade_material_no_projeto_do_Codigo_Penal.pdf',
+    originalPublisher:
+      'Publicado originalmente no site www.cartaforense.com.br, em 21 de janeiro de 2013',
     description:
-      'Análise das garantias fundamentais no contexto do sistema acusatório.',
-  },
-  // --- Migalhas (Migalhas de Peso) ---
-  {
-    title:
-      'A interpretação constitucional e os métodos hermenêuticos contemporâneos',
-    year: 2021,
-    publisher: 'Migalhas de Peso',
-    url: 'https://www.migalhas.com.br/autor/thales-ferri-schoedl',
-    description:
-      'Artigo sobre os métodos de interpretação constitucional na hermenêutica contemporânea.',
+      'Análise da normatização da teoria do bem jurídico e do princípio da lesividade no Projeto de Código Penal, abordando o controle material da tipicidade e o princípio da insignificância.',
   },
   {
     title:
-      'A absolvição no Tribunal do Júri e suas implicações no Direito Processual Penal',
-    year: 2018,
-    publisher: 'Migalhas de Peso',
-    url: 'https://www.migalhas.com.br/autor/thales-ferri-schoedl',
+      'Projeto de Código Penal: a desequiparação entre o dolo direto e o dolo eventual',
+    year: 2013,
+    publisher: 'Carta Forense',
+    pdfUrl: '/artigos/Desequiparacao_entre_o_dolo_direto_e_eventual.pdf',
+    originalPublisher:
+      'Publicado originalmente no site www.cartaforense.com.br, em 12 de abril de 2013',
     description:
-      'Análise das consequências processuais da absolvição pelo Conselho de Sentença.',
+      'Exame da desequiparação entre o dolo direto e o dolo eventual prevista no Projeto de Código Penal, com análise da distinção entre dolo eventual e culpa consciente.',
+  },
+  {
+    title: 'PEC 37/2011: a blindagem do "sistema penal subterrâneo"',
+    year: 2013,
+    publisher: 'Carta Forense',
+    pdfUrl: '/artigos/PEC_37.pdf',
+    originalPublisher:
+      'Publicado originalmente no site www.cartaforense.com.br, em 11 de junho de 2013',
+    description:
+      'Análise crítica da PEC 37/2011 e seus impactos na investigação criminal pelo Ministério Público, abordando o conceito de "sistema penal subterrâneo".',
   },
   {
     title:
-      'Hannibal Lecter e a autoria mediata: uma análise do Direito Penal pela ficção',
-    year: 2016,
-    publisher: 'Migalhas de Peso',
-    url: 'https://www.migalhas.com.br/autor/thales-ferri-schoedl',
-    description:
-      'Análise criativa da doutrina da autoria mediata no Direito Penal utilizando o personagem Hannibal Lecter como estudo de caso.',
-  },
-  // --- Migalhas – Registralhas ---
-  {
-    title: 'O caso Eliza Samudio e as implicações registrais civis (Parte I)',
-    year: 2015,
-    publisher: 'Migalhas — Registralhas',
-    url: 'https://www.migalhas.com.br/autor/thales-ferri-schoedl',
-    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
-    description:
-      'Primeira parte da análise do caso Eliza Samudio sob a perspectiva do Direito Registral Civil.',
-  },
-  {
-    title: 'O caso Eliza Samudio e as implicações registrais civis (Parte II)',
-    year: 2015,
-    publisher: 'Migalhas — Registralhas',
-    url: 'https://www.migalhas.com.br/autor/thales-ferri-schoedl',
-    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
-    description:
-      'Segunda parte da análise do caso Eliza Samudio sob a perspectiva do Direito Registral Civil.',
-  },
-  {
-    title: 'O caso Eliza Samudio e as implicações registrais civis (Parte III)',
-    year: 2015,
-    publisher: 'Migalhas — Registralhas',
-    url: 'https://www.migalhas.com.br/autor/thales-ferri-schoedl',
-    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
-    description:
-      'Terceira parte da análise do caso Eliza Samudio sob a perspectiva do Direito Registral Civil.',
-  },
-  // --- Jus.com.br ---
-  {
-    title:
-      'A exigência do estudo prévio de impacto ambiental na Constituição Federal',
-    year: 2016,
-    publisher: 'Jus.com.br',
-    url: 'https://jus.com.br/@schoedl',
-    description:
-      'Artigo sobre a exigência constitucional de estudo prévio de impacto ambiental para atividades potencialmente degradadoras.',
-  },
-  // --- Despertar Jurídico ---
-  {
-    title: 'A responsabilidade penal do empregador em acidentes de trabalho',
-    year: 2015,
-    publisher: 'Despertar Jurídico',
-    description:
-      'Análise da responsabilidade penal do empregador nos casos de acidentes laborais.',
-  },
-  {
-    title: 'Princípios constitucionais do Direito Penal brasileiro',
+      'A consumação do crime de roubo e a ação do terceiro que intervém em defesa da vítima',
     year: 2014,
-    publisher: 'Despertar Jurídico',
+    publisher: 'Carta Forense',
+    pdfUrl: '/artigos/Consumacao_157_e_25_de_terceiro.pdf',
+    originalPublisher:
+      'Publicado originalmente no site www.cartaforense.com.br, em 7 de janeiro de 2014',
     description:
-      'Estudo dos princípios constitucionais que regem o Direito Penal no Brasil.',
-  },
-  // --- Artigos adicionais (identificados na pesquisa) ---
-  {
-    title: 'A criminalização da homofobia pelo STF: análise crítica da ADO 26',
-    year: 2022,
-    publisher: 'Publicação jurídica',
-    description:
-      'Análise crítica da decisão do STF na Ação Direta de Inconstitucionalidade por Omissão nº 26.',
+      'Estudo sobre o momento consumativo do crime de roubo e as consequências para o reconhecimento da legítima defesa praticada pelo terceiro que intervém em defesa da vítima.',
   },
   {
-    title: 'Neoconstitucionalismo e ativismo judicial no Brasil contemporâneo',
-    year: 2022,
-    publisher: 'Publicação jurídica',
+    title: 'A posse de droga para consumo pessoal no Projeto de Código Penal',
+    year: 2014,
+    publisher: 'Carta Forense',
+    pdfUrl: '/artigos/Posse_de_droga.pdf',
+    originalPublisher:
+      'Publicado originalmente no site www.cartaforense.com.br, em 20 de março de 2014',
     description:
-      'Reflexão sobre o fenômeno do ativismo judicial e o neoconstitucionalismo na prática jurídica brasileira.',
+      'Análise da descriminalização da posse de droga para consumo pessoal no Projeto de Código Penal, à luz do princípio da alteridade.',
   },
   {
-    title:
-      'A defesa coordenada nas esferas criminal e disciplinar do servidor público',
-    year: 2021,
-    publisher: 'Publicação jurídica',
+    title: 'Projeto do Código Penal: o início da execução do delito',
+    year: 2014,
+    publisher: 'Despertar Jurídico / Blog do DG',
+    url: 'https://blogdodg.com.br/projeto-do-codigo-penal-o-inicio-da-execucao-do-delito/',
+    originalPublisher:
+      'Publicado originalmente no site www.despertarjuridico.com.br, em 5 de setembro de 2014, e republicado no Blog do DG em 10 de março de 2017',
     description:
-      'Análise da necessidade de estratégia coordenada entre processos criminais e disciplinares de servidores públicos.',
-  },
-  {
-    title:
-      'O controle de convencionalidade e a proteção dos direitos fundamentais',
-    year: 2020,
-    publisher: 'Publicação jurídica',
-    description:
-      'Estudo sobre o controle de convencionalidade como mecanismo de proteção dos direitos humanos.',
+      'Considerações sobre o início da execução do delito no Projeto de Código Penal.',
   },
   {
     title:
-      'Liberdade de expressão e seus limites no Estado Democrático de Direito',
-    year: 2019,
-    publisher: 'Publicação jurídica',
+      'Particularidades sobre o interesse e a legitimidade recursal no processo penal',
+    year: 2014,
+    publisher: 'Despertar Jurídico / Blog do DG',
+    url: 'https://blogdodg.com.br/particularidades-sobre-o-interesse-e-a-legitimidade-recursal-no-processo-penal/',
+    originalPublisher:
+      'Publicado originalmente no site www.despertarjuridico.com.br, em 5 de setembro de 2014, e republicado no Blog do DG em 15 de março de 2017',
     description:
-      'Análise dos limites da liberdade de expressão na perspectiva constitucional.',
+      'Análise das particularidades do interesse e da legitimidade recursal no âmbito do processo penal.',
+  },
+  {
+    title: 'O estranho caso do inimputável capaz — Parte I',
+    year: 2015,
+    publisher: 'Migalhas — Registralhas',
+    url: 'https://www.migalhas.com.br/coluna/registralhas/228693/o-estranho-caso-do-inimputavel-capaz---parte-i',
+    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
+    description:
+      'Primeira parte da análise interdisciplinar sobre o caso do inimputável capaz, publicada na coluna Registralhas do Migalhas.',
+  },
+  {
+    title: 'O estranho caso do inimputável capaz — Parte II',
+    year: 2015,
+    publisher: 'Migalhas — Registralhas',
+    url: 'https://www.migalhas.com.br/coluna/registralhas/229398/o-estranho-caso-do-inimputavel-capaz---parte-ii',
+    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
+    description:
+      'Segunda parte da análise interdisciplinar sobre o caso do inimputável capaz.',
+  },
+  {
+    title: 'O estranho caso do inimputável capaz — Parte III',
+    year: 2015,
+    publisher: 'Migalhas — Registralhas',
+    url: 'https://www.migalhas.com.br/coluna/registralhas/230397/o-estranho-caso-do-inimputavel-capaz---parte-iii',
+    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
+    description:
+      'Terceira parte da análise interdisciplinar sobre o caso do inimputável capaz.',
   },
   {
     title:
-      'A aplicação do princípio da insignificância no Direito Penal brasileiro',
+      'O caso Eliza Samúdio e a revogação de certidão de óbito: uma abordagem interdisciplinar — Parte I',
+    year: 2016,
+    publisher: 'Migalhas — Registralhas',
+    url: 'https://www.migalhas.com.br/coluna/registralhas/247511/o-caso-eliza-samudio-e-a-revogacao-de-certidao-de-obito---uma-abordagem-interdisciplinar',
+    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
+    description:
+      'Primeira parte da análise do caso Eliza Samúdio sob a perspectiva interdisciplinar, abordando a revogação de certidão de óbito.',
+  },
+  {
+    title:
+      'O caso Eliza Samúdio e a revogação de certidão de óbito: uma abordagem interdisciplinar — Parte II',
+    year: 2016,
+    publisher: 'Migalhas — Registralhas',
+    url: 'https://www.migalhas.com.br/coluna/registralhas/247906/o-caso-eliza-samudio-e-a-revogacao-de-certidao-de-obito---uma-abordagem-interdisciplinar---parte-ii',
+    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
+    description:
+      'Segunda parte da análise do caso Eliza Samúdio e a revogação de certidão de óbito.',
+  },
+  {
+    title:
+      'O caso Eliza Samúdio e a revogação de certidão de óbito: uma abordagem interdisciplinar — Parte III',
+    year: 2016,
+    publisher: 'Migalhas — Registralhas',
+    url: 'https://www.migalhas.com.br/coluna/registralhas/248951/o-caso-eliza-samudio-e-a-revogacao-de-certidao-de-obito---uma-abordagem-interdisciplinar---parte-iii',
+    coauthors: ['Vitor Frederico Kümpel', 'Bruno de Ávila Borgarelli'],
+    description:
+      'Terceira parte da análise do caso Eliza Samúdio e a revogação de certidão de óbito.',
+  },
+  {
+    title:
+      'Dr. Hannibal Lecter e a utilização da própria vítima, em estado de inimputabilidade, para o cometimento do delito: autoria mediata imprópria?',
+    year: 2016,
+    publisher: 'Migalhas de Peso',
+    url: 'https://www.migalhas.com.br/depeso/249782/dr--hannibal-lecter-e-a-utilizacao-da-propria-vitima--em-estado-de-inimputabilidade--para-o-cometimento-do-delito--autoria-mediata-impropria',
+    description:
+      'Análise da doutrina da autoria mediata imprópria no Direito Penal, utilizando o personagem Dr. Hannibal Lecter como estudo de caso.',
+  },
+  {
+    title:
+      'O problema do prazo para o exercício do direito de resposta judicial',
     year: 2018,
-    publisher: 'Publicação jurídica',
+    publisher: 'Carta Forense / JusBrasil',
+    url: 'https://www.jusbrasil.com.br/noticias/o-problema-do-prazo-para-o-exercicio-do-direito-de-resposta-judicial/547522076',
+    originalPublisher:
+      'Publicado originalmente no site www.cartaforense.com.br, em 21 de fevereiro de 2018, e republicado no JusBrasil',
     description:
-      'Estudo sobre a aplicação do princípio da insignificância como excludente material de tipicidade.',
+      'Exame do problema do prazo para o exercício do direito de resposta judicial no ordenamento jurídico brasileiro.',
   },
   {
-    title: 'A Lei de Abuso de Autoridade e a proteção do servidor público',
-    year: 2020,
-    publisher: 'Publicação jurídica',
+    title: 'Desafio da baleia azul (blue whale): repercussões penais e civis',
+    year: 2018,
+    publisher: 'Carta Forense',
+    pdfUrl: '/artigos/Blue_whale.pdf',
+    originalPublisher:
+      'Publicado originalmente no site www.cartaforense.com.br, em 4 de junho de 2018',
     description:
-      'Análise da nova Lei de Abuso de Autoridade e suas implicações para a defesa de servidores públicos.',
+      'Análise das repercussões penais e civis do desafio da baleia azul, examinando a subsunção ao tipo incriminador do art. 122 do Código Penal e a responsabilidade civil dos participantes.',
+  },
+  {
+    title:
+      'Repercussões extrapenais da absolvição proferida pelo Tribunal do Júri e a possibilidade de apelação do réu',
+    year: 2018,
+    publisher: 'Migalhas de Peso',
+    url: 'https://www.migalhas.com.br/depeso/285490/repercussoes-extrapenais-da-absolvicao-proferida-pelo-tribunal-do-juri-e-a-possibilidade-de-apelacao-do-reu',
+    description:
+      'Análise das repercussões extrapenais da absolvição proferida pelo Tribunal do Júri e a possibilidade de apelação do réu.',
+  },
+  {
+    title: 'Métodos de estudo para concursos e exame de Ordem — Parte I',
+    year: 2018,
+    publisher: 'Blog do DG',
+    url: 'https://blogdodg.com.br/artigo-metodos-de-estudo-para-concursos-e-exame-de-ordem-parte-i-thales-ferri-schoedl/',
+    description:
+      'Primeira parte do artigo sobre métodos de estudo para concursos públicos e exame de Ordem.',
+  },
+  {
+    title: 'Métodos de estudo para concursos e exame de Ordem — Parte II',
+    year: 2018,
+    publisher: 'Blog do DG',
+    url: 'https://blogdodg.com.br/artigo-metodos-de-estudo-para-concursos-e-exame-de-ordem-parte-ii-thales-ferri-schoedl/',
+    description:
+      'Segunda parte do artigo sobre métodos de estudo para concursos públicos e exame de Ordem.',
+  },
+  {
+    title:
+      'Tecnologia Social online destinada ao exercício do direito de resposta: a utilização do território virtual como espaço centralizado para a defesa de direitos fundamentais',
+    year: 2020,
+    publisher: 'Revista Eletrônica Âmbito Jurídico',
+    url: 'https://ambitojuridico.com.br/tecnologia-social-on-line-destinada-ao-exercicio-do-direito-de-resposta-a-utilizacao-do-territorio-virtual-como-espaco-centralizado-para-a-defesa-de-direitos-fundamentais/',
+    description:
+      'Artigo sobre a utilização do território virtual como espaço centralizado para a defesa de direitos fundamentais, especificamente o direito de resposta.',
+  },
+  {
+    title:
+      'Multidisciplinaridade e interdisciplinaridade do Estudo de Impacto Ambiental (EIA/RIMA)',
+    year: 2020,
+    publisher: 'Revista Eletrônica Jus',
+    url: 'https://jus.com.br/artigos/78935/multidisciplinaridade-e-interdisciplinaridade-do-estudo-de-impacto-ambiental-eia-rima',
+    description:
+      'Estudo sobre a multidisciplinaridade e interdisciplinaridade do Estudo de Impacto Ambiental (EIA/RIMA).',
+  },
+  {
+    title:
+      'A "ampliação do círculo de intérpretes da Constituição" (HÄBERLE, 2002) como método de controle de constitucionalidade de decisões da Corte Suprema',
+    year: 2021,
+    publisher: 'Migalhas de Peso',
+    url: 'https://www.migalhas.com.br/depeso/343473/a-ampliacao-do-circulo-de-interpretes-da-constituicao-haberle-2002',
+    description:
+      'Análise da ampliação do círculo de intérpretes da Constituição como método de controle de constitucionalidade de decisões da própria Corte Suprema.',
   },
 ];
 
@@ -532,7 +557,7 @@ export const aboutData = {
   birthDate: '1978-05-21',
   bio: 'Ex-Promotor de Justiça do Estado de São Paulo, autor de diversas obras e artigos jurídicos, com trajetória dedicada à defesa de servidores públicos. Experiência na Promotoria de Justiça em processos criminais e do Tribunal do Júri, oferecendo uma perspectiva única — a visão de quem já esteve do lado da acusação.',
   shortBio:
-    'Advogado, jurista, professor, palestrante e ex-Promotor de Justiça do Estado de São Paulo, autor de 10 livros e mais de 23 artigos jurídicos publicados.',
+    'Advogado, jurista, professor, palestrante e ex-Promotor de Justiça do Estado de São Paulo, autor de +10 livros e 22 artigos jurídicos publicados.',
   education: [
     {
       degree: 'Graduação em Direito',
@@ -600,7 +625,7 @@ export const aboutData = {
     'Preparação para concursos públicos (magistratura, Ministério Público, procuradorias, defensorias) e Exame de Ordem (OAB) nas áreas de Direito Constitucional, Administrativo, Penal e Processual Penal.',
   differentials: [
     'Ex-Promotor de Justiça — visão estratégica de quem conhece a perspectiva da acusação',
-    'Autor de 10 livros e mais de 23 artigos jurídicos publicados',
+    'Autor de +10 livros e 22 artigos jurídicos publicados',
     'Professor universitário e coordenador de bancas de exame oral',
     'Atuação nacional com sede em São Paulo',
     'Atendimento técnico, responsável e humanizado',
@@ -638,7 +663,7 @@ export const faqItems = [
   {
     question: 'Quais são as áreas de especialização do Dr. Thales?',
     answer:
-      'Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar, com ênfase na defesa de servidores públicos. O Dr. Thales é também autor de 10 livros e mais de 23 artigos jurídicos publicados.',
+      'Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar, com ênfase na defesa de servidores públicos. O Dr. Thales é também autor de +10 livros e 22 artigos jurídicos publicados.',
   },
 ];
 
@@ -690,9 +715,9 @@ export const livros: Livro[] = [
     edition: '1ª edição',
     price: 120.0,
     description:
-      'Análise crítica de cinco decisões específicas do STF consideradas inconstitucionais pelo autor.',
+      'Prefaciada pelo Dr. José Cretella Neto, a obra contém um estudo crítico acerca do atual papel desempenhado pelo Supremo Tribunal Federal, com enfoque exclusivamente jurídico.',
     longDescription:
-      'Obra que examina de forma detalhada e criteriosa cinco decisões específicas do Supremo Tribunal Federal consideradas inconstitucionais pelo autor, abordando temas como a criminalização da homofobia pela via judicial, ativismo judicial e neoconstitucionalismo. O autor propõe mecanismos para combater decisões inconstitucionais dentro do Estado Democrático de Direito, fundamentando-se na doutrina do controle de constitucionalidade material dos tipos penais — tema central de sua produção acadêmica ao longo dos anos.',
+      'Prefaciada pelo jurista, professor e advogado Dr. José Cretella Neto, a obra contém um estudo crítico acerca do atual papel desempenhado pela Corte Suprema Brasileira (Supremo Tribunal Federal), com enfoque exclusivamente jurídico, muito embora suas recentes decisões venham produzindo nefastos impactos sociais, políticos e econômicos, notadamente por conta do cerceamento de direitos fundamentais conquistados após séculos de luta. Após se discorrer, brevemente, sobre o Jusnaturalismo, Positivismo Jurídico, Neoconstitucionalismo e o ativismo judicial, cada Capítulo foi dedicado ao exame de uma decisão proferida pelo STF, a saber: criminalização da homofobia, interferência do STF nas nomeações do presidente da República, levantamento do sigilo de reuniões presidenciais, investigação de "fake news" de ofício e prisão de parlamentares federais fora das hipóteses de flagrante por delito inafiançável. Nas Considerações Finais foram elencados os possíveis métodos de controle de constitucionalidade de decisões das próprias Cortes Supremas, sempre sob a ótica do Estado Democrático de Direito.',
     topics: [
       'Controle de constitucionalidade',
       'Supremo Tribunal Federal',
@@ -703,9 +728,9 @@ export const livros: Livro[] = [
     dimensions: { width: 16, height: 23, depth: 1.5, unit: 'cm' },
     weight: 380,
     weightUnit: 'g',
-    image: '/images/11f7d423bb.webp',
+    image: '/livros/Capa Comentários decisões STF.jpg',
     inStock: true,
-    featured: true,
+    featured: false,
     saleType: 'direto',
     saleNote: 'Venda direta com o autor',
   },
@@ -723,9 +748,9 @@ export const livros: Livro[] = [
     edition: '1ª edição',
     price: 99.9,
     description:
-      'Obra resultante do Mestrado Interdisciplinar na UFBA, com prefácio de Fernando Capez.',
+      'Prefaciada pelo Dr. Fernando Capez, esta obra é fruto da dissertação de Mestrado do autor na UFBA, sobre o conflito entre liberdade de imprensa e direitos da personalidade.',
     longDescription:
-      'Resultante do Mestrado Interdisciplinar na Universidade Federal da Bahia (UFBA), esta obra oferece uma abordagem que cruza Direito Constitucional, Direito Civil, Processual Penal e Análise Econômica do Direito, intersectando com as áreas de Jornalismo e Gestão Social. Prefaciada por Fernando Capez, um dos mais renomados juristas brasileiros, a obra analisa a ponderação entre liberdade de imprensa e direitos da personalidade, trazendo contribuições originais para o debate acadêmico e prático sobre o tema.',
+      'Esta obra, prefaciada pelo jurista, professor e ex-procurador de justiça Dr. Fernando Capez, é fruto da dissertação de Mestrado do autor na UFBA, inicia-se com um estudo crítico sobre o papel da imprensa no processo penal, tendo como premissa a desmistificação da ideia de "quarto poder", notadamente por conta da vinculação das organizações de comunicação social com os grandes agentes econômicos, o que muitas vezes compromete a imparcialidade e até mesmo a veracidade da informação, tendo como resultado a substituição do suplício da Idade Média pela exploração midiática da pessoa investigada ou acusada. Em seguida, ingressou-se na dogmática dos direitos fundamentais, tratando-se das teorias que procuram solucionar a colisão entre esses direitos, tendo como ponto de partida a distinção entre regras e princípios, passando-se ao conflito específico entre a liberdade de imprensa e os direitos da personalidade, reconhecendo-se a relatividade desses direitos, como consequência da doutrina jusnaturalista que fundamenta o presente trabalho, tratando-se ainda das tutelas previstas em lei (ações preventivas, reparatórias e direito de resposta).',
     topics: [
       'Liberdade de imprensa',
       'Direitos da personalidade',
@@ -737,9 +762,9 @@ export const livros: Livro[] = [
     dimensions: { width: 16, height: 23, depth: 1.8, unit: 'cm' },
     weight: 440,
     weightUnit: 'g',
-    image: '/images/livros.jpg',
+    image: '/livros/Capa liberdade de imprensa.jpg',
     inStock: true,
-    featured: true,
+    featured: false,
     saleType: 'direto',
     saleNote: 'Venda direta com o autor',
   },
@@ -757,9 +782,9 @@ export const livros: Livro[] = [
     edition: '1ª edição',
     price: 69.9,
     description:
-      'Estudo pioneiro sobre os tipos disciplinares da Lei dos Notários e Registradores e suas implicações penais.',
+      'Prefaciada pelo Dr. Vitor Frederico Kümpel, a obra trata da responsabilidade penal dos notários e registradores mediante abordagem interdisciplinar.',
     longDescription:
-      'Obra pioneira que examina de forma detalhada a responsabilidade penal dos notários e registradores no ordenamento jurídico brasileiro. O autor analisa os tipos disciplinares previstos na Lei dos Notários e Registradores, suas implicações penais e a interface entre o Direito Administrativo e o Direito Penal nesse contexto. Essencial para profissionais que atuam em cartórios, concurseiros da área e operadores do Direito em geral.',
+      'A presente obra, prefaciada pelo jurista, professor e desembargador Dr. Vitor Frederico Kümpel, integra a Coleção "Noções Elementares de Direito Notarial e Registral", tratando, mediante abordagem interdisciplinar, da classificação dos agentes públicos e dos notários e registradores, responsabilidade e imputabilidade, relação entre as esferas de responsabilidade (civil, penal e disciplinar) e dos delitos funcionais relacionados ao exercício profissional dos notários e registradores, concluindo com um ensaio sobre as repercussões penais da paternidade socioafetiva e das novas modalidades de família.',
     topics: [
       'Responsabilidade penal',
       'Notários e registradores',
@@ -770,9 +795,9 @@ export const livros: Livro[] = [
     dimensions: { width: 15.5, height: 22.5, depth: 1.3, unit: 'cm' },
     weight: 310,
     weightUnit: 'g',
-    image: '/images/resp-penal.jpg',
+    image: '/livros/Responsabilidade penal dos notários e registradores.jpg',
     inStock: true,
-    featured: true,
+    featured: false,
     saleType: 'editora',
     saleNote: 'Disponível na YK Editora e livrarias',
   },
@@ -790,9 +815,9 @@ export const livros: Livro[] = [
     price: 149.9,
     originalPrice: 179.9,
     description:
-      'Questões respondidas com fundamento e pesquisa minuciosos, cobrindo todas as principais disciplinas para concursos.',
+      'Prefaciada pelo tabelião Arthur Del Guércio Neto, com apresentação de Vitor Frederico Kümpel. Questões respondidas com fundamento e pesquisa minuciosos.',
     longDescription:
-      'O leitor está diante de questões respondidas com fundamento e pesquisa sérios e minuciosos, esmiuçando detidamente os diversos assuntos que podem ser questionados. A obra abrange Direito Constitucional, Administrativo, Tributário, Penal (parte geral e parte especial), Processual Penal, Civil, Processual Civil, Empresarial e Legislação Especial, contendo todo o alicerce das principais disciplinas para os concursos de magistratura, ministério público, procuradorias, defensorias e exame de ordem. Ferramenta indispensável para o estudante universitário, para o acadêmico que presta concurso e para todos os docentes.',
+      'Prefaciada pelo jurista, tabelião e professor Arthur Del Guércio Neto, a obra, nas palavras de seu próprio apresentador, Dr. Vitor Frederico Kümpel, se vale da maiêutica para fins de aprendizado nas mais diversas áreas do direito, iniciando pelo Direito Constitucional e, além de seguir uma consequência cronológica na apresentação de perguntas e respostas, apresenta notas de rodapé esmiuçando cada assunto com academicismo e rigor não vistos nesse tipo de obra. O leitor está diante de questões respondidas com fundamento e pesquisa sérios e minuciosos, esmiuçando detidamente os diversos assuntos que podem ser questionados. Após o autor apresentar as principais perguntas e respostas do Direito Constitucional, procede da mesma forma em relação ao Direito Administrativo, Direito Tributário, Direito Penal (parte geral e parte especial), Direito Processual Penal, Direito Civil, Direito Processual Civil, Direito Empresarial, Legislação Especial, de forma a conter todo o alicerce e arcabouço das principais disciplinas para os concursos de Magistratura, Ministério Público, Procuradorias, Defensorias e para o Exame de Ordem.',
     topics: [
       'Direito Constitucional',
       'Direito Administrativo',
@@ -807,9 +832,9 @@ export const livros: Livro[] = [
     dimensions: { width: 17, height: 24, depth: 4.5, unit: 'cm' },
     weight: 1250,
     weightUnit: 'g',
-    image: '/images/2243-questoes.jpg',
+    image: '/livros/2243-questoes.jpg',
     inStock: true,
-    featured: true,
+    featured: false,
     saleType: 'direto',
     saleNote: 'Venda direta com o autor',
   },
@@ -818,7 +843,7 @@ export const livros: Livro[] = [
     slug: 'questoes-exame-oral-cartorios',
     title: 'Questões Comentadas do Exame Oral: Concursos de Cartórios',
     subtitle:
-      'Capítulos de Direito Constitucional, Administrativo, Penal e Processual Penal',
+      'Capítulos de Direito Penal, Processual Penal, Constitucional e Administrativo',
     author: 'Thales Ferri Schoedl (coautor)',
     coauthor: true,
     year: 2017,
@@ -827,9 +852,9 @@ export const livros: Livro[] = [
     edition: '1ª edição',
     price: 79.9,
     description:
-      'Questões comentadas do exame oral para concursos de cartórios, com capítulos de Direito Constitucional, Administrativo, Penal e Processual Penal.',
+      'Coordenação de Alberto Gentil de Almeida Pedroso. Capítulos de Direito Penal, Processual Penal, Constitucional e Administrativo, os dois últimos em coautoria com Milton Fernando Lamanauskas.',
     longDescription:
-      'Obra coordenada por Alberto Gentil de Almeida Pedroso, reunindo contribuições de diversos especialistas na preparação para concursos de cartórios. Thales Ferri Schoedl assina os capítulos de Direito Constitucional, Administrativo, Penal e Processual Penal, oferecendo questões comentadas com fundamentação detalhada e dicas práticas para a prova oral.',
+      'Em obra coordenada pelo jurista, professor e juiz de direito Alberto Gentil de Almeida Pedroso, coube ao autor a elaboração dos Capítulos de Direito Penal, Processual Penal, Constitucional e Administrativo, os dois últimos em coautoria com o jurista, professor e tabelião Milton Fernando Lamanauskas, valendo-se da mesma metodologia do livro "2243 Questões para Concursos Públicos" para enfrentar diversas questões que foram objeto da prova oral dos Concursos de Cartórios.',
     topics: [
       'Exame oral de cartórios',
       'Direito Constitucional',
@@ -841,12 +866,12 @@ export const livros: Livro[] = [
     dimensions: { width: 16, height: 23, depth: 2, unit: 'cm' },
     weight: 480,
     weightUnit: 'g',
-    image: '/images/IMG_8524.PNG',
+    image: '/livros/Qhestoes comentadas exame oral.png',
     inStock: true,
     saleType: 'editora',
     saleNote: 'Disponível na YK Editora e livrarias',
   },
-  // 6) Direito Notarial e Registral em Artigos I e II — Editora/net
+  // 6) Direito Notarial e Registral em Artigos Vol. I (2016) — Editora/net
   {
     slug: 'direito-notarial-registral-artigos-vol-1',
     title: 'O Direito Notarial e Registral em Artigos',
@@ -859,9 +884,9 @@ export const livros: Livro[] = [
     edition: '1ª edição',
     price: 94.9,
     description:
-      'Artigos sobre Direito Notarial e Registral com abordagem prática de tabeliães, oficiais de registro, juiz, promotor e advogado.',
+      'Coordenação de Arthur Del Guércio Neto e Lucas Barelli Del Guércio. Capítulo sobre discriminação em razão de deficiência (art. 88 da Lei 13.146/15).',
     longDescription:
-      'Coletânea coordenada por Arthur Del Guercio Neto e Lucas Barelli Del Guercio que visa contribuir com artigos sobre assuntos relevantes do Direito Notarial e Registral. Todas as especialidades mereceram atenção: Registro Civil das Pessoas Naturais, Registro Civil das Pessoas Jurídicas, Registro de Imóveis, Registro de Títulos e Documentos, Tabelião de Notas e Tabelião de Protestos. Thales Ferri Schoedl contribui com capítulo sobre discriminação em razão de deficiência (art. 88 da Lei 13.146/15).',
+      'Em obra coordenada pelos juristas, professores e tabeliães Arthur Del Guércio Neto e Lucas Barelli Del Guércio, coube ao autor tecer considerações sobre o tema "Discriminação em razão de deficiência (art. 88 da Lei 13.146/15): análise da constitucionalidade do delito em face dos princípios da legalidade e lesividade, quando praticado por tabelião de notas no exercício da função", propõe uma análise crítica do crime de discriminação em razão de deficiência (art. 88 da Lei 13.146/15), notadamente sobre sua constitucionalidade, confrontando-o com os princípios da legalidade e lesividade, este último implicitamente consagrado na Constituição Federal (CF, art. 5º, XXXIX), reconhecendo-se a atipicidade material da conduta do tabelião que se nega a lavrar ato notarial relacionado a negócio jurídico celebrado por pessoa com deficiência sem qualquer cognoscibilidade, desde que presente a intenção de protegê-la.',
     topics: [
       'Direito Notarial',
       'Direito Registral',
@@ -873,11 +898,12 @@ export const livros: Livro[] = [
     dimensions: { width: 17, height: 24, depth: 3, unit: 'cm' },
     weight: 720,
     weightUnit: 'g',
-    image: '/images/direito-notarial.jpg',
+    image: '/livros/direito-notarial.jpg',
     inStock: true,
     saleType: 'editora',
     saleNote: 'Disponível na YK Editora e livrarias',
   },
+  // 7) Direito Notarial e Registral em Artigos Vol. II (2017) — Editora/net
   {
     slug: 'direito-notarial-registral-artigos-vol-2',
     title: 'O Direito Notarial e Registral em Artigos',
@@ -890,9 +916,9 @@ export const livros: Livro[] = [
     edition: '1ª edição',
     price: 94.9,
     description:
-      'Segundo volume da coletânea sobre Direito Notarial e Registral com abordagem interdisciplinar.',
+      'Coordenação de Arthur Del Guércio Neto e Lucas Barelli Del Guércio. Capítulo sobre tipos disciplinares da Lei dos Notários e Registradores.',
     longDescription:
-      'Segundo volume da coletânea coordenada por Arthur Del Guercio Neto e Lucas Barelli Del Guercio. Thales Ferri Schoedl contribui com capítulo sobre tipos disciplinares da Lei dos Notários e Registradores, aprofundando a análise da responsabilidade dos profissionais da área extrajudicial.',
+      'No Volume II da obra coordenada pelos juristas, professores e tabeliães Arthur Del Guércio Neto e Lucas Barelli Del Guércio, o autor trata do tema "Tipos disciplinares da Lei dos Notários e Registradores (art. 31, incisos I a V, da Lei 8.935/94): uma abordagem interdisciplinar sob a ótica do Direito Penal e Administrativo", defendendo que, embora se reconheça o princípio da atipicidade das faltas disciplinares, inerente ao Direito Administrativo, deve ser admitida a aplicação mitigada do princípio da taxatividade, que decorre da legalidade penal e informa os tipos penais incriminadores (CF, art. 5º, XXXIX, e CP, art. 1º), conferindo-se assim maior segurança jurídica ao exercício da função dos notários e registradores.',
     topics: [
       'Direito Notarial',
       'Direito Registral',
@@ -903,12 +929,12 @@ export const livros: Livro[] = [
     dimensions: { width: 17, height: 24, depth: 2.8, unit: 'cm' },
     weight: 680,
     weightUnit: 'g',
-    image: '/images/direito-notarial.jpg',
+    image: '/livros/Capa Direito Notarial em Artigos Volume II.png',
     inStock: true,
     saleType: 'editora',
     saleNote: 'Disponível na YK Editora e livrarias',
   },
-  // 7) Direitos Fundamentais e Relações Jurídicas (2015) — Editora/net
+  // 8) Direitos Fundamentais e Relações Jurídicas (2015) — Editora/net
   {
     slug: 'direitos-fundamentais-relacoes-juridicas',
     title: 'Direitos Fundamentais e Relações Jurídicas',
@@ -920,9 +946,9 @@ export const livros: Livro[] = [
     edition: '1ª edição',
     price: 89.9,
     description:
-      'Obra coletiva sobre direitos fundamentais e suas relações jurídicas no ordenamento brasileiro e internacional.',
+      'Coordenação de Alexandre Coutinho Pagliarini e Zelma Tomaz Tolentino. Capítulo sobre a compensatória produção de danos morais por veículos de comunicação.',
     longDescription:
-      'Organizada por Alexandre Veronese, André Correia Lima Bastos e Luiz Otávio Figueiredo, esta obra coletiva reúne contribuições de diversos juristas sobre a temática dos direitos fundamentais e suas relações jurídicas. Thales Ferri Schoedl contribui com capítulo que examina a compensatória produção de danos morais por veículos de comunicação, analisando a intersecção entre garantias constitucionais e a prática jurídica contemporânea.',
+      'Em obra coordenada pelos juristas Alexandre Coutinho Pagliarini e Zelma Tomaz Tolentino, o Capítulo elaborado pelo autor é dedicado ao tema "A compensatória produção de danos morais por veículos de comunicação", embrião de sua obra sobre a liberdade de imprensa e os direitos da personalidade (2019), versando sobre os aspectos jurídicos e econômicos relacionados às ofensas produzidas por veículos de comunicação aos direitos da personalidade, passando pelo conflito entre os direitos fundamentais à honra, imagem, privacidade e intimidade, de um lado, e os direitos à informação e à livre manifestação do pensamento, de outro, para, posteriormente, ingressar nos critérios para a fixação do dano moral, demonstrando-se, ao final, que a produção de ofensas por órgãos de imprensa, na conjuntura atual, revela-se uma atividade compensatória sob o ponto de vista econômico.',
     topics: [
       'Direitos fundamentais',
       'Relações jurídicas',
@@ -933,59 +959,27 @@ export const livros: Livro[] = [
     dimensions: { width: 16, height: 23, depth: 2.2, unit: 'cm' },
     weight: 520,
     weightUnit: 'g',
-    image: '/images/direitos-fundamentais.jpg',
+    image: '/livros/direitos-fundamentais.jpg',
     inStock: true,
     saleType: 'editora',
     saleNote: 'Disponível na GZ Editora e livrarias',
   },
-  // 8a) Reflexiones sobre Derecho Latinoamericano (2014) — Editora/net
+  // 9) Reflexiones sobre Derecho Latinoamericano Vol. 11 (2013) — Editora/net
   {
     slug: 'reflexiones-derecho-latinoamericano-vol-11',
     title: 'Reflexiones sobre Derecho Latinoamericano',
-    subtitle: 'Volumen 11 — Estudios en Homenaje al Profesor Ignacio Tedesco',
+    subtitle: 'Volumen 11',
     author: 'Thales Ferri Schoedl (coautor)',
     coauthor: true,
-    year: 2014,
+    year: 2013,
     publisher: 'Editorial Derecho Latino (Buenos Aires)',
     pages: 400,
     edition: '1ª edição',
     price: 79.9,
     description:
-      'Obra coletiva internacional com capítulo sobre o crime de tortura.',
+      'Coordenação de Paulo Aragão, José Marco Tayah e Letícia Danielle Romano. Capítulo sobre controle de constitucionalidade dos tipos penais sob o aspecto material.',
     longDescription:
-      'Volume 11 da coleção Reflexiones sobre Derecho Latinoamericano, organizado por José Marco Taylah, Letícia Danielle Romano e Paulo Aragão, com prólogo do Prof. Gabriel Ignacio Anitua e apresentação de Ricardo D. Rabinovich-Berkman. Thales Ferri Schoedl contribui com artigo sobre o crime de tortura: características gerais e análise de caso. Obra de referência para o estudo comparado do Direito na América Latina.',
-    topics: [
-      'Direito Latinoamericano',
-      'Direito Comparado',
-      'Crime de tortura',
-      'Direito Penal Internacional',
-    ],
-    dimensions: { width: 16, height: 23, depth: 2.5, unit: 'cm' },
-    weight: 580,
-    weightUnit: 'g',
-    image: '/images/reflexiones-derecho.jpg',
-    inStock: true,
-    saleType: 'editora',
-    saleNote:
-      'Disponível na Editorial Derecho Latino e livrarias internacionais',
-  },
-  // 8b) Reflexiones sobre Derecho Latinoamericano (2023) — Editora/net
-  {
-    slug: 'reflexiones-derecho-latinoamericano-vol-15',
-    title: 'Reflexiones sobre Derecho Latinoamericano',
-    subtitle:
-      'Volumen 15 — Estudios en Homenaje al Profesor Enrique Del Percio',
-    author: 'Thales Ferri Schoedl (coautor)',
-    coauthor: true,
-    year: 2023,
-    publisher: 'Editorial Derecho Latino (Buenos Aires)',
-    pages: 420,
-    edition: '1ª edição',
-    price: 84.9,
-    description:
-      'Obra coletiva internacional com capítulo sobre controle de constitucionalidade dos tipos penais.',
-    longDescription:
-      'Volume 15 da coleção, organizado por Paulo Aragão, José Marco Taylah e Letícia Danielle Romano, com prólogo de Andrea Gastron e apresentação de Ricardo D. Rabinovich-Berkman. Thales Ferri Schoedl aprofunda sua análise sobre o controle de constitucionalidade dos tipos penais sob o aspecto material, contribuindo para o diálogo jurídico internacional entre acadêmicos e profissionais de diversos países da América Latina.',
+      'No Volume 11 da obra coordenada pelos juristas e professores Paulo Aragão, José Marco Tayah, Letícia Danielle Romano, publicada no Brasil e na Argentina, o autor aborda o tema "Controle de constitucionalidade dos tipos penais sob o aspecto material", iniciando pelas modalidades de controle de constitucionalidade, passando pela tipicidade material e seus princípios informadores, os quais devem nortear tanto o legislador, no momento da elaboração dos tipos penais, como o aplicador da lei penal, ao realizar o juízo de subsunção de um fato ao tipo penal, concluindo pela necessidade de ampliação do controle de constitucionalidade dos tipos penais sob o aspecto material, e conferindo à jurisprudência a tarefa de trilhar os rumos para o seu necessário amadurecimento.',
     topics: [
       'Direito Latinoamericano',
       'Direito Comparado',
@@ -993,10 +987,41 @@ export const livros: Livro[] = [
       'Tipos penais',
       'Direito Penal Constitucional',
     ],
+    dimensions: { width: 16, height: 23, depth: 2.5, unit: 'cm' },
+    weight: 580,
+    weightUnit: 'g',
+    image: '/livros/reflexiones-derecho.jpg',
+    inStock: true,
+    saleType: 'editora',
+    saleNote:
+      'Disponível na Editorial Derecho Latino e livrarias internacionais',
+  },
+  // 10) Reflexiones sobre Derecho Latinoamericano Vol. 15 (2014) — Editora/net
+  {
+    slug: 'reflexiones-derecho-latinoamericano-vol-15',
+    title: 'Reflexiones sobre Derecho Latinoamericano',
+    subtitle: 'Volumen 15',
+    author: 'Thales Ferri Schoedl (coautor)',
+    coauthor: true,
+    year: 2014,
+    publisher: 'Editorial Derecho Latino (Buenos Aires)',
+    pages: 420,
+    edition: '1ª edição',
+    price: 84.9,
+    description:
+      'Coordenação de Paulo Aragão, José Marco Tayah e Letícia Danielle Romano. Capítulo sobre o crime de tortura: características gerais e análise de caso.',
+    longDescription:
+      'No Volume 15 da obra coordenada pelos juristas e professores Paulo Aragão, José Marco Tayah, Letícia Danielle Romano, igualmente publicada no Brasil e na Argentina, o Capítulo de responsabilidade do autor trata do tema "Do crime de tortura: características gerais e análise de caso", tendo por objeto estudo de caso sobre o delito de tortura, no qual figura como denunciado um agente público, trazendo considerações sobre as características gerais do crime de tortura no Brasil, nos moldes em que fora tipificado pela Lei 9.455/97, compreendendo as modalidades, objeto jurídico, sujeitos do delito, consumação e tentativa, formas qualificadas, causas de aumento de pena, efeitos da condenação, disposições especiais e extraterritorialidade, com especial atenção ao problema da tipificação da tortura como crime comum ou próprio, e às consequências de tal distinção.',
+    topics: [
+      'Direito Latinoamericano',
+      'Direito Comparado',
+      'Crime de tortura',
+      'Direito Penal Internacional',
+    ],
     dimensions: { width: 16, height: 23, depth: 2.8, unit: 'cm' },
     weight: 610,
     weightUnit: 'g',
-    image: '/images/reflexoes-sobre.jpg',
+    image: '/livros/reflexoes-sobre.jpg',
     inStock: true,
     saleType: 'editora',
     saleNote:

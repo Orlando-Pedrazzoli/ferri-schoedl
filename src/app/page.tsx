@@ -181,7 +181,7 @@ export default function Home() {
                 label: 'Livros publicados',
               },
               {
-                n: `${siteConfig.stats.artigosPublicados}+`,
+                n: `${siteConfig.stats.artigosPublicados}`,
                 label: 'Artigos publicados',
               },
               { n: '6', label: 'Áreas de atuação' },

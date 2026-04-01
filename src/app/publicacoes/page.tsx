@@ -46,6 +46,8 @@ export default async function PublicacoesPage() {
         year: a.year as number,
         publisher: a.publisher as string,
         url: (a.url as string) || undefined,
+        pdfUrl: (a.pdfUrl as string) || undefined,
+        originalPublisher: (a.originalPublisher as string) || undefined,
         coauthors: (a.coauthors as string[]) || undefined,
         description: (a.description as string) || undefined,
       }))

@@ -5,6 +5,8 @@ export interface IArticleDocument extends Document {
   year: number;
   publisher: string;
   url?: string;
+  pdfUrl?: string;
+  originalPublisher?: string;
   coauthors: string[];
   description?: string;
   type: 'artigo' | 'capitulo';
@@ -31,6 +33,14 @@ const ArticleSchema = new Schema<IArticleDocument>(
       trim: true,
     },
     url: {
+      type: String,
+      trim: true,
+    },
+    pdfUrl: {
+      type: String,
+      trim: true,
+    },
+    originalPublisher: {
       type: String,
       trim: true,
     },
