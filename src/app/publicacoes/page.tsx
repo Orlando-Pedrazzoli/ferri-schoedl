@@ -11,10 +11,10 @@ import { PublicacoesContent } from './PublicacoesContent';
 
 export const metadata: Metadata = {
   title: 'Publicações | Ferri Schoedl Advocacia',
-  description: `Autor de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial sobre Direito Penal, Constitucional e Improbidade Administrativa.`,
+  description: `Autor de mais de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial sobre Direito Penal, Constitucional e Improbidade Administrativa.`,
   openGraph: {
     title: 'Publicações | Ferri Schoedl Advocacia',
-    description: `Autor de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos publicados.`,
+    description: `Autor de mais de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos publicados.`,
   },
 };
 
@@ -57,7 +57,6 @@ export default async function PublicacoesPage() {
 
   // Publicacoes (books as academic entries) still come from data.ts
   // since the Book model is for the store, not the academic listing.
-  // The publicacoes array in data.ts serves the academic/publication view.
   const publicacoes = fallbackPublicacoes;
 
   return (
@@ -66,7 +65,7 @@ export default async function PublicacoesPage() {
         <SectionHeading
           label='Obras e artigos'
           title='Publicações'
-          description={`Autor de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.`}
+          description={`Autor de mais de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.`}
         />
 
         <PublicacoesContent

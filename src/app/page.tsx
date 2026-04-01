@@ -164,7 +164,7 @@ export default function Home() {
             </motion.div>
           </div>
 
-          {/* Stats row — dados dinâmicos do siteConfig */}
+          {/* Stats row */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -177,7 +177,7 @@ export default function Home() {
                 label: 'Anos de experiência',
               },
               {
-                n: `${siteConfig.stats.livrosPublicados}`,
+                n: `+${siteConfig.stats.livrosPublicados}`,
                 label: 'Livros publicados',
               },
               {
@@ -272,9 +272,9 @@ export default function Home() {
                 Ex-Promotor de Justiça do Estado de São Paulo (2003–2016), com
                 formação pela Universidade Presbiteriana Mackenzie,
                 especialização em Direito Penal e Processual Penal e Mestrado
-                pela UFBA. Autor de {siteConfig.stats.livrosPublicados} livros e
-                mais de {siteConfig.stats.artigosPublicados} artigos jurídicos
-                publicados. Professor na Academia Del Guercio SPCM.
+                pela UFBA. Autor de mais de {siteConfig.stats.livrosPublicados}{' '}
+                livros e mais de {siteConfig.stats.artigosPublicados} artigos
+                jurídicos publicados. Professor na Academia Del Guercio SPCM.
               </p>
               <p className='mt-4 text-base leading-relaxed text-txt-muted'>
                 Sua trajetória une a experiência na Promotoria de Justiça com a
@@ -304,7 +304,7 @@ export default function Home() {
           <SectionHeading
             label='Obras publicadas'
             title='Publicações'
-            description={`Autor de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.`}
+            description={`Autor de mais de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.`}
           />
 
           <RevealStagger className='grid gap-4 md:grid-cols-2'>

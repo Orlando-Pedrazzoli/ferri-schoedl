@@ -70,7 +70,7 @@ export const siteConfig = {
     facebook: 'https://www.facebook.com/thalesferrischoedladvocacia',
   },
   stats: {
-    livrosPublicados: '+10',
+    livrosPublicados: 10,
     artigosPublicados: 22,
     anosExperiencia: 22,
   },
@@ -557,7 +557,7 @@ export const aboutData = {
   birthDate: '1978-05-21',
   bio: 'Ex-Promotor de Justiça do Estado de São Paulo, autor de diversas obras e artigos jurídicos, com trajetória dedicada à defesa de servidores públicos. Experiência na Promotoria de Justiça em processos criminais e do Tribunal do Júri, oferecendo uma perspectiva única — a visão de quem já esteve do lado da acusação.',
   shortBio:
-    'Advogado, jurista, professor, palestrante e ex-Promotor de Justiça do Estado de São Paulo, autor de +10 livros e 22 artigos jurídicos publicados.',
+    'Advogado, jurista, professor, palestrante e ex-Promotor de Justiça do Estado de São Paulo, autor de mais de 10 livros e mais de 22 artigos jurídicos publicados.',
   education: [
     {
       degree: 'Graduação em Direito',
@@ -625,7 +625,7 @@ export const aboutData = {
     'Preparação para concursos públicos (magistratura, Ministério Público, procuradorias, defensorias) e Exame de Ordem (OAB) nas áreas de Direito Constitucional, Administrativo, Penal e Processual Penal.',
   differentials: [
     'Ex-Promotor de Justiça — visão estratégica de quem conhece a perspectiva da acusação',
-    'Autor de +10 livros e 22 artigos jurídicos publicados',
+    'Autor de mais de 10 livros e mais de 22 artigos jurídicos publicados',
     'Professor universitário e coordenador de bancas de exame oral',
     'Atuação nacional com sede em São Paulo',
     'Atendimento técnico, responsável e humanizado',
@@ -663,7 +663,7 @@ export const faqItems = [
   {
     question: 'Quais são as áreas de especialização do Dr. Thales?',
     answer:
-      'Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar, com ênfase na defesa de servidores públicos. O Dr. Thales é também autor de +10 livros e 22 artigos jurídicos publicados.',
+      'Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar, com ênfase na defesa de servidores públicos. O Dr. Thales é também autor de mais de 10 livros e mais de 22 artigos jurídicos publicados.',
   },
 ];
 

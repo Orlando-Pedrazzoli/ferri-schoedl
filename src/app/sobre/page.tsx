@@ -75,8 +75,8 @@ export default function SobrePage() {
                   social e a dignidade humana.
                 </p>
                 <p>
-                  Autor de {siteConfig.stats.livrosPublicados} livros e mais de{' '}
-                  {siteConfig.stats.artigosPublicados} artigos jurídicos
+                  Autor de mais de {siteConfig.stats.livrosPublicados} livros e
+                  mais de {siteConfig.stats.artigosPublicados} artigos jurídicos
                   publicados em veículos como Carta Forense, Migalhas,
                   Jus.com.br e Despertar Jurídico, com temas que vão do controle
                   de constitucionalidade dos tipos penais à liberdade de
