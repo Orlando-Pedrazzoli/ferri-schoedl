@@ -7,39 +7,26 @@ import { FileText, Scale, ExternalLink, ArrowRight } from 'lucide-react';
 import { Reveal, RevealStagger, RevealItem } from '@/components/Reveal';
 import type { Publicacao, Artigo } from '@/lib/data';
 
-const vitorias = [
-  {
-    titulo: 'Indenização contra a Rede Record',
-    instancia: 'STJ — 3ª Turma',
-    descricao:
-      'Condenação mantida ao pagamento de R$ 200 mil por danos morais decorrentes de exposição sensacionalista.',
-  },
-  {
-    titulo: 'Vitória contra a Editora Abril / Revista Veja',
-    instancia: 'Justiça de São Paulo',
-    descricao:
-      'Indenização por publicações injuriosas que divulgaram informações equivocadas.',
-  },
-  {
-    titulo: 'Condenação do Jornal O Estado de S. Paulo',
-    instancia: '35ª Vara Cível de São Paulo',
-    descricao:
-      'Indenização por danos morais devido a publicações difamatórias.',
-  },
-];
-
 type ArtigoFilter = 'todos' | 'Carta Forense' | 'Migalhas' | 'Outros';
+
+interface Vitoria {
+  titulo: string;
+  instancia: string;
+  descricao: string;
+}
 
 interface PublicacoesContentProps {
   publicacoes: Publicacao[];
   artigos: Artigo[];
   totalArtigos: number;
+  vitorias: Vitoria[];
 }
 
 export function PublicacoesContent({
   publicacoes,
   artigos,
   totalArtigos,
+  vitorias,
 }: PublicacoesContentProps) {
   const [filtro, setFiltro] = useState<ArtigoFilter>('todos');
   const [mostrarTodos, setMostrarTodos] = useState(false);

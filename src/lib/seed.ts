@@ -605,6 +605,166 @@ export async function seedSiteContent(force = false) {
       label: 'Timeline / Trajetória',
       description: 'Array JSON com os itens da timeline do Dr. Thales.',
     },
+
+    // ===== POLÍTICA DE PRIVACIDADE =====
+    {
+      key: 'privacidade.lastUpdate',
+      page: 'privacidade',
+      section: 'meta',
+      field: 'lastUpdate',
+      value: 'março de 2026',
+      type: 'text' as const,
+      label: 'Última atualização',
+    },
+    {
+      key: 'privacidade.sections',
+      page: 'privacidade',
+      section: 'content',
+      field: 'sections',
+      value: JSON.stringify([
+        {
+          title: '1. Introdução',
+          text: 'A Ferri Schoedl Advocacia, inscrita na OAB/SP sob o número 196.377, com sede em São Paulo/SP, está comprometida com a proteção dos dados pessoais de seus clientes, usuários e visitantes, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD) e demais normas aplicáveis.\n\nEsta Política descreve como coletamos, utilizamos, armazenamos, compartilhamos e protegemos seus dados pessoais ao acessar nosso site, utilizar nossos serviços, adquirir livros ou cursos, e realizar cadastro em nossa plataforma.',
+        },
+        {
+          title: '2. Dados pessoais coletados',
+          text: 'Podemos coletar os seguintes dados pessoais:\n\nDados de identificação: nome completo, CPF, e-mail, telefone e endereço.\n\nDados de navegação: endereço IP, tipo de navegador, páginas acessadas, tempo de permanência e cookies.\n\nDados de transação comercial: informações de pagamento (processadas por terceiros seguros), endereço de entrega, histórico de compras.\n\nDados de cadastro: credenciais de acesso, preferências de comunicação e dados fornecidos em formulários.',
+        },
+        {
+          title: '3. Finalidades do tratamento',
+          text: 'Seus dados pessoais são tratados para as seguintes finalidades: prestação de serviços jurídicos e atendimento de consultas; processamento de compras de livros e cursos; envio de comunicações sobre serviços, conteúdos e lançamentos (mediante consentimento); cumprimento de obrigações legais e regulatórias; melhoria da experiência de navegação e do funcionamento do site; prevenção de fraudes e garantia da segurança da plataforma.',
+        },
+        {
+          title: '4. Base legal para o tratamento',
+          text: 'O tratamento de dados pessoais é realizado com base nas hipóteses previstas no art. 7º da LGPD, incluindo: consentimento do titular; execução de contrato ou procedimentos preliminares; cumprimento de obrigação legal ou regulatória; exercício regular de direitos em processo judicial; e interesse legítimo do controlador, respeitados os direitos do titular.',
+        },
+        {
+          title: '5. Compartilhamento de dados',
+          text: 'Seus dados pessoais podem ser compartilhados com: processadores de pagamento (para viabilizar transações comerciais); serviços de logística (para entrega de livros); ferramentas de análise de navegação (Google Analytics ou similares, mediante consentimento); e autoridades públicas, quando exigido por lei ou decisão judicial.\n\nNão comercializamos, alugamos ou cedemos dados pessoais a terceiros para fins distintos dos aqui descritos.',
+        },
+        {
+          title: '6. Cookies',
+          text: 'Utilizamos cookies e tecnologias similares para melhorar a experiência de navegação. Os cookies são classificados em: necessários (funcionamento essencial do site), de análise (compreensão do comportamento do usuário) e de marketing (conteúdo personalizado). Você pode gerenciar suas preferências de cookies a qualquer momento através do banner de consentimento exibido no site.',
+        },
+        {
+          title: '7. Direitos do titular',
+          text: 'Nos termos do art. 18 da LGPD, você tem direito a: confirmação da existência de tratamento; acesso aos seus dados; correção de dados incompletos ou desatualizados; anonimização, bloqueio ou eliminação de dados desnecessários; portabilidade dos dados; eliminação dos dados tratados com base no consentimento; informação sobre compartilhamento; informação sobre a possibilidade de não fornecer consentimento e suas consequências; e revogação do consentimento.\n\nPara exercer qualquer destes direitos, entre em contato pelo e-mail indicado na seção de contato deste site.',
+        },
+        {
+          title: '8. Segurança dos dados',
+          text: 'Adotamos medidas técnicas e administrativas adequadas para proteger seus dados pessoais contra acessos não autorizados, situações acidentais ou ilícitas de destruição, perda, alteração ou comunicação indevida, incluindo criptografia, controle de acesso e monitoramento contínuo.',
+        },
+        {
+          title: '9. Retenção dos dados',
+          text: 'Os dados pessoais serão retidos pelo tempo necessário ao cumprimento das finalidades para as quais foram coletados, inclusive para atender obrigações legais, contábeis ou regulatórias. Dados relacionados a transações comerciais serão mantidos pelo prazo legal aplicável (Código de Defesa do Consumidor, legislação tributária, etc.).',
+        },
+        {
+          title: '10. Encarregado de dados (DPO)',
+          text: 'Em caso de dúvidas sobre o tratamento de dados pessoais ou para exercer seus direitos como titular, entre em contato com nosso Encarregado de Proteção de Dados através do e-mail disponível na página de contato deste site.',
+        },
+        {
+          title: '11. Alterações nesta política',
+          text: 'Esta Política de Privacidade poderá ser atualizada periodicamente. Recomendamos a consulta regular desta página. Alterações substanciais serão comunicadas por meio do site ou por e-mail, quando aplicável.',
+        },
+      ]),
+      type: 'json' as const,
+      label: 'Seções da Política de Privacidade',
+      description: 'Array JSON com título e texto de cada seção.',
+    },
+
+    // ===== TERMOS DE USO =====
+    {
+      key: 'termos.lastUpdate',
+      page: 'termos',
+      section: 'meta',
+      field: 'lastUpdate',
+      value: 'março de 2026',
+      type: 'text' as const,
+      label: 'Última atualização',
+    },
+    {
+      key: 'termos.sections',
+      page: 'termos',
+      section: 'content',
+      field: 'sections',
+      value: JSON.stringify([
+        {
+          title: '1. Aceitação dos termos',
+          text: 'Ao acessar e utilizar o site da Ferri Schoedl Advocacia, você concorda integralmente com estes Termos de Uso. Caso não concorde, orientamos que não utilize o site. O uso continuado após alterações constitui aceitação dos termos atualizados.',
+        },
+        {
+          title: '2. Descrição dos serviços',
+          text: 'Este site tem caráter institucional e informativo, apresentando os serviços jurídicos do escritório Ferri Schoedl Advocacia. Adicionalmente, o site disponibiliza a venda de livros e, futuramente, cursos e materiais educacionais, bem como cadastro de usuários para acesso a conteúdos e funcionalidades específicas.',
+        },
+        {
+          title: '3. Conteúdo informativo',
+          text: 'As informações disponibilizadas neste site possuem caráter meramente informativo e não constituem aconselhamento jurídico, parecer ou consultoria. A relação advogado-cliente somente se estabelece mediante contratação formal dos serviços.',
+        },
+        {
+          title: '4. Compra de livros e cursos',
+          text: 'As compras realizadas pelo site estão sujeitas às seguintes condições: os preços estão em Reais (BRL) e podem ser alterados sem aviso prévio; o pagamento é processado por operadoras terceiras que possuem suas próprias políticas de segurança; após a confirmação do pagamento, o prazo de entrega será informado de acordo com a opção de frete selecionada.\n\nNos termos do art. 49 do Código de Defesa do Consumidor (Lei 8.078/90), o consumidor pode desistir da compra no prazo de 7 (sete) dias a contar do recebimento do produto, mediante comunicação por e-mail. Nesse caso, os valores pagos serão integralmente devolvidos, incluindo o frete.',
+        },
+        {
+          title: '5. Cadastro de usuário',
+          text: 'Para acessar determinadas funcionalidades, poderá ser necessário o cadastro com informações verdadeiras e atualizadas. O usuário é responsável pela confidencialidade de suas credenciais de acesso e por todas as atividades realizadas em sua conta.',
+        },
+        {
+          title: '6. Propriedade intelectual',
+          text: 'Todo o conteúdo do site — textos, imagens, logotipos, layout, artigos e materiais didáticos — é protegido por direitos autorais e propriedade intelectual. É proibida a reprodução, distribuição ou modificação sem autorização prévia e expressa.',
+        },
+        {
+          title: '7. Código de Ética da OAB',
+          text: 'Este site observa rigorosamente as disposições do Código de Ética e Disciplina da OAB (Resolução 02/2015 do CFOAB) e do Provimento 205/2021 do CFOAB, que regulamenta a publicidade na advocacia. O conteúdo aqui disponibilizado possui caráter informativo e não configura captação de clientela.',
+        },
+        {
+          title: '8. Limitação de responsabilidade',
+          text: 'A Ferri Schoedl Advocacia não se responsabiliza por danos decorrentes do uso ou impossibilidade de uso do site, incluindo interrupções, erros técnicos ou indisponibilidade temporária. O site é disponibilizado "como está", sem garantias expressas ou implícitas quanto à disponibilidade contínua.',
+        },
+        {
+          title: '9. Legislação aplicável e foro',
+          text: 'Estes Termos são regidos pelas leis da República Federativa do Brasil. Fica eleito o Foro da Comarca de São Paulo/SP para dirimir quaisquer controvérsias, com renúncia a qualquer outro, por mais privilegiado que seja.',
+        },
+        {
+          title: '10. Contato',
+          text: 'Para dúvidas, solicitações ou exercício de direitos relacionados a estes Termos, utilize os canais de contato disponíveis na página de Contato deste site.',
+        },
+      ]),
+      type: 'json' as const,
+      label: 'Seções dos Termos de Uso',
+      description: 'Array JSON com título e texto de cada seção.',
+    },
+
+    // ===== PUBLICAÇÕES — Vitórias Jurídicas =====
+    {
+      key: 'publicacoes.vitorias',
+      page: 'publicacoes',
+      section: 'vitorias',
+      field: 'items',
+      value: JSON.stringify([
+        {
+          titulo: 'Indenização contra a Rede Record',
+          instancia: 'STJ — 3ª Turma',
+          descricao:
+            'Condenação mantida ao pagamento de R$ 200 mil por danos morais decorrentes de exposição sensacionalista.',
+        },
+        {
+          titulo: 'Vitória contra a Editora Abril / Revista Veja',
+          instancia: 'Justiça de São Paulo',
+          descricao:
+            'Indenização por publicações injuriosas que divulgaram informações equivocadas.',
+        },
+        {
+          titulo: 'Condenação do Jornal O Estado de S. Paulo',
+          instancia: '35ª Vara Cível de São Paulo',
+          descricao:
+            'Indenização por danos morais devido a publicações difamatórias.',
+        },
+      ]),
+      type: 'json' as const,
+      label: 'Vitórias Jurídicas',
+      description:
+        'Array JSON com as vitórias jurídicas exibidas na página de publicações.',
+    },
   ];
 
   const result = await SiteContent.insertMany(contentItems);
