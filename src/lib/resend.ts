@@ -1,6 +1,16 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendInstance: Resend | null = null;
+
+function getResend(): Resend {
+  if (!resendInstance) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY não configurada');
+    }
+    resendInstance = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendInstance;
+}
 
 const FROM_EMAIL =
   process.env.NODE_ENV === 'production'
@@ -20,7 +30,7 @@ export async function sendVerificationEmail(
   try {
     const verificationUrl = `${SITE_URL}/api/auth/verify-email?token=${token}`;
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: 'Verifique seu email — Ferri Schoedl Advocacia',
@@ -85,7 +95,7 @@ export async function sendOTP(
   code: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: `${code} — Código de verificação`,
@@ -155,7 +165,7 @@ export async function sendOrderConfirmation(
       )
       .join('');
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: `Pedido ${orderCode} confirmado — Ferri Schoedl Advocacia`,
@@ -242,7 +252,7 @@ export async function sendOrderStatusUpdate(
     `O status do seu pedido foi actualizado para: ${status}.`;
 
   try {
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
       to,
       subject: `Pedido ${orderCode} — ${status.charAt(0).toUpperCase() + status.slice(1)}`,
