@@ -185,39 +185,42 @@ export default function AdminDashboardPage() {
           })}
         </div>
 
-        {/* Seed Section */}
-        <div className='rounded-xl border border-gold-500/10 bg-navy-900 p-6'>
-          <div className='mb-4 flex items-center gap-3'>
-            <Database size={20} className='text-txt-muted' />
-            <h2 className='text-lg font-semibold text-cream-100'>
-              Base de Dados
-            </h2>
-          </div>
-          <p className='mb-4 text-sm text-txt-muted'>
-            Se a base de dados estiver vazia, execute o seed para popular com os
-            dados iniciais do site (livros, artigos e conteúdos de páginas).
-          </p>
-
-          <button
-            onClick={handleSeed}
-            disabled={seedLoading}
-            className='rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-navy-950 transition-colors hover:bg-gold-400 disabled:opacity-50'
-          >
-            {seedLoading ? 'Executando...' : 'Executar Seed Inicial'}
-          </button>
-
-          {seedMessage && (
-            <p
-              className={`mt-3 text-sm ${
-                seedMessage.includes('sucesso')
-                  ? 'text-green-400'
-                  : 'text-red-400'
-              }`}
-            >
-              {seedMessage}
+        {/* Seed Section — only shows when database is empty */}
+        {!loading && stats.books === 0 && stats.articles === 0 && (
+          <div className='rounded-xl border border-gold-500/10 bg-navy-900 p-6'>
+            <div className='mb-4 flex items-center gap-3'>
+              <Database size={20} className='text-txt-muted' />
+              <h2 className='text-lg font-semibold text-cream-100'>
+                Base de Dados
+              </h2>
+            </div>
+            <p className='mb-4 text-sm text-txt-muted'>
+              Se a base de dados estiver vazia, execute o seed para popular com
+              os dados iniciais do site (livros, artigos e conteúdos de
+              páginas).
             </p>
-          )}
-        </div>
+
+            <button
+              onClick={handleSeed}
+              disabled={seedLoading}
+              className='rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-navy-950 transition-colors hover:bg-gold-400 disabled:opacity-50'
+            >
+              {seedLoading ? 'Executando...' : 'Executar Seed Inicial'}
+            </button>
+
+            {seedMessage && (
+              <p
+                className={`mt-3 text-sm ${
+                  seedMessage.includes('sucesso')
+                    ? 'text-green-400'
+                    : 'text-red-400'
+                }`}
+              >
+                {seedMessage}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </>
   );
