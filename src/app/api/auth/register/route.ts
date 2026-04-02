@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
 
     // --- Honeypot: se campo "website" preenchido, é bot ---
     if (website) {
-      // Retorna sucesso falso para não alertar o bot
       return NextResponse.json(
         { message: 'Registo realizado com sucesso. Verifique seu email.' },
         { status: 201 },
@@ -97,13 +96,13 @@ export async function POST(request: NextRequest) {
 
     // --- Gerar token de verificação ---
     const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     // --- Criar Customer ---
     const customer = await Customer.create({
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      password, // Hash é feito no pre-save hook
+      password,
       cpf: sanitizedCPF,
       phone: phone.replace(/\D/g, ''),
       emailVerified: false,
@@ -118,26 +117,19 @@ export async function POST(request: NextRequest) {
       verificationToken,
     );
 
-    if (!emailResult.success) {
-      console.error(
-        '[Register] Falha ao enviar email de verificação:',
-        emailResult.error,
-      );
-      // Não bloquear o registo, mas informar
-    }
-
     return NextResponse.json(
       {
         message:
           'Registo realizado com sucesso. Verifique seu email para activar a conta.',
         email: customer.email,
+        emailSent: emailResult.success,
+        emailError: emailResult.error || null,
       },
       { status: 201 },
     );
   } catch (error) {
     console.error('[Register] Erro:', error);
 
-    // Erro de duplicado do MongoDB (race condition)
     if (
       error &&
       typeof error === 'object' &&
