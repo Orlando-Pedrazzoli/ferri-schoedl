@@ -10,6 +10,8 @@ import {
 import { SectionHeading } from '@/components/SectionHeading';
 import { PublicacoesContent } from './PublicacoesContent';
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: 'Publicações | Ferri Schoedl Advocacia',
   description: `Autor de mais de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial sobre Direito Penal, Constitucional e Improbidade Administrativa.`,

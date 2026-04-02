@@ -6,6 +6,8 @@ import {
 } from '@/lib/data';
 import { SobreClient } from './SobreClient';
 
+export const revalidate = 60;
+
 export const metadata = {
   title: 'Sobre | Ferri Schoedl Advocacia',
   description:

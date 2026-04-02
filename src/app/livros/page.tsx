@@ -5,6 +5,8 @@ import { livros as fallbackLivros, siteConfig } from '@/lib/data';
 import { SectionHeading } from '@/components/SectionHeading';
 import { LivrosGrid } from './LivrosGrid';
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: 'Livros | Ferri Schoedl Advocacia',
   description: `${siteConfig.stats.livrosPublicados} obras publicadas sobre Direito Penal, Constitucional, Notarial, Improbidade Administrativa e preparação para concursos públicos.`,

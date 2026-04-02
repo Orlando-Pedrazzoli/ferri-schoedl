@@ -2,6 +2,8 @@ import { getPageContent } from '@/lib/content-helpers';
 import { areasDeAtuacao as fallbackAreas } from '@/lib/data';
 import { AreasClient } from './AreasClient';
 
+export const revalidate = 60;
+
 export const metadata = {
   title: 'Áreas de Atuação | Ferri Schoedl Advocacia',
   description:

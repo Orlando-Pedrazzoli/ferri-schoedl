@@ -2,6 +2,8 @@ import { getPageContent } from '@/lib/content-helpers';
 import { faqItems as fallbackFaqItems } from '@/lib/data';
 import { FaqClient } from './FaqClient';
 
+export const revalidate = 60;
+
 export const metadata = {
   title: 'Perguntas Frequentes | Ferri Schoedl Advocacia',
   description:

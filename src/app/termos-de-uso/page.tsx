@@ -2,6 +2,8 @@ import { getPageContent } from '@/lib/content-helpers';
 import { Reveal } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
 
+export const revalidate = 60;
+
 export const metadata = {
   title: 'Termos de Uso',
   description:

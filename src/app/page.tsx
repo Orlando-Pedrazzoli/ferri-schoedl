@@ -2,6 +2,8 @@ import { getPageContent } from '@/lib/content-helpers';
 import { siteConfig } from '@/lib/data';
 import { HomeClient } from './HomeClient';
 
+export const revalidate = 60;
+
 export default async function Home() {
   // Fetch editable content from MongoDB (admin panel)
   const homeContent = await getPageContent('home');

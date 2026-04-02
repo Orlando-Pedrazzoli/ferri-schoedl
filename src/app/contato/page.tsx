@@ -2,6 +2,8 @@ import { getPageContent } from '@/lib/content-helpers';
 import { siteConfig } from '@/lib/data';
 import { ContatoClient } from './ContatoClient';
 
+export const revalidate = 60;
+
 export const metadata = {
   title: 'Contato | Ferri Schoedl Advocacia',
   description:

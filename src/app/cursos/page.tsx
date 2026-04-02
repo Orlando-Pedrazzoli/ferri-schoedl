@@ -5,6 +5,8 @@ import { siteConfig } from '@/lib/data';
 import { SectionHeading } from '@/components/SectionHeading';
 import { CursosContent } from './CursosContent';
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: 'Cursos | Ferri Schoedl Advocacia',
   description:
