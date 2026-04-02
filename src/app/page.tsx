@@ -59,7 +59,7 @@ export default function Home() {
                 className='mb-5 flex items-center gap-3 text-xs font-medium uppercase tracking-[3px] text-gold-500 sm:mb-6'
               >
                 <span className='h-px w-8 bg-gold-500' />
-                Advocacia especializada
+                Advocacia e Consultoria Especializadas
               </motion.p>
 
               <motion.h1
@@ -187,7 +187,7 @@ export default function Home() {
               { n: '6', label: 'Áreas de atuação' },
             ].map(stat => (
               <div key={stat.label} className='text-center'>
-                <p className='font-[family-name:var(--font-cormorant)] text-3xl font-light text-gold-500 sm:text-4xl'>
+                <p className='text-2xl font-extralight tabular-nums tracking-tight text-gold-500 sm:text-3xl'>
                   {stat.n}
                 </p>
                 <p className='mt-1 text-[11px] uppercase tracking-[1.5px] text-txt-muted sm:text-xs'>
