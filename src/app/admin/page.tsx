@@ -115,7 +115,7 @@ export default function AdminDashboardPage() {
       color: 'green',
     },
     {
-      label: 'Conteudos',
+      label: 'Conteúdos',
       count: stats.content,
       icon: FileText,
       href: '/admin/conteudo',
@@ -153,12 +153,12 @@ export default function AdminDashboardPage() {
     <>
       <AdminHeader
         title='Dashboard'
-        description='Visao geral do painel administrativo'
+        description='Visão geral do painel administrativo'
       />
 
-      <div className='flex-1 p-6 overflow-auto'>
+      <div className='flex-1 overflow-auto p-6'>
         {/* Stats Cards */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8'>
+        <div className='mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
           {cards.map(card => {
             const Icon = card.icon;
             const colors = colorClasses[card.color];
@@ -167,11 +167,11 @@ export default function AdminDashboardPage() {
               <Link
                 key={card.label}
                 href={card.href}
-                className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 hover:border-[#374151] transition-colors'
+                className='rounded-xl border border-gold-500/10 bg-navy-900 p-5 transition-colors hover:border-gold-500/25'
               >
-                <div className='flex items-center justify-between mb-3'>
+                <div className='mb-3 flex items-center justify-between'>
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center ${colors.bg}`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-lg ${colors.bg}`}
                   >
                     <Icon size={20} className={colors.icon} />
                   </div>
@@ -179,27 +179,29 @@ export default function AdminDashboardPage() {
                 <p className={`text-2xl font-bold ${colors.text}`}>
                   {loading ? '...' : card.count}
                 </p>
-                <p className='text-sm text-gray-400 mt-1'>{card.label}</p>
+                <p className='mt-1 text-sm text-txt-muted'>{card.label}</p>
               </Link>
             );
           })}
         </div>
 
         {/* Seed Section */}
-        <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-6'>
-          <div className='flex items-center gap-3 mb-4'>
-            <Database size={20} className='text-gray-400' />
-            <h2 className='text-lg font-semibold text-white'>Base de Dados</h2>
+        <div className='rounded-xl border border-gold-500/10 bg-navy-900 p-6'>
+          <div className='mb-4 flex items-center gap-3'>
+            <Database size={20} className='text-txt-muted' />
+            <h2 className='text-lg font-semibold text-cream-100'>
+              Base de Dados
+            </h2>
           </div>
-          <p className='text-sm text-gray-400 mb-4'>
+          <p className='mb-4 text-sm text-txt-muted'>
             Se a base de dados estiver vazia, execute o seed para popular com os
-            dados iniciais do site (livros, artigos e conteudos de paginas).
+            dados iniciais do site (livros, artigos e conteúdos de páginas).
           </p>
 
           <button
             onClick={handleSeed}
             disabled={seedLoading}
-            className='px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-600/50 text-white text-sm font-medium rounded-lg transition-colors'
+            className='rounded-lg bg-gold-500 px-4 py-2 text-sm font-medium text-navy-950 transition-colors hover:bg-gold-400 disabled:opacity-50'
           >
             {seedLoading ? 'Executando...' : 'Executar Seed Inicial'}
           </button>

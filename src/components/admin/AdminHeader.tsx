@@ -13,12 +13,12 @@ export function AdminHeader({ title, description, actions }: AdminHeaderProps) {
   const { data: session } = useSession();
 
   return (
-    <header className='bg-[#111827] border-b border-[#1f2937] px-6 py-4'>
+    <header className='border-b border-gold-500/10 bg-navy-900 px-6 py-4'>
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-xl font-semibold text-white'>{title}</h1>
+          <h1 className='text-xl font-semibold text-cream-100'>{title}</h1>
           {description && (
-            <p className='text-sm text-gray-400 mt-0.5'>{description}</p>
+            <p className='mt-0.5 text-sm text-txt-muted'>{description}</p>
           )}
         </div>
 
@@ -26,9 +26,9 @@ export function AdminHeader({ title, description, actions }: AdminHeaderProps) {
           {actions}
 
           {session?.user && (
-            <div className='flex items-center gap-2 text-sm text-gray-400'>
-              <div className='w-8 h-8 bg-amber-600/10 rounded-full flex items-center justify-center'>
-                <User size={14} className='text-amber-500' />
+            <div className='flex items-center gap-2 text-sm text-txt-muted'>
+              <div className='flex h-8 w-8 items-center justify-center rounded-full bg-gold-500/10'>
+                <User size={14} className='text-gold-500' />
               </div>
               <span className='hidden sm:inline'>{session.user.name}</span>
             </div>

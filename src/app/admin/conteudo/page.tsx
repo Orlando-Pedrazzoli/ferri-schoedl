@@ -22,8 +22,8 @@ const PAGE_LABELS: Record<string, string> = {
   contato: 'Contato',
   cursos: 'Cursos',
   faq: 'FAQ',
-  areas: 'Areas de Atuacao',
-  config: 'Configuracoes Gerais',
+  areas: 'Áreas de Atuação',
+  config: 'Configurações Gerais',
 };
 
 const PAGE_ORDER = [
@@ -62,7 +62,6 @@ export default function AdminContentPage() {
 
   const handleValueChange = (key: string, value: string) => {
     setEditedValues(prev => ({ ...prev, [key]: value }));
-    // Remove saved indicator when editing
     setSavedKeys(prev => {
       const next = new Set(prev);
       next.delete(key);
@@ -72,7 +71,6 @@ export default function AdminContentPage() {
 
   const handleSave = async (item: ContentItem) => {
     const newValue = editedValues[item.key] ?? item.value;
-
     setSavingKeys(prev => new Set(prev).add(item.key));
 
     try {
@@ -87,19 +85,15 @@ export default function AdminContentPage() {
 
       const data = await res.json();
       if (data.success) {
-        // Update local state
         setContent(prev =>
           prev.map(c => (c.key === item.key ? { ...c, value: newValue } : c)),
         );
-        // Remove from edited, add to saved
         setEditedValues(prev => {
           const next = { ...prev };
           delete next[item.key];
           return next;
         });
         setSavedKeys(prev => new Set(prev).add(item.key));
-
-        // Remove saved indicator after 3s
         setTimeout(() => {
           setSavedKeys(prev => {
             const next = new Set(prev);
@@ -119,7 +113,6 @@ export default function AdminContentPage() {
     }
   };
 
-  // Group by page
   const grouped = content.reduce<Record<string, ContentItem[]>>((acc, item) => {
     if (!acc[item.page]) acc[item.page] = [];
     acc[item.page].push(item);
@@ -127,10 +120,8 @@ export default function AdminContentPage() {
   }, {});
 
   const pages = PAGE_ORDER.filter(p => grouped[p]);
-
   const filteredContent = grouped[activePage] || [];
 
-  // Group filtered content by section
   const sectionGroups = filteredContent.reduce<Record<string, ContentItem[]>>(
     (acc, item) => {
       if (!acc[item.section]) acc[item.section] = [];
@@ -140,18 +131,15 @@ export default function AdminContentPage() {
     {},
   );
 
-  const inputClass =
-    'w-full px-3 py-2 bg-[#0a0f1c] border border-[#1f2937] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-colors';
-
   return (
     <>
       <AdminHeader
-        title='Conteudo do Site'
-        description='Edite os textos de todas as paginas'
+        title='Conteúdo do Site'
+        description='Edite os textos de todas as páginas'
         actions={
           <button
             onClick={fetchContent}
-            className='flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-white bg-[#1f2937] rounded-lg transition-colors'
+            className='flex items-center gap-2 rounded-lg border border-gold-500/20 px-3 py-2 text-sm text-txt-muted transition-colors hover:border-gold-500/40 hover:text-cream-100'
           >
             <RefreshCw size={14} />
             Recarregar
@@ -159,21 +147,21 @@ export default function AdminContentPage() {
         }
       />
 
-      <div className='flex-1 flex overflow-hidden'>
+      <div className='flex flex-1 overflow-hidden'>
         {/* Page tabs - sidebar */}
-        <div className='w-48 bg-[#111827] border-r border-[#1f2937] p-3 space-y-1 overflow-auto'>
+        <div className='w-48 space-y-1 overflow-auto border-r border-gold-500/10 bg-navy-900 p-3'>
           {pages.map(page => (
             <button
               key={page}
               onClick={() => setActivePage(page)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                 activePage === page
-                  ? 'bg-amber-600/10 text-amber-500 font-medium'
-                  : 'text-gray-400 hover:text-white hover:bg-[#1f2937]'
+                  ? 'bg-gold-500/10 font-medium text-gold-500'
+                  : 'text-txt-muted hover:bg-navy-800 hover:text-cream-100'
               }`}
             >
               {PAGE_LABELS[page] || page}
-              <span className='ml-1 text-xs text-gray-600'>
+              <span className='ml-1 text-xs text-txt-muted/50'>
                 ({grouped[page]?.length || 0})
               </span>
             </button>
@@ -181,17 +169,19 @@ export default function AdminContentPage() {
         </div>
 
         {/* Content editor */}
-        <div className='flex-1 p-6 overflow-auto'>
+        <div className='flex-1 overflow-auto p-6'>
           {loading ? (
-            <div className='text-gray-400 text-center py-12'>Carregando...</div>
+            <div className='py-12 text-center text-txt-muted'>
+              Carregando...
+            </div>
           ) : (
-            <div className='space-y-6 max-w-3xl'>
+            <div className='max-w-3xl space-y-6'>
               {Object.entries(sectionGroups).map(([section, items]) => (
                 <div
                   key={section}
-                  className='bg-[#111827] border border-[#1f2937] rounded-xl p-5'
+                  className='rounded-xl border border-gold-500/10 bg-navy-900 p-5'
                 >
-                  <h3 className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4'>
+                  <h3 className='mb-4 text-xs font-semibold uppercase tracking-wider text-txt-muted'>
                     {section}
                   </h3>
 
@@ -206,8 +196,8 @@ export default function AdminContentPage() {
 
                       return (
                         <div key={item._id}>
-                          <div className='flex items-center justify-between mb-1'>
-                            <label className='text-sm font-medium text-gray-300'>
+                          <div className='mb-1 flex items-center justify-between'>
+                            <label className='text-sm font-medium text-cream-100'>
                               {item.label}
                             </label>
                             <div className='flex items-center gap-2'>
@@ -221,7 +211,7 @@ export default function AdminContentPage() {
                                 <button
                                   onClick={() => handleSave(item)}
                                   disabled={isSaving}
-                                  className='flex items-center gap-1 px-2 py-1 text-xs bg-amber-600 hover:bg-amber-700 disabled:bg-amber-600/50 text-white rounded transition-colors'
+                                  className='flex items-center gap-1 rounded bg-gold-500 px-2 py-1 text-xs text-navy-950 transition-colors hover:bg-gold-400 disabled:opacity-50'
                                 >
                                   <Save size={10} />
                                   {isSaving ? '...' : 'Salvar'}
@@ -231,7 +221,7 @@ export default function AdminContentPage() {
                           </div>
 
                           {item.description && (
-                            <p className='text-xs text-gray-500 mb-1'>
+                            <p className='mb-1 text-xs text-txt-muted'>
                               {item.description}
                             </p>
                           )}
@@ -243,7 +233,7 @@ export default function AdminContentPage() {
                               onChange={e =>
                                 handleValueChange(item.key, e.target.value)
                               }
-                              className={inputClass}
+                              className='w-full rounded-lg border border-gold-500/15 bg-navy-950 px-3 py-2 text-sm text-cream-100 placeholder-txt-muted/50 transition-colors focus:border-gold-500/40 focus:outline-none focus:ring-1 focus:ring-gold-500/30'
                             />
                           ) : item.type === 'json' ? (
                             <textarea
@@ -252,7 +242,7 @@ export default function AdminContentPage() {
                                 handleValueChange(item.key, e.target.value)
                               }
                               rows={6}
-                              className={`${inputClass} font-mono text-xs`}
+                              className='w-full rounded-lg border border-gold-500/15 bg-navy-950 px-3 py-2 font-mono text-xs text-cream-100 placeholder-txt-muted/50 transition-colors focus:border-gold-500/40 focus:outline-none focus:ring-1 focus:ring-gold-500/30'
                             />
                           ) : (
                             <textarea
@@ -261,11 +251,11 @@ export default function AdminContentPage() {
                                 handleValueChange(item.key, e.target.value)
                               }
                               rows={item.type === 'richtext' ? 8 : 4}
-                              className={inputClass}
+                              className='w-full rounded-lg border border-gold-500/15 bg-navy-950 px-3 py-2 text-sm text-cream-100 placeholder-txt-muted/50 transition-colors focus:border-gold-500/40 focus:outline-none focus:ring-1 focus:ring-gold-500/30'
                             />
                           )}
 
-                          <p className='text-[10px] text-gray-600 mt-1 font-mono'>
+                          <p className='mt-1 font-mono text-[10px] text-txt-muted/40'>
                             {item.key}
                           </p>
                         </div>

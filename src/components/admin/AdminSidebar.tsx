@@ -16,13 +16,14 @@ import {
   UserCog,
 } from 'lucide-react';
 import { useState } from 'react';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/livros', label: 'Livros', icon: BookOpen },
   { href: '/admin/cursos', label: 'Cursos', icon: GraduationCap },
-  { href: '/admin/publicacoes', label: 'Publicacoes', icon: Newspaper },
-  { href: '/admin/conteudo', label: 'Conteudo do Site', icon: FileText },
+  { href: '/admin/publicacoes', label: 'Publicações', icon: Newspaper },
+  { href: '/admin/conteudo', label: 'Conteúdo do Site', icon: FileText },
 ];
 
 export function AdminSidebar() {
@@ -38,29 +39,29 @@ export function AdminSidebar() {
     <aside
       className={`${
         collapsed ? 'w-16' : 'w-64'
-      } min-h-screen bg-[#111827] border-r border-[#1f2937] flex flex-col transition-all duration-200`}
+      } flex min-h-screen flex-col border-r border-gold-500/10 bg-navy-900 transition-all duration-200`}
     >
-      <div className='p-4 border-b border-[#1f2937] flex items-center justify-between'>
+      <div className='flex items-center justify-between border-b border-gold-500/10 p-4'>
         {!collapsed && (
           <div>
             <h2
-              className='text-lg font-semibold text-white'
+              className='text-lg font-semibold text-cream-100'
               style={{ fontFamily: 'Cormorant Garamond, serif' }}
             >
               Ferri Schoedl
             </h2>
-            <p className='text-xs text-gray-500'>Admin</p>
+            <p className='text-xs text-txt-muted'>Admin</p>
           </div>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className='p-1.5 text-gray-400 hover:text-white hover:bg-[#1f2937] rounded-lg transition-colors'
+          className='rounded-lg p-1.5 text-txt-muted transition-colors hover:bg-navy-800 hover:text-cream-100'
         >
           {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       </div>
 
-      <nav className='flex-1 p-3 space-y-1'>
+      <nav className='flex-1 space-y-1 p-3'>
         {navItems.map(item => {
           const Icon = item.icon;
           const active = isActive(item.href);
@@ -69,10 +70,10 @@ export function AdminSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 active
-                  ? 'bg-amber-600/10 text-amber-500'
-                  : 'text-gray-400 hover:text-white hover:bg-[#1f2937]'
+                  ? 'bg-gold-500/10 text-gold-500'
+                  : 'text-txt-muted hover:bg-navy-800 hover:text-cream-100'
               }`}
               title={collapsed ? item.label : undefined}
             >
@@ -83,13 +84,18 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      <div className='p-3 border-t border-[#1f2937] space-y-1'>
+      <div className='space-y-1 border-t border-gold-500/10 p-3'>
+        {!collapsed && (
+          <div className='mb-2 flex justify-center'>
+            <ThemeToggle />
+          </div>
+        )}
         <Link
           href='/admin/conta'
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+          className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
             pathname === '/admin/conta'
-              ? 'bg-amber-600/10 text-amber-500'
-              : 'text-gray-400 hover:text-white hover:bg-[#1f2937]'
+              ? 'bg-gold-500/10 text-gold-500'
+              : 'text-txt-muted hover:bg-navy-800 hover:text-cream-100'
           }`}
           title={collapsed ? 'Minha Conta' : undefined}
         >
@@ -99,7 +105,7 @@ export function AdminSidebar() {
         <Link
           href='/'
           target='_blank'
-          className='flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-[#1f2937] transition-colors'
+          className='flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-txt-muted transition-colors hover:bg-navy-800 hover:text-cream-100'
           title={collapsed ? 'Ver Site' : undefined}
         >
           <Settings size={18} />
@@ -107,7 +113,7 @@ export function AdminSidebar() {
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: '/admin/login' })}
-          className='flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors w-full'
+          className='flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-txt-muted transition-colors hover:bg-red-500/10 hover:text-red-400'
           title={collapsed ? 'Sair' : undefined}
         >
           <LogOut size={18} />
