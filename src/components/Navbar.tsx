@@ -4,7 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X, ShoppingBag, ChevronDown } from 'lucide-react';
+import { Menu, X, ShoppingBag, ChevronDown, User, LogOut } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
 import { ThemeToggle } from './ThemeToggle';
 import { useCart } from './CartProvider';
 import { useTheme } from './ThemeProvider';
@@ -134,6 +135,140 @@ function DropdownMenu({ link, pathname }: { link: NavLink; pathname: string }) {
   );
 }
 
+/* ─── User Menu Dropdown ─── */
+function UserMenu() {
+  const { data: session, status } = useSession();
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const isCustomer = session?.user?.role === 'customer';
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    if (open) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [open]);
+
+  const handleEnter = () => {
+    if (timeout.current) clearTimeout(timeout.current);
+    setOpen(true);
+  };
+
+  const handleLeave = () => {
+    timeout.current = setTimeout(() => setOpen(false), 200);
+  };
+
+  // Loading state
+  if (status === 'loading') {
+    return (
+      <div className='flex h-9 w-9 items-center justify-center border border-gold-500/20 text-gold-500/40'>
+        <User size={15} strokeWidth={1.5} />
+      </div>
+    );
+  }
+
+  // Not logged in — show login icon
+  if (!session || !isCustomer) {
+    return (
+      <div
+        ref={menuRef}
+        className='relative'
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+      >
+        <button
+          onClick={() => setOpen(!open)}
+          className='relative flex h-9 w-9 items-center justify-center border border-gold-500/20 text-gold-500 transition-all duration-300 hover:border-gold-500/50 hover:bg-gold-500/5'
+          aria-label='Entrar'
+        >
+          <User size={15} strokeWidth={1.5} />
+        </button>
+
+        {open && (
+          <div className='absolute right-0 top-full z-50 mt-1 min-w-[180px] border border-gold-500/10 bg-navy-950/98 shadow-xl backdrop-blur-md'>
+            <Link
+              href='/conta/login'
+              onClick={() => setOpen(false)}
+              className='block px-5 py-3 text-sm tracking-wide text-txt-muted transition-colors duration-150 hover:bg-gold-500/5 hover:text-cream-100'
+            >
+              Entrar
+            </Link>
+            <Link
+              href='/conta/registro'
+              onClick={() => setOpen(false)}
+              className='block border-t border-gold-500/5 px-5 py-3 text-sm tracking-wide text-txt-muted transition-colors duration-150 hover:bg-gold-500/5 hover:text-cream-100'
+            >
+              Criar conta
+            </Link>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Logged in as customer
+  const firstName = session.user.name?.split(' ')[0] || 'Cliente';
+
+  return (
+    <div
+      ref={menuRef}
+      className='relative'
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      <button
+        onClick={() => setOpen(!open)}
+        className='relative flex h-9 items-center gap-2 border border-gold-500/30 px-3 text-gold-500 transition-all duration-300 hover:border-gold-500/50 hover:bg-gold-500/5'
+        aria-label='Minha conta'
+      >
+        <User size={14} strokeWidth={1.5} />
+        <span className='hidden text-xs tracking-wide sm:inline'>
+          {firstName}
+        </span>
+      </button>
+
+      {open && (
+        <div className='absolute right-0 top-full z-50 mt-1 min-w-[200px] border border-gold-500/10 bg-navy-950/98 shadow-xl backdrop-blur-md'>
+          <div className='border-b border-gold-500/10 px-5 py-3'>
+            <p className='text-sm text-cream-100'>{session.user.name}</p>
+            <p className='text-xs text-txt-muted'>{session.user.email}</p>
+          </div>
+          <Link
+            href='/conta/minha-conta'
+            onClick={() => setOpen(false)}
+            className='block px-5 py-3 text-sm tracking-wide text-txt-muted transition-colors duration-150 hover:bg-gold-500/5 hover:text-cream-100'
+          >
+            Minha Conta
+          </Link>
+          <Link
+            href='/conta/pedidos'
+            onClick={() => setOpen(false)}
+            className='block px-5 py-3 text-sm tracking-wide text-txt-muted transition-colors duration-150 hover:bg-gold-500/5 hover:text-cream-100'
+          >
+            Meus Pedidos
+          </Link>
+          <button
+            onClick={() => {
+              setOpen(false);
+              signOut({ callbackUrl: '/' });
+            }}
+            className='flex w-full items-center gap-2 border-t border-gold-500/10 px-5 py-3 text-sm tracking-wide text-txt-muted transition-colors duration-150 hover:bg-gold-500/5 hover:text-cream-100'
+          >
+            <LogOut size={13} strokeWidth={1.5} />
+            Sair
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Navbar() {
   const pathname = usePathname();
   const { theme } = useTheme();
@@ -141,6 +276,8 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { totalItems, setIsOpen: setCartOpen } = useCart();
+  const { data: session } = useSession();
+  const isCustomer = session?.user?.role === 'customer';
 
   const logoSrc = isDark
     ? '/images/thales-logo1.png'
@@ -198,9 +335,10 @@ export function Navbar() {
           ))}
         </div>
 
-        {/* CTA + Cart + Theme */}
+        {/* CTA + User + Cart + Theme */}
         <div className='flex items-center gap-3'>
           <ThemeToggle />
+          <UserMenu />
           <button
             onClick={() => setCartOpen(true)}
             className='relative flex h-9 w-9 items-center justify-center border border-gold-500/20 text-gold-500 transition-all duration-300 hover:border-gold-500/50 hover:bg-gold-500/5'
@@ -251,9 +389,10 @@ export function Navbar() {
           />
         </Link>
 
-        {/* Right: Theme + Cart */}
+        {/* Right: Theme + User + Cart */}
         <div className='flex items-center gap-2'>
           <ThemeToggle />
+          <UserMenu />
           <button
             onClick={() => setCartOpen(true)}
             className='relative flex h-9 w-9 items-center justify-center border border-gold-500/20 text-gold-500 transition-all duration-300 hover:border-gold-500/50 hover:bg-gold-500/5'
@@ -290,6 +429,62 @@ export function Navbar() {
                 </Link>
               );
             })}
+
+            {/* Mobile user links */}
+            <div className='mt-4 border-t border-gold-500/10 pt-4'>
+              {isCustomer ? (
+                <>
+                  <Link
+                    href='/conta/minha-conta'
+                    className='flex items-center gap-2 py-3 text-sm tracking-wide text-txt-muted'
+                  >
+                    <User
+                      size={14}
+                      strokeWidth={1.5}
+                      className='text-gold-500'
+                    />
+                    Minha Conta
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className='flex items-center gap-2 py-3 text-sm tracking-wide text-txt-muted'
+                  >
+                    <LogOut
+                      size={14}
+                      strokeWidth={1.5}
+                      className='text-gold-500'
+                    />
+                    Sair
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href='/conta/login'
+                    className='flex items-center gap-2 py-3 text-sm tracking-wide text-txt-muted'
+                  >
+                    <User
+                      size={14}
+                      strokeWidth={1.5}
+                      className='text-gold-500'
+                    />
+                    Entrar
+                  </Link>
+                  <Link
+                    href='/conta/registro'
+                    className='flex items-center gap-2 py-3 text-sm tracking-wide text-txt-muted'
+                  >
+                    <User
+                      size={14}
+                      strokeWidth={1.5}
+                      className='text-gold-500'
+                    />
+                    Criar Conta
+                  </Link>
+                </>
+              )}
+            </div>
+
             <Link
               href='/contato'
               className='mt-4 border border-gold-500/50 py-3 text-center text-xs font-medium uppercase tracking-[2px] text-gold-500'
