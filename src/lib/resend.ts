@@ -12,11 +12,7 @@ function getResend(): Resend {
   return resendInstance;
 }
 
-const FROM_EMAIL =
-  process.env.NODE_ENV === 'production'
-    ? 'Ferri Schoedl Advocacia <cristiane@ferrischoedl.adv.br>'
-    : 'Ferri Schoedl <onboarding@resend.dev>';
-
+const FROM_EMAIL = 'Ferri Schoedl <onboarding@resend.dev>';
 const SITE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
 
 /**
