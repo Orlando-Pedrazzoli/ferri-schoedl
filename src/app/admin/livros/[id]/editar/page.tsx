@@ -49,7 +49,7 @@ export default function EditBookPage() {
         if (data.success) {
           setBook(data.data);
         } else {
-          setError('Livro nao encontrado');
+          setError('Livro não encontrado');
         }
       } catch {
         setError('Erro ao carregar livro');
@@ -66,7 +66,7 @@ export default function EditBookPage() {
       <>
         <AdminHeader title='Editar Livro' />
         <div className='flex-1 p-6 flex items-center justify-center'>
-          <p className='text-gray-400'>Carregando...</p>
+          <p className='text-txt-muted'>Carregando...</p>
         </div>
       </>
     );
@@ -77,7 +77,7 @@ export default function EditBookPage() {
       <>
         <AdminHeader title='Erro' />
         <div className='flex-1 p-6 flex items-center justify-center'>
-          <p className='text-red-400'>{error || 'Livro nao encontrado'}</p>
+          <p className='text-red-400'>{error || 'Livro não encontrado'}</p>
         </div>
       </>
     );

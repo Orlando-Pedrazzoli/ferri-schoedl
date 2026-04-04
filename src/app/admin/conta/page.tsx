@@ -28,12 +28,12 @@ export default function AdminContaPage() {
     setSuccess('');
 
     if (form.newPassword !== form.confirmPassword) {
-      setError('As passwords nao coincidem.');
+      setError('As passwords não coincidem.');
       return;
     }
 
     if (form.newPassword.length < 6) {
-      setError('A nova password deve ter no minimo 6 caracteres.');
+      setError('A nova password deve ter no mínimo 6 caracteres.');
       return;
     }
 
@@ -64,8 +64,8 @@ export default function AdminContaPage() {
   };
 
   const inputClass =
-    'w-full px-3 py-2 bg-[#0a0f1c] border border-[#1f2937] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-colors';
-  const labelClass = 'block text-sm font-medium text-gray-300 mb-1';
+    'w-full px-3 py-2 bg-navy-950 border border-gold-500/15 rounded-lg text-cream-100 text-sm placeholder-txt-muted/50 focus:outline-none focus:ring-1 focus:ring-gold-500/30 focus:border-gold-500/40 transition-colors';
+  const labelClass = 'block text-sm font-medium text-cream-200 mb-1';
 
   return (
     <>
@@ -76,28 +76,26 @@ export default function AdminContaPage() {
 
       <div className='flex-1 p-6 overflow-auto'>
         <div className='max-w-xl space-y-6'>
-          {/* Account info */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5'>
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5'>
             <div className='flex items-center gap-3 mb-4'>
-              <div className='w-10 h-10 bg-amber-600/10 rounded-full flex items-center justify-center'>
-                <User size={18} className='text-amber-500' />
+              <div className='w-10 h-10 bg-gold-500/10 rounded-full flex items-center justify-center'>
+                <User size={18} className='text-gold-500' />
               </div>
               <div>
-                <p className='text-sm font-medium text-white'>
+                <p className='text-sm font-medium text-cream-100'>
                   {session?.user?.name || 'Admin'}
                 </p>
-                <p className='text-xs text-gray-400'>
+                <p className='text-xs text-txt-muted'>
                   {session?.user?.email || ''}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Change password */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5'>
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5'>
             <div className='flex items-center gap-2 mb-5'>
-              <Lock size={16} className='text-gray-400' />
-              <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
+              <Lock size={16} className='text-txt-muted' />
+              <h3 className='text-sm font-semibold text-cream-100 uppercase tracking-wider'>
                 Alterar Password
               </h3>
             </div>
@@ -137,7 +135,7 @@ export default function AdminContaPage() {
                   required
                   minLength={6}
                   className={inputClass}
-                  placeholder='Minimo 6 caracteres'
+                  placeholder='Mínimo 6 caracteres'
                 />
               </div>
 
@@ -157,7 +155,7 @@ export default function AdminContaPage() {
               <button
                 type='submit'
                 disabled={saving}
-                className='flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-600/50 text-white text-sm font-medium rounded-lg transition-colors'
+                className='flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-400 disabled:bg-gold-500/50 text-navy-950 text-sm font-medium rounded-lg transition-colors'
               >
                 <Lock size={14} />
                 {saving ? 'Alterando...' : 'Alterar Password'}

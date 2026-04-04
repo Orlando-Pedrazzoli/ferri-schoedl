@@ -108,7 +108,7 @@ export default function AdminDashboardPage() {
       color: 'blue',
     },
     {
-      label: 'Artigos',
+      label: 'Publicações',
       count: stats.articles,
       icon: Newspaper,
       href: '/admin/publicacoes',
@@ -157,7 +157,6 @@ export default function AdminDashboardPage() {
       />
 
       <div className='flex-1 overflow-auto p-6'>
-        {/* Stats Cards */}
         <div className='mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
           {cards.map(card => {
             const Icon = card.icon;
@@ -185,7 +184,6 @@ export default function AdminDashboardPage() {
           })}
         </div>
 
-        {/* Seed Section — only shows when database is empty */}
         {!loading && stats.books === 0 && stats.articles === 0 && (
           <div className='rounded-xl border border-gold-500/10 bg-navy-900 p-6'>
             <div className='mb-4 flex items-center gap-3'>
@@ -196,7 +194,7 @@ export default function AdminDashboardPage() {
             </div>
             <p className='mb-4 text-sm text-txt-muted'>
               Se a base de dados estiver vazia, execute o seed para popular com
-              os dados iniciais do site (livros, artigos e conteúdos de
+              os dados iniciais do site (livros, publicações e conteúdos de
               páginas).
             </p>
 

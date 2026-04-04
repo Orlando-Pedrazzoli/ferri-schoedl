@@ -166,8 +166,8 @@ export function CourseForm({
   };
 
   const inputClass =
-    'w-full px-3 py-2 bg-[#0a0f1c] border border-[#1f2937] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50 transition-colors';
-  const labelClass = 'block text-sm font-medium text-gray-300 mb-1';
+    'w-full px-3 py-2 bg-navy-950 border border-gold-500/15 rounded-lg text-cream-100 text-sm placeholder-txt-muted/50 focus:outline-none focus:ring-1 focus:ring-gold-500/30 focus:border-gold-500/40 transition-colors';
+  const labelClass = 'block text-sm font-medium text-cream-200 mb-1';
 
   return (
     <form onSubmit={handleSubmit} className='space-y-6'>
@@ -180,7 +180,7 @@ export function CourseForm({
       <div className='flex items-center justify-between'>
         <Link
           href='/admin/cursos'
-          className='flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors'
+          className='flex items-center gap-2 text-sm text-txt-muted hover:text-cream-100 transition-colors'
         >
           <ArrowLeft size={16} />
           Voltar
@@ -188,7 +188,7 @@ export function CourseForm({
         <button
           type='submit'
           disabled={saving}
-          className='flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-600/50 text-white text-sm font-medium rounded-lg transition-colors'
+          className='flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-400 disabled:bg-gold-500/50 text-navy-950 text-sm font-medium rounded-lg transition-colors'
         >
           <Save size={16} />
           {saving ? 'Salvando...' : isEditing ? 'Atualizar' : 'Criar Curso'}
@@ -197,14 +197,13 @@ export function CourseForm({
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
         <div className='lg:col-span-2 space-y-6'>
-          {/* Basic info */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
-              Informacoes do Curso
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
+              Informações do Curso
             </h3>
 
             <div>
-              <label className={labelClass}>Titulo *</label>
+              <label className={labelClass}>Título *</label>
               <input
                 type='text'
                 value={form.title}
@@ -215,7 +214,7 @@ export function CourseForm({
             </div>
 
             <div>
-              <label className={labelClass}>Subtitulo</label>
+              <label className={labelClass}>Subtítulo</label>
               <input
                 type='text'
                 value={form.subtitle}
@@ -241,7 +240,7 @@ export function CourseForm({
                   type='text'
                   value={form.category}
                   onChange={e => updateField('category', e.target.value)}
-                  placeholder='Ex: Concursos Publicos'
+                  placeholder='Ex: Concursos Públicos'
                   required
                   className={inputClass}
                 />
@@ -249,7 +248,7 @@ export function CourseForm({
             </div>
 
             <div>
-              <label className={labelClass}>Descricao Curta *</label>
+              <label className={labelClass}>Descrição Curta *</label>
               <textarea
                 value={form.description}
                 onChange={e => updateField('description', e.target.value)}
@@ -260,7 +259,7 @@ export function CourseForm({
             </div>
 
             <div>
-              <label className={labelClass}>Descricao Longa *</label>
+              <label className={labelClass}>Descrição Longa *</label>
               <textarea
                 value={form.longDescription}
                 onChange={e => updateField('longDescription', e.target.value)}
@@ -272,7 +271,7 @@ export function CourseForm({
 
             <div>
               <label className={labelClass}>
-                Topicos (separados por virgula)
+                Tópicos (separados por vírgula)
               </label>
               <input
                 type='text'
@@ -283,35 +282,34 @@ export function CourseForm({
             </div>
           </div>
 
-          {/* Modules */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
             <div className='flex items-center justify-between'>
-              <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
-                Modulos
+              <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
+                Módulos
               </h3>
               <button
                 type='button'
                 onClick={addModule}
-                className='flex items-center gap-1 px-3 py-1.5 text-xs bg-[#1f2937] text-gray-300 rounded-lg hover:bg-[#374151] transition-colors'
+                className='flex items-center gap-1 px-3 py-1.5 text-xs bg-navy-800 text-cream-200 rounded-lg hover:bg-navy-700 transition-colors'
               >
                 <Plus size={12} />
-                Adicionar Modulo
+                Adicionar Módulo
               </button>
             </div>
 
             {form.modules.map((mod, modIndex) => (
               <div
                 key={modIndex}
-                className='border border-[#1f2937] rounded-lg p-4 space-y-3'
+                className='border border-gold-500/10 rounded-lg p-4 space-y-3'
               >
                 <div className='flex items-center justify-between'>
-                  <span className='text-xs text-gray-500'>
-                    Modulo {modIndex + 1}
+                  <span className='text-xs text-txt-muted'>
+                    Módulo {modIndex + 1}
                   </span>
                   <button
                     type='button'
                     onClick={() => removeModule(modIndex)}
-                    className='p-1 text-gray-400 hover:text-red-400 transition-colors'
+                    className='p-1 text-txt-muted hover:text-red-400 transition-colors'
                   >
                     <Trash2 size={14} />
                   </button>
@@ -319,7 +317,7 @@ export function CourseForm({
 
                 <div className='grid grid-cols-2 gap-3'>
                   <div>
-                    <label className={labelClass}>Titulo</label>
+                    <label className={labelClass}>Título</label>
                     <input
                       type='text'
                       value={mod.title}
@@ -330,7 +328,7 @@ export function CourseForm({
                     />
                   </div>
                   <div>
-                    <label className={labelClass}>Duracao</label>
+                    <label className={labelClass}>Duração</label>
                     <input
                       type='text'
                       value={mod.duration}
@@ -344,7 +342,7 @@ export function CourseForm({
                 </div>
 
                 <div>
-                  <label className={labelClass}>Descricao</label>
+                  <label className={labelClass}>Descrição</label>
                   <input
                     type='text'
                     value={mod.description}
@@ -372,7 +370,7 @@ export function CourseForm({
                   <button
                     type='button'
                     onClick={() => addLesson(modIndex)}
-                    className='text-xs text-amber-500 hover:text-amber-400'
+                    className='text-xs text-gold-500 hover:text-gold-400'
                   >
                     + Adicionar aula
                   </button>
@@ -382,10 +380,9 @@ export function CourseForm({
           </div>
         </div>
 
-        {/* Sidebar */}
         <div className='space-y-6'>
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
               Imagem
             </h3>
             <ImageUpload
@@ -395,13 +392,13 @@ export function CourseForm({
             />
           </div>
 
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
-              Preco e Detalhes
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
+              Preço e Detalhes
             </h3>
 
             <div>
-              <label className={labelClass}>Preco (R$) *</label>
+              <label className={labelClass}>Preço (R$) *</label>
               <input
                 type='number'
                 step='0.01'
@@ -414,7 +411,7 @@ export function CourseForm({
               />
             </div>
             <div>
-              <label className={labelClass}>Preco Original (R$)</label>
+              <label className={labelClass}>Preço Original (R$)</label>
               <input
                 type='number'
                 step='0.01'
@@ -426,7 +423,7 @@ export function CourseForm({
               />
             </div>
             <div>
-              <label className={labelClass}>Duracao Total *</label>
+              <label className={labelClass}>Duração Total *</label>
               <input
                 type='text'
                 value={form.duration}
@@ -437,15 +434,15 @@ export function CourseForm({
               />
             </div>
             <div>
-              <label className={labelClass}>Nivel</label>
+              <label className={labelClass}>Nível</label>
               <select
                 value={form.level}
                 onChange={e => updateField('level', e.target.value)}
                 className={inputClass}
               >
                 <option value='iniciante'>Iniciante</option>
-                <option value='intermediario'>Intermediario</option>
-                <option value='avancado'>Avancado</option>
+                <option value='intermediario'>Intermediário</option>
+                <option value='avancado'>Avançado</option>
               </select>
             </div>
             <div>
@@ -459,8 +456,8 @@ export function CourseForm({
             </div>
           </div>
 
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
               Status
             </h3>
 
@@ -475,6 +472,9 @@ export function CourseForm({
                 <option value='publicado'>Publicado</option>
                 <option value='arquivado'>Arquivado</option>
               </select>
+              <p className='mt-1.5 text-[11px] text-gold-500/70'>
+                Apenas cursos com estado &quot;Publicado&quot; aparecem no site.
+              </p>
             </div>
 
             <label className='flex items-center gap-3 cursor-pointer'>
@@ -482,18 +482,18 @@ export function CourseForm({
                 type='checkbox'
                 checked={form.isActive}
                 onChange={e => updateField('isActive', e.target.checked)}
-                className='w-4 h-4 rounded border-gray-600 text-amber-600 focus:ring-amber-500/50 bg-[#0a0f1c]'
+                className='w-4 h-4 rounded border-navy-600 text-gold-500 focus:ring-gold-500/50 bg-navy-950'
               />
-              <span className='text-sm text-gray-300'>Ativo</span>
+              <span className='text-sm text-cream-200'>Ativo</span>
             </label>
             <label className='flex items-center gap-3 cursor-pointer'>
               <input
                 type='checkbox'
                 checked={form.featured}
                 onChange={e => updateField('featured', e.target.checked)}
-                className='w-4 h-4 rounded border-gray-600 text-amber-600 focus:ring-amber-500/50 bg-[#0a0f1c]'
+                className='w-4 h-4 rounded border-navy-600 text-gold-500 focus:ring-gold-500/50 bg-navy-950'
               />
-              <span className='text-sm text-gray-300'>Destaque</span>
+              <span className='text-sm text-cream-200'>Destaque</span>
             </label>
 
             <div>

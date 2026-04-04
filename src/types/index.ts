@@ -32,39 +32,49 @@ export interface IBook {
   isActive: boolean;
 }
 
-// --- Articles ---
+// --- Articles (Publicações) ---
 export interface IArticle {
   _id?: string;
-  slug: string;
   title: string;
-  author: string;
   year: number;
-  journal?: string;
-  abstract: string;
+  publisher: string;
+  url?: string;
   pdfUrl?: string;
-  externalUrl?: string;
-  topics: string[];
-  order: number;
+  originalPublisher?: string;
+  coauthors: string[];
+  description?: string;
+  type: 'artigo' | 'capitulo';
   isActive: boolean;
+  order: number;
 }
 
 // --- Courses ---
+export interface ICourseModule {
+  title: string;
+  description: string;
+  lessons: string[];
+  duration: string;
+}
+
 export interface ICourse {
   _id?: string;
   slug: string;
   title: string;
+  subtitle?: string;
   description: string;
   longDescription: string;
   instructor: string;
-  platform: string;
-  platformUrl: string;
-  duration: string;
-  level: string;
+  image: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  duration: string;
+  modules: ICourseModule[];
+  level: 'iniciante' | 'intermediario' | 'avancado';
+  category: string;
   topics: string[];
+  featured: boolean;
   isActive: boolean;
+  status: 'rascunho' | 'publicado' | 'arquivado';
   order: number;
 }
 

@@ -45,7 +45,7 @@ const defaultBook: BookData = {
   publisher: '',
   pages: 0,
   isbn: '',
-  edition: '1a edicao',
+  edition: '1a edição',
   price: 0,
   originalPrice: 0,
   description: '',
@@ -130,8 +130,8 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
   };
 
   const inputClass =
-    'w-full px-3 py-2 bg-[#0a0f1c] border border-[#1f2937] rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors';
-  const labelClass = 'block text-sm font-medium text-gray-300 mb-1';
+    'w-full px-3 py-2 bg-navy-950 border border-gold-500/15 rounded-lg text-cream-100 text-sm placeholder-txt-muted/50 focus:outline-none focus:ring-1 focus:ring-gold-500/30 focus:border-gold-500/40 transition-colors';
+  const labelClass = 'block text-sm font-medium text-cream-200 mb-1';
 
   return (
     <form onSubmit={handleSubmit} className='space-y-6'>
@@ -141,11 +141,10 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
         </div>
       )}
 
-      {/* Header actions */}
       <div className='flex items-center justify-between'>
         <Link
           href='/admin/livros'
-          className='flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors'
+          className='flex items-center gap-2 text-sm text-txt-muted hover:text-cream-100 transition-colors'
         >
           <ArrowLeft size={16} />
           Voltar
@@ -153,7 +152,7 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
         <button
           type='submit'
           disabled={saving}
-          className='flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-600/50 text-white text-sm font-medium rounded-lg transition-colors'
+          className='flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-400 disabled:bg-gold-500/50 text-navy-950 text-sm font-medium rounded-lg transition-colors'
         >
           <Save size={16} />
           {saving ? 'Salvando...' : isEditing ? 'Atualizar' : 'Criar Livro'}
@@ -161,16 +160,14 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
       </div>
 
       <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
-        {/* Main content - 2 cols */}
         <div className='lg:col-span-2 space-y-6'>
-          {/* Basic info */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
-              Informacoes Basicas
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
+              Informações Básicas
             </h3>
 
             <div>
-              <label className={labelClass}>Titulo *</label>
+              <label className={labelClass}>Título *</label>
               <input
                 type='text'
                 value={form.title}
@@ -181,7 +178,7 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
             </div>
 
             <div>
-              <label className={labelClass}>Subtitulo</label>
+              <label className={labelClass}>Subtítulo</label>
               <input
                 type='text'
                 value={form.subtitle}
@@ -237,7 +234,7 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                 />
               </div>
               <div>
-                <label className={labelClass}>Edicao *</label>
+                <label className={labelClass}>Edição *</label>
                 <input
                   type='text'
                   value={form.edition}
@@ -250,7 +247,7 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
 
             <div className='grid grid-cols-2 gap-4'>
               <div>
-                <label className={labelClass}>Paginas *</label>
+                <label className={labelClass}>Páginas *</label>
                 <input
                   type='number'
                   value={form.pages}
@@ -273,14 +270,13 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
             </div>
           </div>
 
-          {/* Descriptions */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
-              Descricoes
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
+              Descrições
             </h3>
 
             <div>
-              <label className={labelClass}>Descricao Curta *</label>
+              <label className={labelClass}>Descrição Curta *</label>
               <textarea
                 value={form.description}
                 onChange={e => updateField('description', e.target.value)}
@@ -291,7 +287,7 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
             </div>
 
             <div>
-              <label className={labelClass}>Descricao Longa *</label>
+              <label className={labelClass}>Descrição Longa *</label>
               <textarea
                 value={form.longDescription}
                 onChange={e => updateField('longDescription', e.target.value)}
@@ -303,7 +299,7 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
 
             <div>
               <label className={labelClass}>
-                Topicos (separados por virgula)
+                Tópicos (separados por vírgula)
               </label>
               <input
                 type='text'
@@ -315,10 +311,9 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
             </div>
           </div>
 
-          {/* Physical specs */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
-              Especificacoes Fisicas
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
+              Especificações Físicas
             </h3>
 
             <div className='grid grid-cols-4 gap-4'>
@@ -373,11 +368,9 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
           </div>
         </div>
 
-        {/* Sidebar - 1 col */}
         <div className='space-y-6'>
-          {/* Image */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
               Imagem
             </h3>
             <ImageUpload
@@ -387,14 +380,13 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
             />
           </div>
 
-          {/* Pricing */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
-              Preco e Venda
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
+              Preço e Venda
             </h3>
 
             <div>
-              <label className={labelClass}>Preco (R$) *</label>
+              <label className={labelClass}>Preço (R$) *</label>
               <input
                 type='number'
                 step='0.01'
@@ -408,7 +400,7 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
             </div>
 
             <div>
-              <label className={labelClass}>Preco Original (R$)</label>
+              <label className={labelClass}>Preço Original (R$)</label>
               <input
                 type='number'
                 step='0.01'
@@ -444,9 +436,8 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
             </div>
           </div>
 
-          {/* Status */}
-          <div className='bg-[#111827] border border-[#1f2937] rounded-xl p-5 space-y-4'>
-            <h3 className='text-sm font-semibold text-white uppercase tracking-wider'>
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
               Status
             </h3>
 
@@ -456,9 +447,9 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                   type='checkbox'
                   checked={form.isActive}
                   onChange={e => updateField('isActive', e.target.checked)}
-                  className='w-4 h-4 rounded border-gray-600 text-amber-600 focus:ring-amber-500/50 bg-[#0a0f1c]'
+                  className='w-4 h-4 rounded border-navy-600 text-gold-500 focus:ring-gold-500/50 bg-navy-950'
                 />
-                <span className='text-sm text-gray-300'>Ativo</span>
+                <span className='text-sm text-cream-200'>Ativo</span>
               </label>
 
               <label className='flex items-center gap-3 cursor-pointer'>
@@ -466,9 +457,9 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                   type='checkbox'
                   checked={form.inStock}
                   onChange={e => updateField('inStock', e.target.checked)}
-                  className='w-4 h-4 rounded border-gray-600 text-amber-600 focus:ring-amber-500/50 bg-[#0a0f1c]'
+                  className='w-4 h-4 rounded border-navy-600 text-gold-500 focus:ring-gold-500/50 bg-navy-950'
                 />
-                <span className='text-sm text-gray-300'>Em Stock</span>
+                <span className='text-sm text-cream-200'>Em Stock</span>
               </label>
 
               <label className='flex items-center gap-3 cursor-pointer'>
@@ -476,9 +467,9 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                   type='checkbox'
                   checked={form.featured}
                   onChange={e => updateField('featured', e.target.checked)}
-                  className='w-4 h-4 rounded border-gray-600 text-amber-600 focus:ring-amber-500/50 bg-[#0a0f1c]'
+                  className='w-4 h-4 rounded border-navy-600 text-gold-500 focus:ring-gold-500/50 bg-navy-950'
                 />
-                <span className='text-sm text-gray-300'>Destaque</span>
+                <span className='text-sm text-cream-200'>Destaque</span>
               </label>
 
               <label className='flex items-center gap-3 cursor-pointer'>
@@ -486,9 +477,9 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                   type='checkbox'
                   checked={form.coauthor}
                   onChange={e => updateField('coauthor', e.target.checked)}
-                  className='w-4 h-4 rounded border-gray-600 text-amber-600 focus:ring-amber-500/50 bg-[#0a0f1c]'
+                  className='w-4 h-4 rounded border-navy-600 text-gold-500 focus:ring-gold-500/50 bg-navy-950'
                 />
-                <span className='text-sm text-gray-300'>Coautoria</span>
+                <span className='text-sm text-cream-200'>Coautoria</span>
               </label>
             </div>
 

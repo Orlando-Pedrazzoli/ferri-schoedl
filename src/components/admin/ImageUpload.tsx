@@ -57,7 +57,6 @@ export function ImageUpload({
 
   return (
     <div className='space-y-2'>
-      {/* Preview */}
       {value ? (
         <div className='relative inline-block'>
           <Image
@@ -65,7 +64,7 @@ export function ImageUpload({
             alt='Preview'
             width={200}
             height={200}
-            className='rounded-lg object-cover border border-[#1f2937]'
+            className='rounded-lg object-cover border border-gold-500/10'
           />
           <button
             type='button'
@@ -78,38 +77,35 @@ export function ImageUpload({
       ) : (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className='w-48 h-48 border-2 border-dashed border-[#1f2937] rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-amber-500/50 transition-colors'
+          className='w-48 h-48 border-2 border-dashed border-gold-500/15 rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-gold-500/40 transition-colors'
         >
-          <ImageIcon size={24} className='text-gray-500' />
-          <span className='text-xs text-gray-500'>Clique para enviar</span>
+          <ImageIcon size={24} className='text-txt-muted' />
+          <span className='text-xs text-txt-muted'>Clique para enviar</span>
         </div>
       )}
 
-      {/* Upload button */}
       <div className='flex items-center gap-2'>
         <button
           type='button'
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className='flex items-center gap-2 px-3 py-1.5 bg-[#1f2937] text-gray-300 text-sm rounded-lg hover:bg-[#374151] disabled:opacity-50 transition-colors'
+          className='flex items-center gap-2 px-3 py-1.5 bg-navy-800 text-cream-200 text-sm rounded-lg hover:bg-navy-700 disabled:opacity-50 transition-colors'
         >
           <Upload size={14} />
           {uploading ? 'Enviando...' : 'Upload'}
         </button>
 
-        {/* Manual URL input */}
         <input
           type='text'
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder='Ou cole o URL da imagem'
-          className='flex-1 px-3 py-1.5 bg-[#0a0f1c] border border-[#1f2937] rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-amber-500/50'
+          className='flex-1 px-3 py-1.5 bg-navy-950 border border-gold-500/15 rounded-lg text-sm text-cream-100 placeholder-txt-muted/50 focus:outline-none focus:ring-1 focus:ring-gold-500/30'
         />
       </div>
 
       {error && <p className='text-xs text-red-400'>{error}</p>}
 
-      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type='file'

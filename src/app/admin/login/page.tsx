@@ -37,33 +37,30 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-[#0a0f1c]'>
+    <div className='min-h-screen flex items-center justify-center bg-navy-950'>
       <div className='w-full max-w-md p-8'>
-        <div className='bg-[#111827] rounded-2xl p-8 border border-[#1f2937] shadow-2xl'>
-          {/* Logo / Title */}
+        <div className='bg-navy-900 rounded-2xl p-8 border border-gold-500/10 shadow-2xl'>
           <div className='text-center mb-8'>
             <h1
-              className='text-2xl font-semibold text-white'
+              className='text-2xl font-semibold text-cream-100'
               style={{ fontFamily: 'Cormorant Garamond, serif' }}
             >
               Ferri Schoedl
             </h1>
-            <p className='text-sm text-gray-400 mt-1'>Painel Administrativo</p>
+            <p className='text-sm text-txt-muted mt-1'>Painel Administrativo</p>
           </div>
 
-          {/* Error message */}
           {error && (
             <div className='mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center'>
               {error}
             </div>
           )}
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className='space-y-5'>
             <div>
               <label
                 htmlFor='email'
-                className='block text-sm font-medium text-gray-300 mb-1.5'
+                className='block text-sm font-medium text-cream-200 mb-1.5'
               >
                 Email
               </label>
@@ -73,7 +70,7 @@ export default function AdminLoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className='w-full px-4 py-2.5 bg-[#0a0f1c] border border-[#1f2937] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors'
+                className='w-full px-4 py-2.5 bg-navy-950 border border-gold-500/15 rounded-lg text-cream-100 placeholder-txt-muted/50 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500/40 transition-colors'
                 placeholder='thales@ferrischoedl.adv.br'
               />
             </div>
@@ -81,7 +78,7 @@ export default function AdminLoginPage() {
             <div>
               <label
                 htmlFor='password'
-                className='block text-sm font-medium text-gray-300 mb-1.5'
+                className='block text-sm font-medium text-cream-200 mb-1.5'
               >
                 Password
               </label>
@@ -91,7 +88,7 @@ export default function AdminLoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className='w-full px-4 py-2.5 bg-[#0a0f1c] border border-[#1f2937] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-colors'
+                className='w-full px-4 py-2.5 bg-navy-950 border border-gold-500/15 rounded-lg text-cream-100 placeholder-txt-muted/50 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500/40 transition-colors'
                 placeholder='••••••••'
               />
             </div>
@@ -99,7 +96,7 @@ export default function AdminLoginPage() {
             <button
               type='submit'
               disabled={loading}
-              className='w-full py-2.5 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-600/50 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50'
+              className='w-full py-2.5 bg-gold-500 hover:bg-gold-400 disabled:bg-gold-500/50 text-navy-950 font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gold-500/30'
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>

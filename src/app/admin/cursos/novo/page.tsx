@@ -6,7 +6,7 @@ export default function NewCoursePage() {
     <>
       <AdminHeader
         title='Novo Curso'
-        description='Adicionar um novo curso preparatorio'
+        description='Adicionar um novo curso preparatório'
       />
       <div className='flex-1 p-6 overflow-auto'>
         <CourseForm />

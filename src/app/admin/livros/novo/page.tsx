@@ -6,7 +6,7 @@ export default function NewBookPage() {
     <>
       <AdminHeader
         title='Novo Livro'
-        description='Adicionar um novo livro a loja'
+        description='Adicionar um novo livro à loja'
       />
       <div className='flex-1 p-6 overflow-auto'>
         <BookForm />

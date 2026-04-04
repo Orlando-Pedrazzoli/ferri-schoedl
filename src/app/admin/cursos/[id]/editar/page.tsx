@@ -46,7 +46,7 @@ export default function EditCoursePage() {
         const res = await fetch(`/api/admin/courses/${params.id}`);
         const data = await res.json();
         if (data.success) setCourse(data.data);
-        else setError('Curso nao encontrado');
+        else setError('Curso não encontrado');
       } catch {
         setError('Erro ao carregar curso');
       } finally {
@@ -61,7 +61,7 @@ export default function EditCoursePage() {
       <>
         <AdminHeader title='Editar Curso' />
         <div className='flex-1 p-6 flex items-center justify-center'>
-          <p className='text-gray-400'>Carregando...</p>
+          <p className='text-txt-muted'>Carregando...</p>
         </div>
       </>
     );
