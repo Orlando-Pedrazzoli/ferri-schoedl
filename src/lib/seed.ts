@@ -733,38 +733,6 @@ export async function seedSiteContent(force = false) {
       label: 'Seções dos Termos de Uso',
       description: 'Array JSON com título e texto de cada seção.',
     },
-
-    // ===== PUBLICAÇÕES — Vitórias Jurídicas =====
-    {
-      key: 'publicacoes.vitorias',
-      page: 'publicacoes',
-      section: 'vitorias',
-      field: 'items',
-      value: JSON.stringify([
-        {
-          titulo: 'Indenização contra a Rede Record',
-          instancia: 'STJ — 3ª Turma',
-          descricao:
-            'Condenação mantida ao pagamento de R$ 200 mil por danos morais decorrentes de exposição sensacionalista.',
-        },
-        {
-          titulo: 'Vitória contra a Editora Abril / Revista Veja',
-          instancia: 'Justiça de São Paulo',
-          descricao:
-            'Indenização por publicações injuriosas que divulgaram informações equivocadas.',
-        },
-        {
-          titulo: 'Condenação do Jornal O Estado de S. Paulo',
-          instancia: '35ª Vara Cível de São Paulo',
-          descricao:
-            'Indenização por danos morais devido a publicações difamatórias.',
-        },
-      ]),
-      type: 'json' as const,
-      label: 'Vitórias Jurídicas',
-      description:
-        'Array JSON com as vitórias jurídicas exibidas na página de publicações.',
-    },
   ];
 
   const result = await SiteContent.insertMany(contentItems);

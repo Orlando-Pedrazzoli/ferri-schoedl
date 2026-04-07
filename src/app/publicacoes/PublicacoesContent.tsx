@@ -3,30 +3,22 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FileText, Scale, ExternalLink, ArrowRight } from 'lucide-react';
+import { FileText, ExternalLink, ArrowRight } from 'lucide-react';
 import { Reveal, RevealStagger, RevealItem } from '@/components/Reveal';
 import type { Publicacao, Artigo } from '@/lib/data';
 
 type ArtigoFilter = 'todos' | 'Carta Forense' | 'Migalhas' | 'Outros';
 
-interface Vitoria {
-  titulo: string;
-  instancia: string;
-  descricao: string;
-}
-
 interface PublicacoesContentProps {
   publicacoes: Publicacao[];
   artigos: Artigo[];
   totalArtigos: number;
-  vitorias: Vitoria[];
 }
 
 export function PublicacoesContent({
   publicacoes,
   artigos,
   totalArtigos,
-  vitorias,
 }: PublicacoesContentProps) {
   const [filtro, setFiltro] = useState<ArtigoFilter>('todos');
   const [mostrarTodos, setMostrarTodos] = useState(false);
@@ -264,37 +256,6 @@ export function PublicacoesContent({
           </button>
         </div>
       )}
-
-      {/* VITÓRIAS JURÍDICAS */}
-      <Reveal className='mt-12 sm:mt-16'>
-        <p className='mb-4 flex items-center gap-3 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
-          <span className='h-px w-8 bg-gold-500/40' />
-          Vitórias jurídicas e proteção da imagem
-        </p>
-      </Reveal>
-
-      <RevealStagger className='grid gap-3 md:grid-cols-3'>
-        {vitorias.map((vitoria, i) => (
-          <RevealItem key={`vit-${i}`}>
-            <div className='border border-gold-500/8 bg-navy-800/20 p-4 transition-all duration-300 hover:border-gold-500/15 sm:p-5'>
-              <Scale
-                size={18}
-                strokeWidth={1}
-                className='mb-3 text-gold-500/50'
-              />
-              <h3 className='font-[family-name:var(--font-cormorant)] text-[15px] text-cream-100 sm:text-base'>
-                {vitoria.titulo}
-              </h3>
-              <p className='mt-1 text-[11px] uppercase tracking-[1.5px] text-gold-600'>
-                {vitoria.instancia}
-              </p>
-              <p className='mt-2 text-[12px] leading-relaxed text-txt-muted sm:text-[13px]'>
-                {vitoria.descricao}
-              </p>
-            </div>
-          </RevealItem>
-        ))}
-      </RevealStagger>
 
       {/* ONDE ENCONTRAR */}
       <Reveal className='mt-12 sm:mt-16'>
