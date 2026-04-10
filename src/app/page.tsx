@@ -1,15 +1,29 @@
 import { getPageContent } from '@/lib/content-helpers';
 import { siteConfig } from '@/lib/data';
 import { HomeClient } from './HomeClient';
+import { buildPageMetadata } from '@/lib/seo';
 
 export const revalidate = 60;
 
+export const metadata = buildPageMetadata({
+  title: 'Ferri Schoedl Advocacia | Direito Criminal, Júri e Improbidade',
+  description:
+    'Escritório de advocacia especializado em Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Cível, Disciplinar e Imobiliário. Dr. Thales Ferri Schoedl — OAB/SP 196.377. Sede em São Paulo, atuação em todo o Brasil.',
+  path: '/',
+  keywords: [
+    'advogado criminalista São Paulo',
+    'escritório advocacia criminal',
+    'defesa criminal',
+    'tribunal do júri advogado',
+    'improbidade administrativa advogado',
+    'defesa servidor público SP',
+  ],
+});
+
 export default async function Home() {
-  // Fetch editable content from MongoDB (admin panel)
   const homeContent = await getPageContent('home');
   const configContent = await getPageContent('config');
 
-  // Hero section — merge DB values with data.ts fallbacks
   const hero = {
     label:
       homeContent['home.hero.label'] ||
@@ -25,7 +39,6 @@ export default async function Home() {
       'Atuação estratégica nas áreas criminal, tribunal do júri, improbidade administrativa, imobiliário, cível e disciplinar, com ênfase na defesa de servidores públicos. Escritório com sede em São Paulo e atuação em todo o território nacional.',
   };
 
-  // Stats — from DB or fallback to siteConfig
   const stats = {
     anosExperiencia:
       configContent['config.stats.anosExperiencia'] ||
@@ -38,7 +51,6 @@ export default async function Home() {
       String(siteConfig.stats.artigosPublicados),
   };
 
-  // Areas section headings
   const areas = {
     label: homeContent['home.areas.label'] || 'Especializações',
     title: homeContent['home.areas.title'] || 'Áreas de atuação',
@@ -47,7 +59,6 @@ export default async function Home() {
       'Atuação abrangente em áreas estratégicas do Direito, com ênfase na defesa técnica de servidores públicos em causas de alta complexidade.',
   };
 
-  // About section
   const about = {
     name: homeContent['home.about.title'] || 'Dr. Thales Ferri Schoedl',
     subtitle:
@@ -61,7 +72,6 @@ export default async function Home() {
       'Sua trajetória une a experiência na Promotoria de Justiça com a advocacia estratégica, oferecendo uma perspectiva única — a visão de quem já esteve do lado da acusação — resultando em uma atuação técnica diferenciada na defesa de servidores públicos e em causas de alta complexidade.',
   };
 
-  // Publicações section headings
   const publicacoesSection = {
     label: homeContent['home.publicacoes.label'] || 'Obras publicadas',
     title: homeContent['home.publicacoes.title'] || 'Publicações',
@@ -70,7 +80,6 @@ export default async function Home() {
       `Autor de mais de ${siteConfig.stats.livrosPublicados} livros e mais de ${siteConfig.stats.artigosPublicados} artigos jurídicos — produção acadêmica e editorial que reflete décadas de experiência na prática e no ensino do Direito.`,
   };
 
-  // CTA final
   const cta = {
     title:
       homeContent['home.cta.title'] || 'Cada caso exige uma estratégia única',
@@ -79,7 +88,6 @@ export default async function Home() {
       'Entre em contato para uma análise preliminar do seu caso. Atuamos em todo o Brasil com atendimento presencial e online.',
   };
 
-  // Cursos section
   const cursos = {
     title: homeContent['home.cursos.title'] || 'Cursos Preparatórios',
     text:
@@ -87,12 +95,7 @@ export default async function Home() {
       'Preparação estratégica para concursos públicos e Exame de Ordem, com a experiência de quem viveu a Promotoria de Justiça por dentro.',
   };
 
-  // OAB (used in hero photo tag)
   const oab = configContent['config.contact.oab'] || siteConfig.oab;
-
-  // NOTE: areasDeAtuacao and publicacoes are imported directly inside HomeClient
-  // because they contain React components (Lucide icons) that cannot be
-  // serialized from Server Components to Client Components.
 
   return (
     <HomeClient

@@ -1,44 +1,75 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/components/AuthProvider';
 import { LayoutShell } from '@/components/LayoutShell';
+import { buildLawFirmJsonLd, buildWebSiteJsonLd } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
 import './globals.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.ferrischoedl.adv.br'),
   title: {
-    default: 'Ferri Schoedl Advocacia | Direito Criminal, Juri e Improbidade',
+    default: 'Ferri Schoedl Advocacia | Direito Criminal, Júri e Improbidade',
     template: '%s | Ferri Schoedl Advocacia',
   },
   description:
-    'Escritorio de advocacia com sede em Sao Paulo e atuacao nacional, especializado em Direito Criminal, Tribunal do Juri, Improbidade Administrativa, Imobiliario, Civel e Disciplinar. Enfase na defesa de servidores publicos, com a experiencia de um ex-Promotor de Justica. Autor de 10 livros e mais de 23 artigos juridicos.',
+    'Escritório de advocacia com sede em São Paulo e atuação nacional, especializado em Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar. Ênfase na defesa de servidores públicos, com a experiência de um ex-Promotor de Justiça. Autor de 10 livros e mais de 23 artigos jurídicos.',
   keywords: [
-    'advogado criminal Sao Paulo',
-    'tribunal do juri',
+    'advogado criminal São Paulo',
+    'tribunal do júri',
     'improbidade administrativa',
-    'advogado imobiliario',
-    'defesa servidor publico',
+    'advogado imobiliário',
+    'defesa servidor público',
     'advogado disciplinar',
     'processo administrativo disciplinar',
-    'ex-promotor de justica',
-    'livros juridicos',
-    'artigos juridicos',
-    'reintegracao servidor publico',
+    'ex-promotor de justiça',
+    'livros jurídicos',
+    'artigos jurídicos',
+    'reintegração servidor público',
     'advogado defesa criminal',
     'Thales Ferri Schoedl',
     'Ferri Schoedl Advocacia',
   ],
   authors: [{ name: 'Thales Ferri Schoedl' }],
+  creator: 'Thales Ferri Schoedl',
+  publisher: 'Ferri Schoedl Advocacia',
+  alternates: {
+    canonical: 'https://www.ferrischoedl.adv.br',
+  },
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
+    url: 'https://www.ferrischoedl.adv.br',
     siteName: 'Ferri Schoedl Advocacia',
+    title: 'Ferri Schoedl Advocacia | Direito Criminal, Júri e Improbidade',
+    description:
+      'Escritório de advocacia especializado em Direito Criminal, Tribunal do Júri, Improbidade Administrativa e defesa de servidores públicos. Sede em São Paulo, atuação nacional.',
     images: [
       {
-        url: '/images/og-image.jpg',
+        url: 'https://www.ferrischoedl.adv.br/images/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Ferri Schoedl Advocacia — Defesa tecnica com rigor e experiencia',
+        alt: 'Ferri Schoedl Advocacia — Defesa técnica com rigor e experiência',
       },
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ferri Schoedl Advocacia | Direito Criminal, Júri e Improbidade',
+    description:
+      'Escritório de advocacia especializado em Direito Criminal, Tribunal do Júri, Improbidade Administrativa e defesa de servidores públicos.',
+    images: ['https://www.ferrischoedl.adv.br/images/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-snippet': -1,
+      'max-image-preview': 'large',
+      'max-video-preview': -1,
+    },
   },
   icons: {
     icon: [
@@ -53,6 +84,10 @@ export const metadata: Metadata = {
     apple: '/images/apple-touch-icon.png?v=2',
   },
   manifest: '/images/site.webmanifest',
+  verification: {
+    // Após verificar no Google Search Console, descomentar:
+    // google: 'SEU_CODIGO_AQUI',
+  },
 };
 
 export default function RootLayout({
@@ -89,6 +124,8 @@ export default function RootLayout({
         />
       </head>
       <body className='min-h-screen bg-navy-950 text-txt antialiased'>
+        <JsonLd data={buildLawFirmJsonLd()} />
+        <JsonLd data={buildWebSiteJsonLd()} />
         <AuthProvider>
           <LayoutShell>{children}</LayoutShell>
         </AuthProvider>

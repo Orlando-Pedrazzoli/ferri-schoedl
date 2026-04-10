@@ -1,14 +1,22 @@
 import { getPageContent } from '@/lib/content-helpers';
 import { Reveal } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
+import { buildPageMetadata } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: 'Política de Privacidade',
   description:
     'Política de Privacidade do escritório Ferri Schoedl Advocacia, em conformidade com a LGPD (Lei 13.709/18).',
-};
+  path: '/politica-de-privacidade',
+  keywords: [
+    'política de privacidade',
+    'LGPD',
+    'proteção de dados',
+    'Lei 13.709',
+  ],
+});
 
 // Fallback sections — exact text from the original hardcoded page
 const fallbackSections = [

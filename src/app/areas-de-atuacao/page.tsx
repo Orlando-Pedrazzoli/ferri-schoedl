@@ -1,14 +1,27 @@
 import { getPageContent } from '@/lib/content-helpers';
 import { areasDeAtuacao as fallbackAreas } from '@/lib/data';
 import { AreasClient } from './AreasClient';
+import { buildPageMetadata, buildBreadcrumbJsonLd, SITE_URL } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: 'Áreas de Atuação | Ferri Schoedl Advocacia',
+export const metadata = buildPageMetadata({
+  title: 'Áreas de Atuação',
   description:
-    'Atuação especializada em Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar.',
-};
+    'Atuação especializada em Direito Criminal, Tribunal do Júri, Improbidade Administrativa, Imobiliário, Cível e Disciplinar. Defesa técnica de servidores públicos em causas de alta complexidade. Atendimento em todo o Brasil.',
+  path: '/areas-de-atuacao',
+  keywords: [
+    'áreas de atuação advocacia',
+    'direito criminal São Paulo',
+    'tribunal do júri advogado',
+    'improbidade administrativa defesa',
+    'advogado imobiliário São Paulo',
+    'processo administrativo disciplinar',
+    'sindicância administrativa',
+    'defesa servidor público',
+  ],
+});
 
 export default async function AreasDeAtuacaoPage() {
   const areasContent = await getPageContent('areas');
@@ -47,5 +60,15 @@ export default async function AreasDeAtuacaoPage() {
   });
 
   // Pass only serializable data (no icons) — AreasClient imports icons itself
-  return <AreasClient areasData={areasData} />;
+  return (
+    <>
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Início', url: SITE_URL },
+          { name: 'Áreas de Atuação', url: `${SITE_URL}/areas-de-atuacao` },
+        ])}
+      />
+      <AreasClient areasData={areasData} />
+    </>
+  );
 }

@@ -1,14 +1,24 @@
 import { getPageContent } from '@/lib/content-helpers';
 import { siteConfig } from '@/lib/data';
 import { ContatoClient } from './ContatoClient';
+import { buildPageMetadata, buildBreadcrumbJsonLd, SITE_URL } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: 'Contato | Ferri Schoedl Advocacia',
+export const metadata = buildPageMetadata({
+  title: 'Contato',
   description:
-    'Entre em contato com o escritório Ferri Schoedl Advocacia. Atendimento presencial em São Paulo e online em todo o Brasil.',
-};
+    'Entre em contato com o escritório Ferri Schoedl Advocacia. Atendimento presencial em São Paulo e online em todo o Brasil. Telefone: (11) 94990-3000.',
+  path: '/contato',
+  keywords: [
+    'contato advogado São Paulo',
+    'agendar consulta advocacia',
+    'advogado criminal contato',
+    'consulta jurídica São Paulo',
+    'WhatsApp advogado',
+  ],
+});
 
 export default async function ContatoPage() {
   const configContent = await getPageContent('config');
@@ -38,5 +48,15 @@ export default async function ContatoPage() {
     }
   }
 
-  return <ContatoClient config={contactConfig} />;
+  return (
+    <>
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Início', url: SITE_URL },
+          { name: 'Contato', url: `${SITE_URL}/contato` },
+        ])}
+      />
+      <ContatoClient config={contactConfig} />
+    </>
+  );
 }

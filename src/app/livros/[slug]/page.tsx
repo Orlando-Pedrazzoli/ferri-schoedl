@@ -4,6 +4,14 @@ import dbConnect from '@/lib/mongodb';
 import Book from '@/models/Book';
 import { livros as fallbackLivros } from '@/lib/data';
 import { LivroDetail } from './LivroDetail';
+import {
+  buildPageMetadata,
+  buildBookJsonLd,
+  buildBreadcrumbJsonLd,
+  SITE_URL,
+  LAWYER_NAME,
+} from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -89,32 +97,56 @@ export async function generateMetadata({
 
   const dbBook = await getBook(slug);
   if (dbBook) {
-    return {
-      title: `${dbBook.title} | Ferri Schoedl Advocacia`,
-      description: dbBook.description as string,
-      openGraph: {
-        title: `${dbBook.title} | Ferri Schoedl Advocacia`,
-        description: dbBook.description as string,
-        images: dbBook.image ? [{ url: dbBook.image as string }] : [],
-      },
-    };
+    const title = dbBook.title as string;
+    const description =
+      (dbBook.description as string) || `${title} — Obra de ${LAWYER_NAME}`;
+    const image = dbBook.image as string;
+    const publisher = dbBook.publisher as string;
+    const year = dbBook.year as number;
+
+    return buildPageMetadata({
+      title,
+      description: `${title}${publisher ? ` — ${publisher}` : ''}${year ? `, ${year}` : ''}. ${description}`,
+      path: `/livros/${slug}`,
+      ogType: 'book',
+      ogImage: image || undefined,
+      keywords: [
+        title,
+        LAWYER_NAME,
+        'livro jurídico',
+        publisher || '',
+        'direito penal',
+      ].filter(Boolean),
+    });
   }
 
   const fallback = fallbackLivros.find(l => l.slug === slug);
   if (fallback) {
-    return {
-      title: `${fallback.title} | Ferri Schoedl Advocacia`,
-      description: fallback.description,
-    };
+    return buildPageMetadata({
+      title: fallback.title,
+      description: `${fallback.title} — ${fallback.publisher}, ${fallback.year}. ${fallback.description}`,
+      path: `/livros/${slug}`,
+      ogType: 'book',
+      keywords: [
+        fallback.title,
+        LAWYER_NAME,
+        'livro jurídico',
+        fallback.publisher,
+      ],
+    });
   }
 
-  return { title: 'Livro não encontrado' };
+  return buildPageMetadata({
+    title: 'Livro não encontrado',
+    description: 'O livro solicitado não foi encontrado.',
+    path: `/livros/${slug}`,
+    noIndex: true,
+  });
 }
 
 export default async function LivroSlugPage({ params }: PageProps) {
   const { slug } = await params;
 
-  // Try MongoDB first
   const dbBook = await getBook(slug);
   const dbRelated = await getRelatedBooks(slug);
 
@@ -134,10 +166,32 @@ export default async function LivroSlugPage({ params }: PageProps) {
           saleNote: l.saleNote || '',
         }));
 
-    return <LivroDetail livro={livro} outrosLivros={outrosLivros} />;
+    return (
+      <>
+        <JsonLd
+          data={buildBookJsonLd({
+            title: livro.title,
+            description: livro.description,
+            slug: livro.slug,
+            isbn: livro.isbn,
+            publisher: livro.publisher,
+            year: livro.year,
+            pages: livro.pages,
+            imageUrl: livro.image,
+          })}
+        />
+        <JsonLd
+          data={buildBreadcrumbJsonLd([
+            { name: 'Início', url: SITE_URL },
+            { name: 'Livros', url: `${SITE_URL}/livros` },
+            { name: livro.title, url: `${SITE_URL}/livros/${slug}` },
+          ])}
+        />
+        <LivroDetail livro={livro} outrosLivros={outrosLivros} />
+      </>
+    );
   }
 
-  // Fallback to data.ts
   const fallback = fallbackLivros.find(l => l.slug === slug);
   if (!fallback) {
     notFound();
@@ -155,5 +209,28 @@ export default async function LivroSlugPage({ params }: PageProps) {
       saleNote: l.saleNote || '',
     }));
 
-  return <LivroDetail livro={fallback} outrosLivros={outrosLivros} />;
+  return (
+    <>
+      <JsonLd
+        data={buildBookJsonLd({
+          title: fallback.title,
+          description: fallback.description,
+          slug: fallback.slug,
+          isbn: fallback.isbn,
+          publisher: fallback.publisher,
+          year: fallback.year,
+          pages: fallback.pages,
+          imageUrl: fallback.image,
+        })}
+      />
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Início', url: SITE_URL },
+          { name: 'Livros', url: `${SITE_URL}/livros` },
+          { name: fallback.title, url: `${SITE_URL}/livros/${slug}` },
+        ])}
+      />
+      <LivroDetail livro={fallback} outrosLivros={outrosLivros} />
+    </>
+  );
 }

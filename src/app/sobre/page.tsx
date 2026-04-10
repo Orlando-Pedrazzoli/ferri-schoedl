@@ -5,27 +5,42 @@ import {
   timeline as fallbackTimeline,
 } from '@/lib/data';
 import { SobreClient } from './SobreClient';
+import {
+  buildPageMetadata,
+  buildPersonJsonLd,
+  buildBreadcrumbJsonLd,
+  SITE_URL,
+} from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 60;
 
-export const metadata = {
-  title: 'Sobre | Ferri Schoedl Advocacia',
+export const metadata = buildPageMetadata({
+  title: 'Sobre — Dr. Thales Ferri Schoedl',
   description:
-    'Conheça o Dr. Thales Ferri Schoedl — advogado, jurista, professor, palestrante e ex-Promotor de Justiça do Estado de São Paulo.',
-};
+    'Conheça o Dr. Thales Ferri Schoedl — ex-Promotor de Justiça do Estado de São Paulo (2003–2016), advogado criminalista, jurista, professor e palestrante. Autor de mais de 10 livros e 22 artigos jurídicos. Mestre pela UFBA. OAB/SP 196.377.',
+  path: '/sobre',
+  ogType: 'profile',
+  keywords: [
+    'Thales Ferri Schoedl',
+    'advogado criminalista',
+    'ex-promotor de justiça São Paulo',
+    'professor direito penal',
+    'OAB/SP 196.377',
+    'mestrado UFBA',
+    'Mackenzie direito',
+  ],
+});
 
 export default async function SobrePage() {
-  // Fetch editable content from MongoDB (admin panel)
   const content = await getPageContent('sobre');
   const configContent = await getPageContent('config');
 
-  // Merge MongoDB values with data.ts fallbacks
   const bio = content['sobre.bio.text'] || aboutData.bio;
   const shortBio = content['sobre.bio.shortBio'] || aboutData.shortBio;
   const title = content['sobre.bio.title'] || aboutData.title;
   const coaching = content['sobre.coaching.text'] || aboutData.coaching;
 
-  // Differentials — parse from DB (JSON) or fallback
   let differentials = aboutData.differentials;
   const dbDifferentials = content['sobre.differentials.items'];
   if (dbDifferentials) {
@@ -39,7 +54,6 @@ export default async function SobrePage() {
     }
   }
 
-  // Timeline — parse from DB (JSON) or fallback
   let timeline = fallbackTimeline;
   const dbTimeline = content['sobre.timeline.items'];
   if (dbTimeline) {
@@ -53,7 +67,6 @@ export default async function SobrePage() {
     }
   }
 
-  // Stats from DB or fallback
   const oab = configContent['config.contact.oab'] || siteConfig.oab;
   const livrosPublicados = Number(
     configContent['config.stats.livrosPublicados'] ||
@@ -65,20 +78,29 @@ export default async function SobrePage() {
   );
 
   return (
-    <SobreClient
-      bio={bio}
-      shortBio={shortBio}
-      title={title}
-      coaching={coaching}
-      differentials={differentials}
-      timeline={timeline}
-      siteConfig={{
-        oab,
-        stats: {
-          livrosPublicados,
-          artigosPublicados,
-        },
-      }}
-    />
+    <>
+      <JsonLd data={buildPersonJsonLd()} />
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Início', url: SITE_URL },
+          { name: 'Sobre', url: `${SITE_URL}/sobre` },
+        ])}
+      />
+      <SobreClient
+        bio={bio}
+        shortBio={shortBio}
+        title={title}
+        coaching={coaching}
+        differentials={differentials}
+        timeline={timeline}
+        siteConfig={{
+          oab,
+          stats: {
+            livrosPublicados,
+            artigosPublicados,
+          },
+        }}
+      />
+    </>
   );
 }

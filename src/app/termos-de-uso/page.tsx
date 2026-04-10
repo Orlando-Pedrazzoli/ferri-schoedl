@@ -1,14 +1,17 @@
 import { getPageContent } from '@/lib/content-helpers';
 import { Reveal } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
+import { buildPageMetadata } from '@/lib/seo';
 
 export const revalidate = 60;
 
-export const metadata = {
+export const metadata = buildPageMetadata({
   title: 'Termos de Uso',
   description:
     'Termos de Uso do site Ferri Schoedl Advocacia, incluindo condições de compra de livros e cursos.',
-};
+  path: '/termos-de-uso',
+  keywords: ['termos de uso', 'condições de uso', 'termos e condições'],
+});
 
 // Fallback sections — exact text from the original hardcoded page
 const fallbackSections = [

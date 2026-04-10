@@ -1,20 +1,29 @@
-import type { Metadata } from 'next';
 import dbConnect from '@/lib/mongodb';
 import Book from '@/models/Book';
 import { livros as fallbackLivros, siteConfig } from '@/lib/data';
 import { SectionHeading } from '@/components/SectionHeading';
 import { LivrosGrid } from './LivrosGrid';
+import { buildPageMetadata, buildBreadcrumbJsonLd, SITE_URL } from '@/lib/seo';
+import JsonLd from '@/components/JsonLd';
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: 'Livros | Ferri Schoedl Advocacia',
+export const metadata = buildPageMetadata({
+  title: 'Livros',
   description: `${siteConfig.stats.livrosPublicados} obras publicadas sobre Direito Penal, Constitucional, Notarial, Improbidade Administrativa e preparação para concursos públicos.`,
-  openGraph: {
-    title: 'Livros | Ferri Schoedl Advocacia',
-    description: `${siteConfig.stats.livrosPublicados} obras publicadas sobre Direito Penal, Constitucional, Notarial, Improbidade Administrativa e preparação para concursos públicos.`,
-  },
-};
+  path: '/livros',
+  keywords: [
+    'livros direito penal',
+    'livros jurídicos',
+    'Thales Ferri Schoedl livros',
+    'direito notarial',
+    'liberdade de imprensa livro',
+    'responsabilidade penal notários',
+    'questões concursos públicos',
+    'comentários STF',
+    'direitos fundamentais',
+  ],
+});
 
 async function getBooks() {
   try {
@@ -70,16 +79,24 @@ export default async function LivrosPage() {
     : fallbackLivros;
 
   return (
-    <section className='pb-16 pt-28 sm:pb-24 sm:pt-32 lg:pb-32'>
-      <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
-        <SectionHeading
-          label='Loja'
-          title='Livros'
-          description={`${siteConfig.stats.livrosPublicados} obras publicadas sobre Direito Penal, Constitucional, Notarial, Improbidade Administrativa e preparação para concursos públicos.`}
-        />
+    <>
+      <JsonLd
+        data={buildBreadcrumbJsonLd([
+          { name: 'Início', url: SITE_URL },
+          { name: 'Livros', url: `${SITE_URL}/livros` },
+        ])}
+      />
+      <section className='pb-16 pt-28 sm:pb-24 sm:pt-32 lg:pb-32'>
+        <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
+          <SectionHeading
+            label='Loja'
+            title='Livros'
+            description={`${siteConfig.stats.livrosPublicados} obras publicadas sobre Direito Penal, Constitucional, Notarial, Improbidade Administrativa e preparação para concursos públicos.`}
+          />
 
-        <LivrosGrid livros={livros} />
-      </div>
-    </section>
+          <LivrosGrid livros={livros} />
+        </div>
+      </section>
+    </>
   );
 }

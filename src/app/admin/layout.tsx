@@ -1,11 +1,20 @@
 'use client';
 
+import type { Metadata } from 'next';
 import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { AuthProvider } from '@/components/AuthProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { useEffect } from 'react';
+
+// ─── SEO: Block all search engines from admin area ───────────
+// NOTA: Como este layout é 'use client', o export const metadata
+// não funciona directamente aqui. O bloqueio é feito via:
+// 1. robots.ts (disallow /admin/)
+// 2. next.config.ts headers (X-Robots-Tag: noindex para /admin/*)
+// Ambos já estão configurados nos ficheiros 03 e 05.
+// ─────────────────────────────────────────────────────────────
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const { status } = useSession();
