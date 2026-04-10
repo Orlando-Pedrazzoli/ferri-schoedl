@@ -85,8 +85,7 @@ export const metadata: Metadata = {
   },
   manifest: '/images/site.webmanifest',
   verification: {
-    // Após verificar no Google Search Console, descomentar:
-    // google: 'SEU_CODIGO_AQUI',
+    google: '2u0kuhWkm6I-ljGCpvaYXSh_sPIAxlJMscid5aG-Vro',
   },
 };
 
