@@ -123,11 +123,11 @@ export function CartDrawer() {
                       key={item.livro.slug}
                       className='flex gap-4 border-b border-gold-500/8 pb-4'
                     >
-                      <div className='flex h-24 w-16 shrink-0 items-center justify-center border border-gold-500/10 bg-navy-800/60'>
-                        <ShoppingBag
-                          size={16}
-                          strokeWidth={1}
-                          className='text-gold-600/30'
+                      <div className='h-24 w-16 shrink-0 overflow-hidden border border-gold-500/10 bg-navy-800/60'>
+                        <img
+                          src={item.livro.image}
+                          alt={item.livro.title}
+                          className='h-full w-full object-cover'
                         />
                       </div>
                       <div className='min-w-0 flex-1'>
