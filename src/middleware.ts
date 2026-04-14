@@ -56,7 +56,7 @@ export default withAuth(
       },
     },
     pages: {
-      signIn: '/admin/login',
+      signIn: '/conta/login',
     },
   },
 );
