@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { X, Minus, Plus, Trash2, Truck, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,6 +32,7 @@ function calcularFrete(weightG: number) {
 }
 
 export function CartDrawer() {
+  const router = useRouter();
   const {
     items,
     isOpen,
@@ -59,6 +61,11 @@ export function CartDrawer() {
     freteSelecionado !== null && freteOpcoes
       ? freteOpcoes[freteSelecionado].price
       : 0;
+
+  const handleFinalizarCompra = () => {
+    setIsOpen(false);
+    router.push('/checkout');
+  };
 
   return (
     <AnimatePresence>
@@ -265,7 +272,10 @@ export function CartDrawer() {
                   </div>
                 </div>
 
-                <button className='mt-4 w-full bg-gold-500 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'>
+                <button
+                  onClick={handleFinalizarCompra}
+                  className='mt-4 w-full bg-gold-500 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'
+                >
                   Finalizar compra
                 </button>
               </div>
