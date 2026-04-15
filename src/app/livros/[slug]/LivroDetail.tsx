@@ -11,13 +11,29 @@ import {
   Truck,
   Check,
   ExternalLink,
-  MessageCircle,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Reveal } from '@/components/Reveal';
 import { useCart } from '@/components/CartProvider';
-import { siteConfig } from '@/lib/data';
 import type { Livro } from '@/lib/data';
+
+// Links de compra nas editoras por slug
+const EDITORA_LINKS: Record<string, string> = {
+  'responsabilidade-penal-notarios-registradores':
+    'https://www.amazon.com.br/Responsabilidade-Penal-dos-Not%C3%A1rios-Registradores/dp/8568215173',
+  'questoes-exame-oral-cartorios':
+    'https://www.amazon.com.br/Quest%C3%B5es-Comentadas-Exame-Concurso-Cart%C3%B3rios/dp/8568215203',
+  'direito-notarial-registral-artigos-vol-1':
+    'https://loja.ykeditora.com/direito-notarial-e-registral/o-direito-notarial-e-registral-em-artigos',
+  'direito-notarial-registral-artigos-vol-2':
+    'https://loja.ykeditora.com/direito-notarial-e-registral/o-direito-notarial-e-registral-em-artigos-vol-2',
+  'direitos-fundamentais-relacoes-juridicas':
+    'https://www.editoragz.com.br/direitos-fundamentais-e-relacoes-juridicas-7442249',
+  'reflexiones-derecho-latinoamericano-vol-11':
+    'https://www.pensamientopenal.com.ar/system/files/2015/11/doctrina42329.pdf',
+  'reflexiones-derecho-latinoamericano-vol-15':
+    'https://www.pensamientopenal.com.ar/system/files/2015/11/doctrina42329.pdf',
+};
 
 interface RelatedBook {
   slug: string;
@@ -36,10 +52,7 @@ interface LivroDetailProps {
 export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
   const { addItem } = useCart();
 
-  const whatsappMessage = encodeURIComponent(
-    `Olá, Dr. Thales! Tenho interesse no livro "${livro.title}". Poderia me informar sobre disponibilidade e forma de pagamento?`,
-  );
-  const whatsappLink = `https://wa.me/${siteConfig.whatsapp}?text=${whatsappMessage}`;
+  const editoraLink = EDITORA_LINKS[livro.slug] || '';
 
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28 lg:pb-32'>
@@ -129,53 +142,33 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                     <span className='text-green-400'>Em estoque</span>
                   </span>
                 ) : (
-                  <span className='text-red-400'>Indisponível</span>
+                  <span className='text-red-400'>Indisponivel</span>
                 )}
                 <span className='text-txt-muted'>·</span>
                 <span className='text-txt-muted'>{livro.saleNote}</span>
               </div>
 
-              {/* CTA baseado no tipo de venda */}
-              <div className='mt-6 flex flex-wrap gap-3'>
+              {/* CTA */}
+              <div className='mt-6'>
                 {livro.saleType === 'direto' ? (
-                  <>
-                    <button
-                      onClick={() => addItem(livro)}
-                      disabled={!livro.inStock}
-                      className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-50 sm:px-10 sm:py-4'
-                    >
-                      <ShoppingCart size={16} />
-                      Adicionar ao carrinho
-                    </button>
-                    <a
-                      href={whatsappLink}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='inline-flex items-center gap-2 border border-gold-500/30 px-6 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-gold-500 transition-colors hover:border-gold-500 hover:bg-gold-500/5 sm:px-8 sm:py-4'
-                    >
-                      <MessageCircle size={16} />
-                      Comprar via WhatsApp
-                    </a>
-                  </>
+                  <button
+                    onClick={() => addItem(livro)}
+                    disabled={!livro.inStock}
+                    className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-50 sm:px-10 sm:py-4'
+                  >
+                    <ShoppingCart size={16} />
+                    Adicionar ao carrinho
+                  </button>
                 ) : (
-                  <>
-                    <a
-                      href={whatsappLink}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-10 sm:py-4'
-                    >
-                      <MessageCircle size={16} />
-                      Consultar disponibilidade
-                    </a>
-                    <p className='flex items-center self-center text-[13px] text-txt-muted'>
-                      <ExternalLink
-                        size={14}
-                        className='mr-1.5 text-gold-600'
-                      />
-                      Também disponível em livrarias e editora
-                    </p>
-                  </>
+                  <a
+                    href={editoraLink}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-10 sm:py-4'
+                  >
+                    <ExternalLink size={16} />
+                    Comprar na editora
+                  </a>
                 )}
               </div>
             </Reveal>
@@ -221,7 +214,7 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                     className='mb-2 text-gold-600'
                   />
                   <p className='text-xs uppercase tracking-[1px] text-gold-600'>
-                    Páginas
+                    Paginas
                   </p>
                   <p className='mt-1 text-base text-cream-100'>{livro.pages}</p>
                 </div>
@@ -232,7 +225,7 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                     className='mb-2 text-gold-600'
                   />
                   <p className='text-xs uppercase tracking-[1px] text-gold-600'>
-                    Dimensões
+                    Dimensoes
                   </p>
                   <p className='mt-1 text-sm text-cream-100'>
                     {livro.dimensions.width} x {livro.dimensions.height} x{' '}
@@ -273,7 +266,7 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
               <div className='mt-6 border-l border-gold-500/20 pl-5'>
                 <div className='space-y-2 text-sm'>
                   <p>
-                    <span className='text-txt-muted'>Edição:</span>{' '}
+                    <span className='text-txt-muted'>Edicao:</span>{' '}
                     <span className='text-cream-100'>{livro.edition}</span>
                   </p>
                   {livro.isbn && (

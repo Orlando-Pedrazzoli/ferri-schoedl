@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -21,37 +21,17 @@ import { motion } from 'framer-motion';
 import { useCart } from '@/components/CartProvider';
 import toast from 'react-hot-toast';
 
-// --- Frete (espelhado do CartDrawer) ---
-
-const FRETE_FAIXAS = [
-  { maxWeight: 500, label: 'PAC', price: 18.9, days: '8-12 dias uteis' },
-  { maxWeight: 500, label: 'SEDEX', price: 32.5, days: '3-5 dias uteis' },
-  { maxWeight: 1500, label: 'PAC', price: 24.9, days: '8-12 dias uteis' },
-  { maxWeight: 1500, label: 'SEDEX', price: 42.9, days: '3-5 dias uteis' },
-  { maxWeight: 5000, label: 'PAC', price: 34.9, days: '10-15 dias uteis' },
-  { maxWeight: 5000, label: 'SEDEX', price: 58.9, days: '4-6 dias uteis' },
-];
-
-function calcularFrete(weightG: number) {
-  const pac = FRETE_FAIXAS.filter(
-    f => f.label === 'PAC' && weightG <= f.maxWeight,
-  )[0] || { price: 34.9, days: '10-15 dias uteis' };
-
-  const sedex = FRETE_FAIXAS.filter(
-    f => f.label === 'SEDEX' && weightG <= f.maxWeight,
-  )[0] || { price: 58.9, days: '4-6 dias uteis' };
-
-  return [
-    { label: 'PAC' as const, price: pac.price, days: pac.days },
-    { label: 'SEDEX' as const, price: sedex.price, days: sedex.days },
-  ];
-}
-
 // --- Tipos ---
 
 type PaymentMethod = 'credit_card' | 'boleto' | 'pix';
 type ShippingMethod = 'PAC' | 'SEDEX';
 type CheckoutStep = 'dados' | 'pagamento' | 'confirmacao';
+
+interface FreteOpcao {
+  method: ShippingMethod;
+  price: number;
+  days: string;
+}
 
 interface AddressForm {
   street: string;
@@ -143,7 +123,7 @@ export function CheckoutForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Dados de endereco
+  // Endereco
   const [address, setAddress] = useState<AddressForm>({
     street: '',
     number: '',
@@ -154,7 +134,10 @@ export function CheckoutForm() {
     cep: '',
   });
 
-  // Frete
+  // Frete (calculado via API)
+  const [freteOpcoes, setFreteOpcoes] = useState<FreteOpcao[]>([]);
+  const [freteRegiao, setFreteRegiao] = useState('');
+  const [freteLoading, setFreteLoading] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('PAC');
 
   // Pagamento
@@ -173,15 +156,14 @@ export function CheckoutForm() {
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
 
-  // Calcular frete
-  const freteOpcoes = useMemo(() => calcularFrete(totalWeight), [totalWeight]);
+  // Preco do frete selecionado
   const fretePrice =
-    freteOpcoes.find(f => f.label === shippingMethod)?.price || 0;
+    freteOpcoes.find(f => f.method === shippingMethod)?.price || 0;
   const freteDays =
-    freteOpcoes.find(f => f.label === shippingMethod)?.days || '';
+    freteOpcoes.find(f => f.method === shippingMethod)?.days || '';
   const total = totalPrice + fretePrice;
 
-  // Opcoes de parcelamento
+  // Parcelas
   const installmentOptions = useMemo(() => {
     const opts = [];
     const max = total >= 100 ? 12 : total >= 50 ? 6 : total >= 30 ? 3 : 1;
@@ -212,7 +194,7 @@ export function CheckoutForm() {
   }, [sessionStatus, router]);
 
   // Buscar CEP via ViaCEP
-  const handleCepBlur = async () => {
+  const handleCepBlur = useCallback(async () => {
     const cepDigits = address.cep.replace(/\D/g, '');
     if (cepDigits.length !== 8) return;
 
@@ -229,9 +211,28 @@ export function CheckoutForm() {
         }));
       }
     } catch {
-      // Silencioso — usuario preenche manualmente
+      // Silencioso
     }
-  };
+
+    // Calcular frete automaticamente
+    setFreteLoading(true);
+    try {
+      const res = await fetch('/api/shipping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cep: cepDigits, weightG: totalWeight }),
+      });
+      const data = await res.json();
+      if (res.ok && data.opcoes) {
+        setFreteOpcoes(data.opcoes);
+        setFreteRegiao(data.regiao || '');
+      }
+    } catch {
+      // Silencioso
+    } finally {
+      setFreteLoading(false);
+    }
+  }, [address.cep, totalWeight]);
 
   // Validar step 1
   const validateDados = (): boolean => {
@@ -251,6 +252,12 @@ export function CheckoutForm() {
     }
     if (!ESTADOS_BR.includes(address.state.toUpperCase())) {
       setError('Estado invalido.');
+      return false;
+    }
+    if (freteOpcoes.length === 0) {
+      setError(
+        'Calcule o frete antes de continuar. Preencha o CEP e clique fora do campo.',
+      );
       return false;
     }
     setError('');
@@ -288,10 +295,7 @@ export function CheckoutForm() {
 
       const payload = {
         customerId: user.id,
-        items: items.map(i => ({
-          slug: i.livro.slug,
-          quantity: i.quantity,
-        })),
+        items: items.map(i => ({ slug: i.livro.slug, quantity: i.quantity })),
         shipping: {
           method: shippingMethod,
           address: {
@@ -363,10 +367,6 @@ export function CheckoutForm() {
     );
   }
 
-  // ============================================================
-  // RENDER
-  // ============================================================
-
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28'>
       <div className='mx-auto max-w-5xl px-4 sm:px-6 lg:px-8'>
@@ -391,7 +391,6 @@ export function CheckoutForm() {
             {step === 'confirmacao' ? 'Pedido realizado' : 'Finalizar compra'}
           </h1>
 
-          {/* Steps indicator */}
           {step !== 'confirmacao' && (
             <div className='mt-4 flex items-center gap-3'>
               {(['dados', 'pagamento'] as const).map((s, i) => (
@@ -411,9 +410,7 @@ export function CheckoutForm() {
                     {i + 1}
                   </button>
                   <span
-                    className={`text-xs uppercase tracking-[1px] ${
-                      step === s ? 'text-cream-100' : 'text-txt-muted'
-                    }`}
+                    className={`text-xs uppercase tracking-[1px] ${step === s ? 'text-cream-100' : 'text-txt-muted'}`}
                   >
                     {s === 'dados' ? 'Endereco e Frete' : 'Pagamento'}
                   </span>
@@ -437,7 +434,6 @@ export function CheckoutForm() {
         )}
 
         <div className='grid gap-8 lg:grid-cols-3'>
-          {/* Main content */}
           <div className='lg:col-span-2'>
             {/* ========== STEP 1: Endereco + Frete ========== */}
             {step === 'dados' && (
@@ -446,15 +442,12 @@ export function CheckoutForm() {
                 animate={{ opacity: 1, x: 0 }}
                 className='space-y-6'
               >
-                {/* Endereco de entrega */}
                 <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
                   <h2 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
                     <Truck size={14} />
                     Endereco de entrega
                   </h2>
-
                   <div className='grid gap-4 sm:grid-cols-2'>
-                    {/* CEP */}
                     <div>
                       <label className='mb-1 block text-xs text-txt-muted'>
                         CEP *
@@ -463,10 +456,7 @@ export function CheckoutForm() {
                         type='text'
                         value={formatCep(address.cep)}
                         onChange={e =>
-                          setAddress(prev => ({
-                            ...prev,
-                            cep: e.target.value,
-                          }))
+                          setAddress(prev => ({ ...prev, cep: e.target.value }))
                         }
                         onBlur={handleCepBlur}
                         placeholder='00000-000'
@@ -474,8 +464,6 @@ export function CheckoutForm() {
                         className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
                       />
                     </div>
-
-                    {/* Estado */}
                     <div>
                       <label className='mb-1 block text-xs text-txt-muted'>
                         Estado *
@@ -498,8 +486,6 @@ export function CheckoutForm() {
                         ))}
                       </select>
                     </div>
-
-                    {/* Rua */}
                     <div className='sm:col-span-2'>
                       <label className='mb-1 block text-xs text-txt-muted'>
                         Rua / Logradouro *
@@ -516,8 +502,6 @@ export function CheckoutForm() {
                         className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
                       />
                     </div>
-
-                    {/* Numero */}
                     <div>
                       <label className='mb-1 block text-xs text-txt-muted'>
                         Numero *
@@ -534,8 +518,6 @@ export function CheckoutForm() {
                         className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
                       />
                     </div>
-
-                    {/* Complemento */}
                     <div>
                       <label className='mb-1 block text-xs text-txt-muted'>
                         Complemento
@@ -553,8 +535,6 @@ export function CheckoutForm() {
                         className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
                       />
                     </div>
-
-                    {/* Bairro */}
                     <div>
                       <label className='mb-1 block text-xs text-txt-muted'>
                         Bairro *
@@ -571,8 +551,6 @@ export function CheckoutForm() {
                         className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
                       />
                     </div>
-
-                    {/* Cidade */}
                     <div>
                       <label className='mb-1 block text-xs text-txt-muted'>
                         Cidade *
@@ -592,39 +570,66 @@ export function CheckoutForm() {
                   </div>
                 </div>
 
-                {/* Metodo de envio */}
+                {/* Frete */}
                 <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
                   <h2 className='mb-4 text-xs uppercase tracking-[2px] text-gold-500'>
                     Metodo de envio
                   </h2>
-                  <div className='space-y-2'>
-                    {freteOpcoes.map(opt => (
-                      <button
-                        key={opt.label}
-                        onClick={() => setShippingMethod(opt.label)}
-                        className={`flex w-full items-center justify-between border px-4 py-3 text-left transition-colors ${
-                          shippingMethod === opt.label
-                            ? 'border-gold-500/40 bg-gold-500/5'
-                            : 'border-gold-500/10 hover:border-gold-500/20'
-                        }`}
-                      >
-                        <div>
-                          <span className='text-sm text-cream-100'>
-                            {opt.label}
-                          </span>
-                          <span className='ml-2 text-xs text-txt-muted'>
-                            {opt.days}
-                          </span>
-                        </div>
-                        <span className='text-sm text-gold-500'>
-                          R$ {formatCurrency(opt.price)}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
+
+                  {freteLoading && (
+                    <div className='flex items-center gap-2 py-4'>
+                      <Loader2
+                        size={16}
+                        className='animate-spin text-gold-500'
+                      />
+                      <span className='text-sm text-txt-muted'>
+                        Calculando frete...
+                      </span>
+                    </div>
+                  )}
+
+                  {!freteLoading && freteOpcoes.length === 0 && (
+                    <p className='py-4 text-sm text-txt-muted'>
+                      Preencha o CEP acima para calcular o frete.
+                    </p>
+                  )}
+
+                  {!freteLoading && freteOpcoes.length > 0 && (
+                    <>
+                      {freteRegiao && (
+                        <p className='mb-3 text-xs text-txt-muted'>
+                          Regiao: {freteRegiao}
+                        </p>
+                      )}
+                      <div className='space-y-2'>
+                        {freteOpcoes.map(opt => (
+                          <button
+                            key={opt.method}
+                            onClick={() => setShippingMethod(opt.method)}
+                            className={`flex w-full items-center justify-between border px-4 py-3 text-left transition-colors ${
+                              shippingMethod === opt.method
+                                ? 'border-gold-500/40 bg-gold-500/5'
+                                : 'border-gold-500/10 hover:border-gold-500/20'
+                            }`}
+                          >
+                            <div>
+                              <span className='text-sm text-cream-100'>
+                                {opt.method}
+                              </span>
+                              <span className='ml-2 text-xs text-txt-muted'>
+                                {opt.days}
+                              </span>
+                            </div>
+                            <span className='text-sm text-gold-500'>
+                              R$ {formatCurrency(opt.price)}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
 
-                {/* Botao avancar */}
                 <button
                   onClick={() => {
                     if (validateDados()) setStep('pagamento');
@@ -643,7 +648,6 @@ export function CheckoutForm() {
                 animate={{ opacity: 1, x: 0 }}
                 className='space-y-6'
               >
-                {/* Tabs de pagamento */}
                 <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
                   <h2 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
                     <Lock size={14} />
@@ -683,11 +687,7 @@ export function CheckoutForm() {
                           }
                         />
                         <span
-                          className={`text-xs uppercase tracking-[1px] ${
-                            paymentMethod === value
-                              ? 'text-cream-100'
-                              : 'text-txt-muted'
-                          }`}
+                          className={`text-xs uppercase tracking-[1px] ${paymentMethod === value ? 'text-cream-100' : 'text-txt-muted'}`}
                         >
                           {label}
                         </span>
@@ -695,7 +695,6 @@ export function CheckoutForm() {
                     ))}
                   </div>
 
-                  {/* Formulario de cartao */}
                   {paymentMethod === 'credit_card' && (
                     <div className='space-y-4'>
                       <div>
@@ -716,7 +715,6 @@ export function CheckoutForm() {
                           className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
                         />
                       </div>
-
                       <div>
                         <label className='mb-1 block text-xs text-txt-muted'>
                           Nome no cartao *
@@ -734,7 +732,6 @@ export function CheckoutForm() {
                           className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
                         />
                       </div>
-
                       <div className='grid grid-cols-3 gap-3'>
                         <div>
                           <label className='mb-1 block text-xs text-txt-muted'>
@@ -806,7 +803,6 @@ export function CheckoutForm() {
                           />
                         </div>
                       </div>
-
                       <div>
                         <label className='mb-1 block text-xs text-txt-muted'>
                           Parcelas
@@ -831,7 +827,6 @@ export function CheckoutForm() {
                     </div>
                   )}
 
-                  {/* PIX info */}
                   {paymentMethod === 'pix' && (
                     <div className='rounded border border-gold-500/8 bg-navy-800/20 p-4'>
                       <div className='flex items-start gap-3'>
@@ -842,15 +837,13 @@ export function CheckoutForm() {
                           </p>
                           <p className='mt-1 text-xs text-txt-muted'>
                             Apos confirmar, voce recebera o QR Code e o codigo
-                            PIX para copiar e colar. O pagamento e confirmado em
-                            segundos. Validade: 1 hora.
+                            PIX para copiar e colar. Validade: 1 hora.
                           </p>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Boleto info */}
                   {paymentMethod === 'boleto' && (
                     <div className='rounded border border-gold-500/8 bg-navy-800/20 p-4'>
                       <div className='flex items-start gap-3'>
@@ -860,9 +853,8 @@ export function CheckoutForm() {
                             Pagamento via Boleto Bancario
                           </p>
                           <p className='mt-1 text-xs text-txt-muted'>
-                            Apos confirmar, voce recebera o boleto com
-                            vencimento em 3 dias uteis. O pedido sera processado
-                            apos a compensacao do pagamento (1-2 dias uteis).
+                            Vencimento em 3 dias uteis. Pedido processado apos
+                            compensacao (1-2 dias uteis).
                           </p>
                         </div>
                       </div>
@@ -870,7 +862,6 @@ export function CheckoutForm() {
                   )}
                 </div>
 
-                {/* Botoes */}
                 <div className='flex gap-3'>
                   <button
                     onClick={() => setStep('dados')}
@@ -914,13 +905,11 @@ export function CheckoutForm() {
                       className='text-gold-500'
                     />
                   </div>
-
                   <h2 className='font-[family-name:var(--font-cormorant)] text-2xl text-cream-100'>
                     {orderResult.paymentMethod === 'credit_card'
                       ? 'Pagamento confirmado!'
                       : 'Pedido realizado!'}
                   </h2>
-
                   <p className='mt-2 text-sm text-txt-muted'>
                     Codigo do pedido:{' '}
                     <span className='font-mono text-gold-500'>
@@ -928,13 +917,11 @@ export function CheckoutForm() {
                     </span>
                   </p>
 
-                  {/* PIX: mostrar QR code e codigo */}
                   {orderResult.paymentMethod === 'pix' &&
                     orderResult.pixQrCode && (
                       <div className='mt-6 space-y-4'>
                         {orderResult.pixQrCodeUrl && (
                           <div className='mx-auto w-fit border border-gold-500/10 bg-white p-3'>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={orderResult.pixQrCodeUrl}
                               alt='QR Code PIX'
@@ -974,7 +961,6 @@ export function CheckoutForm() {
                       </div>
                     )}
 
-                  {/* Boleto: mostrar link */}
                   {orderResult.paymentMethod === 'boleto' &&
                     orderResult.boletoUrl && (
                       <div className='mt-6'>
@@ -1003,7 +989,6 @@ export function CheckoutForm() {
                       </div>
                     )}
 
-                  {/* Cartao: confirmado */}
                   {orderResult.paymentMethod === 'credit_card' && (
                     <p className='mt-4 text-sm text-txt-muted'>
                       Voce recebera um email de confirmacao em breve.
@@ -1037,8 +1022,6 @@ export function CheckoutForm() {
                   <ShoppingBag size={14} />
                   Resumo
                 </h3>
-
-                {/* Items */}
                 <div className='space-y-3'>
                   {items.map(item => (
                     <div
@@ -1059,7 +1042,6 @@ export function CheckoutForm() {
                     </div>
                   ))}
                 </div>
-
                 <div className='mt-4 space-y-2 border-t border-gold-500/8 pt-3'>
                   <div className='flex justify-between text-[13px]'>
                     <span className='text-txt-muted'>Subtotal</span>
@@ -1067,18 +1049,22 @@ export function CheckoutForm() {
                       R$ {formatCurrency(totalPrice)}
                     </span>
                   </div>
-                  <div className='flex justify-between text-[13px]'>
-                    <span className='text-txt-muted'>
-                      Frete ({shippingMethod})
-                    </span>
-                    <span className='text-cream-100'>
-                      R$ {formatCurrency(fretePrice)}
-                    </span>
-                  </div>
-                  <div className='flex justify-between text-[13px] text-txt-muted'>
-                    <span>Prazo</span>
-                    <span>{freteDays}</span>
-                  </div>
+                  {fretePrice > 0 && (
+                    <div className='flex justify-between text-[13px]'>
+                      <span className='text-txt-muted'>
+                        Frete ({shippingMethod})
+                      </span>
+                      <span className='text-cream-100'>
+                        R$ {formatCurrency(fretePrice)}
+                      </span>
+                    </div>
+                  )}
+                  {freteDays && (
+                    <div className='flex justify-between text-[13px] text-txt-muted'>
+                      <span>Prazo</span>
+                      <span>{freteDays}</span>
+                    </div>
+                  )}
                   <div className='flex justify-between border-t border-gold-500/8 pt-2'>
                     <span className='text-sm text-cream-100'>Total</span>
                     <span className='font-[family-name:var(--font-cormorant)] text-xl text-gold-500'>
@@ -1086,7 +1072,6 @@ export function CheckoutForm() {
                     </span>
                   </div>
                 </div>
-
                 <div className='mt-4 flex items-center gap-2 text-[11px] text-txt-muted'>
                   <Lock size={12} className='text-gold-600' />
                   Pagamento seguro via Pagar.me

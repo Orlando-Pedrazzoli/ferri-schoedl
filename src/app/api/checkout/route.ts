@@ -4,6 +4,7 @@ import Order from '@/models/Order';
 import Customer from '@/models/Customer';
 import Book from '@/models/Book';
 import { sendOrderConfirmation } from '@/lib/resend';
+import { calcularFreteReal } from '@/lib/shipping';
 
 // --- Helpers ---
 
@@ -29,7 +30,6 @@ function parsePhone(phone: string): {
   number: string;
 } {
   const digits = cleanPhone(phone);
-  // Aceita formato: 55 11 999999999 ou 11 999999999 ou 999999999
   if (digits.length >= 12) {
     return {
       country_code: digits.slice(0, 2),
@@ -57,33 +57,6 @@ function buildPagarmeAuth(): string {
   return 'Basic ' + Buffer.from(`${sk}:`).toString('base64');
 }
 
-// --- Frete (mesmo calculo do CartDrawer) ---
-
-const FRETE_FAIXAS = [
-  { maxWeight: 500, label: 'PAC', price: 18.9, days: '8-12 dias uteis' },
-  { maxWeight: 500, label: 'SEDEX', price: 32.5, days: '3-5 dias uteis' },
-  { maxWeight: 1500, label: 'PAC', price: 24.9, days: '8-12 dias uteis' },
-  { maxWeight: 1500, label: 'SEDEX', price: 42.9, days: '3-5 dias uteis' },
-  { maxWeight: 5000, label: 'PAC', price: 34.9, days: '10-15 dias uteis' },
-  { maxWeight: 5000, label: 'SEDEX', price: 58.9, days: '4-6 dias uteis' },
-];
-
-function calcularFrete(
-  weightG: number,
-  method: 'PAC' | 'SEDEX',
-): { price: number; days: string } {
-  const opcoes = FRETE_FAIXAS.filter(
-    f => f.label === method && weightG <= f.maxWeight,
-  );
-  if (opcoes.length > 0) {
-    return { price: opcoes[0].price, days: opcoes[0].days };
-  }
-  // Fallback para peso acima de 5kg
-  return method === 'PAC'
-    ? { price: 34.9, days: '10-15 dias uteis' }
-    : { price: 58.9, days: '4-6 dias uteis' };
-}
-
 // --- Validacao do body ---
 
 interface CheckoutBody {
@@ -106,7 +79,6 @@ interface CheckoutBody {
   };
   payment: {
     method: 'credit_card' | 'boleto' | 'pix';
-    // Campos de cartao (obrigatorios se method === 'credit_card')
     card?: {
       number: string;
       holderName: string;
@@ -211,7 +183,7 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    // 4. Calcular totais
+    // 4. Calcular totais com frete real por regiao
     const subtotal = orderItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
@@ -220,8 +192,21 @@ export async function POST(request: NextRequest) {
       (sum, item) => sum + item.weight * item.quantity,
       0,
     );
-    const frete = calcularFrete(totalWeight, body.shipping.method);
-    const total = subtotal + frete.price;
+
+    const cepDestino = cleanCep(body.shipping.address.cep);
+    const freteOpcoes = calcularFreteReal(cepDestino, totalWeight);
+    const freteSelecionado = freteOpcoes.find(
+      f => f.method === body.shipping.method,
+    );
+
+    if (!freteSelecionado) {
+      return NextResponse.json(
+        { error: 'Nao foi possivel calcular o frete para este CEP.' },
+        { status: 400 },
+      );
+    }
+
+    const total = subtotal + freteSelecionado.price;
 
     // 5. Criar order no MongoDB (status pendente)
     const order = new Order({
@@ -234,8 +219,8 @@ export async function POST(request: NextRequest) {
       subtotal,
       shipping: {
         method: body.shipping.method,
-        price: frete.price,
-        estimatedDays: frete.days,
+        price: freteSelecionado.price,
+        estimatedDays: freteSelecionado.days,
         address: {
           street: body.shipping.address.street,
           number: body.shipping.address.number,
@@ -243,7 +228,7 @@ export async function POST(request: NextRequest) {
           neighborhood: body.shipping.address.neighborhood,
           city: body.shipping.address.city,
           state: body.shipping.address.state.toUpperCase(),
-          cep: cleanCep(body.shipping.address.cep),
+          cep: cepDestino,
         },
       },
       total,
@@ -288,14 +273,14 @@ export async function POST(request: NextRequest) {
         country: 'BR',
         state: shippingAddr.state.toUpperCase(),
         city: shippingAddr.city,
-        zip_code: cleanCep(shippingAddr.cep),
+        zip_code: cepDestino,
         line_1: `${shippingAddr.number}, ${shippingAddr.street}, ${shippingAddr.neighborhood}`,
         line_2: shippingAddr.complement || '',
       },
     };
 
     const pagarmeShipping = {
-      amount: toAmountCents(frete.price),
+      amount: toAmountCents(freteSelecionado.price),
       description: `Envio ${body.shipping.method}`,
       recipient_name: customer.name,
       recipient_phone: cleanPhone(customer.phone),
@@ -303,7 +288,7 @@ export async function POST(request: NextRequest) {
         country: 'BR',
         state: shippingAddr.state.toUpperCase(),
         city: shippingAddr.city,
-        zip_code: cleanCep(shippingAddr.cep),
+        zip_code: cepDestino,
         line_1: `${shippingAddr.number}, ${shippingAddr.street}, ${shippingAddr.neighborhood}`,
         line_2: shippingAddr.complement || '',
       },
@@ -331,7 +316,7 @@ export async function POST(request: NextRequest) {
               country: 'BR',
               state: shippingAddr.state.toUpperCase(),
               city: shippingAddr.city,
-              zip_code: cleanCep(shippingAddr.cep),
+              zip_code: cepDestino,
               line_1: `${shippingAddr.number}, ${shippingAddr.street}, ${shippingAddr.neighborhood}`,
               line_2: shippingAddr.complement || '',
             },
@@ -350,11 +335,10 @@ export async function POST(request: NextRequest) {
         },
       };
     } else {
-      // PIX
       pagarmePayment = {
         payment_method: 'pix',
         pix: {
-          expires_in: 3600, // 1 hora
+          expires_in: 3600,
         },
       };
     }
@@ -390,8 +374,6 @@ export async function POST(request: NextRequest) {
         '[Checkout] Pagar.me erro:',
         JSON.stringify(pagarmeData, null, 2),
       );
-
-      // Marcar order como falhou
       order.payment.status = 'failed';
       order.status = 'falhou';
       await order.save();
@@ -412,14 +394,11 @@ export async function POST(request: NextRequest) {
     const charge = pagarmeData.charges?.[0];
     if (charge) {
       order.payment.pagarmeChargeId = charge.id;
-
       const lastTx = charge.last_transaction;
 
       if (body.payment.method === 'credit_card') {
-        // Cartao: pagamento pode ja estar paid
         order.payment.cardLastDigits = lastTx?.card?.last_four_digits || '';
         order.payment.cardBrand = lastTx?.card?.brand || '';
-
         if (pagarmeData.status === 'paid') {
           order.payment.status = 'paid';
           order.payment.paidAt = new Date();
@@ -456,7 +435,6 @@ export async function POST(request: NextRequest) {
         total,
       ).catch(err => console.error('[Checkout] Erro ao enviar email:', err));
 
-      // Adicionar order ao customer
       await Customer.findByIdAndUpdate(customer._id, {
         $push: { orders: order._id },
       });
@@ -472,7 +450,6 @@ export async function POST(request: NextRequest) {
       total,
     };
 
-    // Incluir dados especificos do metodo de pagamento
     if (body.payment.method === 'boleto') {
       responseData.boletoUrl = order.payment.boletoUrl;
       responseData.boletoBarcode = order.payment.boletoBarcode;

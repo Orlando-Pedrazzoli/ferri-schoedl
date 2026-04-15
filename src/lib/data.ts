@@ -95,6 +95,39 @@ export const areasDeAtuacao: AreaDeAtuacao[] = [
     ],
   },
   {
+    slug: 'disciplinar',
+    title: 'Disciplinar',
+    subtitle: 'Processos administrativos disciplinares',
+    icon: UserPlus,
+    description:
+      'Defesa de servidores públicos em processos administrativos disciplinares e sindicâncias, com estratégia coordenada entre as esferas disciplinar e criminal. Experiência de quem conhece a perspectiva da acusação.',
+    details: [
+      'Defesa em processos administrativos disciplinares (PAD)',
+      'Defesa em sindicâncias administrativas',
+      'Estratégia coordenada disciplinar-criminal',
+      'Recursos contra exonerações e penalidades',
+      'Reintegração ao cargo público',
+      'Assessoria preventiva para servidores',
+    ],
+  },
+  {
+    slug: 'civel',
+    title: 'Cível',
+    subtitle: 'Responsabilidade civil e funcional',
+    icon: Scale,
+    description:
+      'Atuação em ações de responsabilidade civil e funcional, incluindo reparação de danos morais e materiais decorrentes de acusações disciplinares ou criminais, bem como ações de anulação de exoneração e reintegração.',
+    details: [
+      'Ações de reparação de danos morais e materiais',
+      'Responsabilidade civil e funcional',
+      'Ações de anulação de exoneração',
+      'Ações de reintegração ao cargo com verbas retroativas',
+      'Demandas cíveis de alta complexidade',
+      'Recursos em instâncias superiores',
+      'Consultorias e pareceres',
+    ],
+  },
+  {
     slug: 'tribunal-do-juri',
     title: 'Tribunal do Júri',
     subtitle: 'Experiência comprovada em plenário',
@@ -139,39 +172,6 @@ export const areasDeAtuacao: AreaDeAtuacao[] = [
       'Assessoria em escrituras e contratos',
       'Planejamento patrimonial familiar e empresarial',
       'Análise de documentação para compra segura',
-    ],
-  },
-  {
-    slug: 'civel',
-    title: 'Cível',
-    subtitle: 'Responsabilidade civil e funcional',
-    icon: Scale,
-    description:
-      'Atuação em ações de responsabilidade civil e funcional, incluindo reparação de danos morais e materiais decorrentes de acusações disciplinares ou criminais, bem como ações de anulação de exoneração e reintegração.',
-    details: [
-      'Ações de reparação de danos morais e materiais',
-      'Responsabilidade civil e funcional',
-      'Ações de anulação de exoneração',
-      'Ações de reintegração ao cargo com verbas retroativas',
-      'Demandas cíveis de alta complexidade',
-      'Recursos em instâncias superiores',
-      'Consultorias e pareceres',
-    ],
-  },
-  {
-    slug: 'disciplinar',
-    title: 'Disciplinar',
-    subtitle: 'Processos administrativos disciplinares',
-    icon: UserPlus,
-    description:
-      'Defesa de servidores públicos em processos administrativos disciplinares e sindicâncias, com estratégia coordenada entre as esferas disciplinar e criminal. Experiência de quem conhece a perspectiva da acusação.',
-    details: [
-      'Defesa em processos administrativos disciplinares (PAD)',
-      'Defesa em sindicâncias administrativas',
-      'Estratégia coordenada disciplinar-criminal',
-      'Recursos contra exonerações e penalidades',
-      'Reintegração ao cargo público',
-      'Assessoria preventiva para servidores',
     ],
   },
 ];

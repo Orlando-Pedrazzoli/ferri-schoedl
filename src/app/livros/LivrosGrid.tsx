@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingCart, ExternalLink } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { RevealStagger, RevealItem } from '@/components/Reveal';
-import { useCart } from '@/components/CartProvider';
 import type { Livro } from '@/lib/data';
 
 interface LivrosGridProps {
@@ -12,8 +11,6 @@ interface LivrosGridProps {
 }
 
 export function LivrosGrid({ livros }: LivrosGridProps) {
-  const { addItem } = useCart();
-
   return (
     <RevealStagger className='grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3'>
       {livros.map(livro => (
@@ -84,23 +81,13 @@ export function LivrosGrid({ livros }: LivrosGridProps) {
                   </p>
                 </div>
 
-                {livro.saleType === 'direto' ? (
-                  <button
-                    onClick={() => addItem(livro)}
-                    className='flex items-center gap-2 bg-gold-500 px-3 py-2 text-xs font-medium uppercase tracking-[1.5px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-4 sm:py-2.5'
-                  >
-                    <ShoppingCart size={14} />
-                    Comprar
-                  </button>
-                ) : (
-                  <Link
-                    href={`/livros/${livro.slug}`}
-                    className='flex items-center gap-2 border border-gold-500/30 px-3 py-2 text-xs font-medium uppercase tracking-[1.5px] text-gold-500 transition-colors hover:border-gold-500 hover:bg-gold-500/5 sm:px-4 sm:py-2.5'
-                  >
-                    <ExternalLink size={14} />
-                    Ver mais
-                  </Link>
-                )}
+                <Link
+                  href={`/livros/${livro.slug}`}
+                  className='flex items-center gap-2 bg-gold-500 px-3 py-2 text-xs font-medium uppercase tracking-[1.5px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-4 sm:py-2.5'
+                >
+                  <ShoppingCart size={14} />
+                  Comprar
+                </Link>
               </div>
             </div>
           </div>

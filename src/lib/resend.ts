@@ -12,8 +12,8 @@ function getResend(): Resend {
   return resendInstance;
 }
 
-const FROM_EMAIL = 'Ferri Schoedl <onboarding@resend.dev>';
-const SITE_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+const FROM_EMAIL = 'Ferri Schoedl Advocacia <noreply@send.ferrischoedl.adv.br>';
+const SITE_URL = process.env.NEXTAUTH_URL || 'https://ferrischoedl.adv.br';
 
 /**
  * Envia email de verificação de conta (registo)

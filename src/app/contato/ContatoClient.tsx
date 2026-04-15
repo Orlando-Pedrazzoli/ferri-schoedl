@@ -9,6 +9,7 @@ import {
   ArrowRight,
   MessageCircle,
   Building2,
+  Loader2,
 } from 'lucide-react';
 import { Reveal } from '@/components/Reveal';
 import { SectionHeading } from '@/components/SectionHeading';
@@ -36,11 +37,52 @@ interface ContatoClientProps {
 
 export function ContatoClient({ config }: ContatoClientProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    area: '',
+    message: '',
+  });
+
+  function handleChange(
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
+  ) {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError('');
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitted(true);
-  };
+    setError('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Erro ao enviar mensagem. Tente novamente.');
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError('Erro de conexao. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const whatsappLink = `https://wa.me/${config.whatsapp}?text=${encodeURIComponent('Olá, Dr. Thales! Gostaria de agendar uma consulta.')}`;
 
@@ -189,6 +231,12 @@ export function ContatoClient({ config }: ContatoClientProps) {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className='space-y-5'>
+                {error && (
+                  <div className='border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400'>
+                    {error}
+                  </div>
+                )}
+
                 <div className='grid gap-5 sm:grid-cols-2'>
                   <div>
                     <label className='mb-2 block text-xs uppercase tracking-[1.5px] text-gold-600'>
@@ -196,7 +244,10 @@ export function ContatoClient({ config }: ContatoClientProps) {
                     </label>
                     <input
                       type='text'
+                      name='name'
                       required
+                      value={form.name}
+                      onChange={handleChange}
                       className='w-full border border-gold-500/12 bg-navy-800/30 px-4 py-3 text-sm text-cream-100 outline-none transition-colors placeholder:text-txt-muted/40 focus:border-gold-500/30'
                       placeholder='Seu nome'
                     />
@@ -207,7 +258,10 @@ export function ContatoClient({ config }: ContatoClientProps) {
                     </label>
                     <input
                       type='email'
+                      name='email'
                       required
+                      value={form.email}
+                      onChange={handleChange}
                       className='w-full border border-gold-500/12 bg-navy-800/30 px-4 py-3 text-sm text-cream-100 outline-none transition-colors placeholder:text-txt-muted/40 focus:border-gold-500/30'
                       placeholder='seu@email.com'
                     />
@@ -221,6 +275,9 @@ export function ContatoClient({ config }: ContatoClientProps) {
                     </label>
                     <input
                       type='tel'
+                      name='phone'
+                      value={form.phone}
+                      onChange={handleChange}
                       className='w-full border border-gold-500/12 bg-navy-800/30 px-4 py-3 text-sm text-cream-100 outline-none transition-colors placeholder:text-txt-muted/40 focus:border-gold-500/30'
                       placeholder='(11) 99999-9999'
                     />
@@ -229,7 +286,12 @@ export function ContatoClient({ config }: ContatoClientProps) {
                     <label className='mb-2 block text-xs uppercase tracking-[1.5px] text-gold-600'>
                       Área de interesse
                     </label>
-                    <select className='w-full border border-gold-500/12 bg-navy-800/30 px-4 py-3 text-sm text-cream-100 outline-none transition-colors focus:border-gold-500/30'>
+                    <select
+                      name='area'
+                      value={form.area}
+                      onChange={handleChange}
+                      className='w-full border border-gold-500/12 bg-navy-800/30 px-4 py-3 text-sm text-cream-100 outline-none transition-colors focus:border-gold-500/30'
+                    >
                       <option value=''>Selecione</option>
                       <option value='criminal'>Criminal</option>
                       <option value='tribunal-do-juri'>Tribunal do Júri</option>
@@ -249,8 +311,11 @@ export function ContatoClient({ config }: ContatoClientProps) {
                     Descreva brevemente sua demanda
                   </label>
                   <textarea
+                    name='message'
                     rows={5}
                     required
+                    value={form.message}
+                    onChange={handleChange}
                     className='w-full resize-none border border-gold-500/12 bg-navy-800/30 px-4 py-3 text-sm text-cream-100 outline-none transition-colors placeholder:text-txt-muted/40 focus:border-gold-500/30'
                     placeholder='Conte-nos um pouco sobre sua situação...'
                   />
@@ -263,13 +328,23 @@ export function ContatoClient({ config }: ContatoClientProps) {
 
                 <button
                   type='submit'
-                  className='group inline-flex items-center gap-2 bg-gold-500 px-6 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-all duration-300 hover:bg-gold-400 sm:px-8 sm:py-3.5'
+                  disabled={loading}
+                  className='group inline-flex items-center gap-2 bg-gold-500 px-6 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-all duration-300 hover:bg-gold-400 disabled:opacity-50 sm:px-8 sm:py-3.5'
                 >
-                  Enviar mensagem
-                  <ArrowRight
-                    size={14}
-                    className='transition-transform group-hover:translate-x-1'
-                  />
+                  {loading ? (
+                    <>
+                      <Loader2 size={14} className='animate-spin' />
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      Enviar mensagem
+                      <ArrowRight
+                        size={14}
+                        className='transition-transform group-hover:translate-x-1'
+                      />
+                    </>
+                  )}
                 </button>
               </form>
             )}

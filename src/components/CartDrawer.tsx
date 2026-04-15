@@ -2,34 +2,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { X, Minus, Plus, Trash2, Truck, ShoppingBag } from 'lucide-react';
+import {
+  X,
+  Minus,
+  Plus,
+  Trash2,
+  Truck,
+  ShoppingBag,
+  Loader2,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from './CartProvider';
-
-const FRETE_FAIXAS = [
-  { maxWeight: 500, label: 'PAC', price: 18.9, days: '8-12 dias uteis' },
-  { maxWeight: 500, label: 'SEDEX', price: 32.5, days: '3-5 dias uteis' },
-  { maxWeight: 1500, label: 'PAC', price: 24.9, days: '8-12 dias uteis' },
-  { maxWeight: 1500, label: 'SEDEX', price: 42.9, days: '3-5 dias uteis' },
-  { maxWeight: 5000, label: 'PAC', price: 34.9, days: '10-15 dias uteis' },
-  { maxWeight: 5000, label: 'SEDEX', price: 58.9, days: '4-6 dias uteis' },
-];
-
-function calcularFrete(weightG: number) {
-  const pac = FRETE_FAIXAS.filter(
-    f => f.label === 'PAC' && weightG <= f.maxWeight,
-  )[0] || { price: 34.9, days: '10-15 dias uteis' };
-
-  const sedex = FRETE_FAIXAS.filter(
-    f => f.label === 'SEDEX' && weightG <= f.maxWeight,
-  )[0] || { price: 58.9, days: '4-6 dias uteis' };
-
-  return [
-    { label: 'PAC', price: pac.price, days: pac.days },
-    { label: 'SEDEX', price: sedex.price, days: sedex.days },
-  ];
-}
 
 export function CartDrawer() {
   const router = useRouter();
@@ -46,14 +29,45 @@ export function CartDrawer() {
 
   const [cep, setCep] = useState('');
   const [freteOpcoes, setFreteOpcoes] = useState<
-    { label: string; price: number; days: string }[] | null
+    { method: string; price: number; days: string }[] | null
   >(null);
+  const [freteRegiao, setFreteRegiao] = useState('');
   const [freteSelecionado, setFreteSelecionado] = useState<number | null>(null);
+  const [freteLoading, setFreteLoading] = useState(false);
+  const [freteError, setFreteError] = useState('');
 
-  const handleCalcFrete = () => {
-    if (cep.length >= 8) {
-      setFreteOpcoes(calcularFrete(totalWeight));
-      setFreteSelecionado(null);
+  const handleCalcFrete = async () => {
+    const cepClean = cep.replace(/\D/g, '');
+    if (cepClean.length !== 8) {
+      setFreteError('CEP invalido');
+      return;
+    }
+
+    setFreteLoading(true);
+    setFreteError('');
+    setFreteOpcoes(null);
+    setFreteSelecionado(null);
+
+    try {
+      const res = await fetch('/api/shipping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cep: cepClean, weightG: totalWeight }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setFreteError(data.error || 'Erro ao calcular frete');
+        return;
+      }
+
+      setFreteOpcoes(data.opcoes);
+      setFreteRegiao(data.regiao);
+    } catch {
+      setFreteError('Erro de conexao. Tente novamente.');
+    } finally {
+      setFreteLoading(false);
     }
   };
 
@@ -204,9 +218,14 @@ export function CartDrawer() {
                     />
                     <button
                       onClick={handleCalcFrete}
-                      className='border border-gold-500/30 px-4 py-2 text-xs uppercase tracking-[1px] text-gold-500 transition-colors hover:bg-gold-500/5'
+                      disabled={freteLoading}
+                      className='border border-gold-500/30 px-4 py-2 text-xs uppercase tracking-[1px] text-gold-500 transition-colors hover:bg-gold-500/5 disabled:opacity-50'
                     >
-                      Calcular
+                      {freteLoading ? (
+                        <Loader2 size={14} className='animate-spin' />
+                      ) : (
+                        'Calcular'
+                      )}
                     </button>
                   </div>
                   <p className='mt-1 text-xs text-txt-muted'>
@@ -216,11 +235,21 @@ export function CartDrawer() {
                       : `${totalWeight}g`}
                   </p>
 
+                  {freteError && (
+                    <p className='mt-1 text-xs text-red-400'>{freteError}</p>
+                  )}
+
+                  {freteRegiao && (
+                    <p className='mt-1 text-xs text-txt-muted'>
+                      Regiao: {freteRegiao}
+                    </p>
+                  )}
+
                   {freteOpcoes && (
                     <div className='mt-3 space-y-2'>
                       {freteOpcoes.map((opt, i) => (
                         <button
-                          key={opt.label}
+                          key={opt.method}
                           onClick={() => setFreteSelecionado(i)}
                           className={`flex w-full items-center justify-between border px-3 py-2 text-left transition-colors ${
                             freteSelecionado === i
@@ -230,7 +259,7 @@ export function CartDrawer() {
                         >
                           <div>
                             <span className='text-[13px] text-cream-100'>
-                              {opt.label}
+                              {opt.method}
                             </span>
                             <span className='ml-2 text-xs text-txt-muted'>
                               {opt.days}
@@ -256,7 +285,7 @@ export function CartDrawer() {
                   {freteSelecionado !== null && freteOpcoes && (
                     <div className='flex justify-between text-[13px]'>
                       <span className='text-txt-muted'>
-                        Frete ({freteOpcoes[freteSelecionado].label})
+                        Frete ({freteOpcoes[freteSelecionado].method})
                       </span>
                       <span className='text-cream-100'>
                         R$ {fretePrice.toFixed(2).replace('.', ',')}
