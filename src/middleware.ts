@@ -27,7 +27,12 @@ export default withAuth(
 
     // --- Protecção de /checkout/* (apenas customer) ---
     if (pathname.startsWith('/checkout')) {
-      if (token?.role !== 'customer') {
+      if (!token) {
+        return NextResponse.redirect(
+          new URL('/conta/login?redirect=/checkout', req.url),
+        );
+      }
+      if (token.role !== 'customer') {
         return NextResponse.redirect(
           new URL('/conta/login?redirect=/checkout', req.url),
         );
@@ -38,16 +43,20 @@ export default withAuth(
   },
   {
     callbacks: {
-      // Permitir acesso sem autenticação a rotas públicas dentro do matcher
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
 
-        // Rotas de conta que não precisam de autenticação
+        // Rotas publicas dentro de /conta
         if (
           pathname === '/conta/login' ||
           pathname === '/conta/registro' ||
           pathname.startsWith('/conta/verificar-email')
         ) {
+          return true;
+        }
+
+        // Checkout: permitir aqui para o redirect ser tratado na funcao middleware acima
+        if (pathname.startsWith('/checkout')) {
           return true;
         }
 

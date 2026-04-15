@@ -211,8 +211,14 @@ export function CartDrawer() {
                     <input
                       type='text'
                       maxLength={9}
-                      value={cep}
-                      onChange={e => setCep(e.target.value.replace(/\D/g, ''))}
+                      value={
+                        cep.length > 5
+                          ? `${cep.slice(0, 5)}-${cep.slice(5)}`
+                          : cep
+                      }
+                      onChange={e =>
+                        setCep(e.target.value.replace(/\D/g, '').slice(0, 8))
+                      }
                       placeholder='CEP'
                       className='flex-1 border border-gold-500/12 bg-navy-800/30 px-3 py-2 text-[13px] text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
                     />

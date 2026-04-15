@@ -52,7 +52,7 @@ export default function LoginForm() {
       }
 
       const redirect = searchParams.get('redirect');
-      router.push(redirect || '/conta/minha-conta');
+      router.push(redirect || '/conta');
       router.refresh();
     } catch {
       setError('Erro de conexão. Tente novamente.');
