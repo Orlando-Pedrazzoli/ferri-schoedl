@@ -189,7 +189,10 @@ export function CheckoutForm() {
 
   useEffect(() => {
     if (sessionStatus === 'unauthenticated') {
-      router.push('/conta/login?redirect=/checkout');
+      const timer = setTimeout(() => {
+        router.push('/conta/login?redirect=/checkout');
+      }, 1000);
+      return () => clearTimeout(timer);
     }
   }, [sessionStatus, router]);
 

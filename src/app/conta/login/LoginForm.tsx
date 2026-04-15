@@ -52,8 +52,10 @@ export default function LoginForm() {
       }
 
       const redirect = searchParams.get('redirect');
-      router.push(redirect || '/conta');
       router.refresh();
+      setTimeout(() => {
+        router.push(redirect || '/conta');
+      }, 500);
     } catch {
       setError('Erro de conexão. Tente novamente.');
     } finally {

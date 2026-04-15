@@ -240,7 +240,7 @@ function UserMenu() {
             <p className='text-xs text-txt-muted'>{session.user.email}</p>
           </div>
           <Link
-            href='/conta/minha-conta'
+            href='/conta'
             onClick={() => setOpen(false)}
             className='block px-5 py-3 text-sm tracking-wide text-txt-muted transition-colors duration-150 hover:bg-gold-500/5 hover:text-cream-100'
           >
@@ -435,7 +435,7 @@ export function Navbar() {
               {isCustomer ? (
                 <>
                   <Link
-                    href='/conta/minha-conta'
+                    href='/conta'
                     className='flex items-center gap-2 py-3 text-sm tracking-wide text-txt-muted'
                   >
                     <User
