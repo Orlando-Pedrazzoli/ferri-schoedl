@@ -1,3 +1,4 @@
+// src/middleware.ts
 import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
 
@@ -25,19 +26,9 @@ export default withAuth(
       }
     }
 
-    // --- Protecção de /checkout/* (apenas customer) ---
-    if (pathname.startsWith('/checkout')) {
-      if (!token) {
-        return NextResponse.redirect(
-          new URL('/conta/login?redirect=/checkout', req.url),
-        );
-      }
-      if (token.role !== 'customer') {
-        return NextResponse.redirect(
-          new URL('/conta/login?redirect=/checkout', req.url),
-        );
-      }
-    }
+    // NOTA: /checkout é PÚBLICO (guest checkout).
+    // A autenticação acontece dentro do CheckoutForm via modal OTP,
+    // apenas no momento de enviar o pedido ao Pagar.me.
 
     return NextResponse.next();
   },
@@ -55,11 +46,6 @@ export default withAuth(
           return true;
         }
 
-        // Checkout: permitir aqui para o redirect ser tratado na funcao middleware acima
-        if (pathname.startsWith('/checkout')) {
-          return true;
-        }
-
         // Todas as outras rotas no matcher precisam de token
         return !!token;
       },
@@ -70,6 +56,7 @@ export default withAuth(
   },
 );
 
+// IMPORTANTE: /checkout REMOVIDO do matcher para permitir guest checkout
 export const config = {
   matcher: ['/admin/((?!login).*)', '/conta/:path*'],
 };

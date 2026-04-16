@@ -16,12 +16,12 @@ import {
   AlertCircle,
   Check,
   Copy,
+  User,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '@/components/CartProvider';
+import { CheckoutLoginGate } from '@/components/CheckoutLoginGate';
 import toast from 'react-hot-toast';
-
-// --- Tipos ---
 
 type PaymentMethod = 'credit_card' | 'boleto' | 'pix';
 type ShippingMethod = 'PAC' | 'SEDEX';
@@ -31,6 +31,13 @@ interface FreteOpcao {
   method: ShippingMethod;
   price: number;
   days: string;
+}
+
+interface PersonalForm {
+  name: string;
+  email: string;
+  cpf: string;
+  phone: string;
 }
 
 interface AddressForm {
@@ -65,21 +72,31 @@ interface OrderResult {
   pixExpiresAt?: string;
 }
 
-// --- Helpers ---
-
 function formatCurrency(value: number): string {
   return value.toFixed(2).replace('.', ',');
 }
-
 function formatCardNumber(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 16);
   return digits.replace(/(\d{4})(?=\d)/g, '$1 ');
 }
-
 function formatCep(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 8);
   if (digits.length > 5) return `${digits.slice(0, 5)}-${digits.slice(5)}`;
   return digits;
+}
+function formatCpf(value: string): string {
+  const d = value.replace(/\D/g, '').slice(0, 11);
+  return d
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+}
+function formatPhone(value: string): string {
+  const d = value.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 10) {
+    return d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
+  }
+  return d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
 }
 
 const ESTADOS_BR = [
@@ -112,18 +129,38 @@ const ESTADOS_BR = [
   'TO',
 ];
 
-// --- Componente ---
-
 export function CheckoutForm() {
   const router = useRouter();
-  const { data: session, status: sessionStatus } = useSession();
+  const {
+    data: session,
+    status: sessionStatus,
+    update: updateSession,
+  } = useSession();
   const { items, totalPrice, totalWeight, clearCart } = useCart();
 
   const [step, setStep] = useState<CheckoutStep>('dados');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [gateOpen, setGateOpen] = useState(false);
 
-  // Endereco
+  const [personal, setPersonal] = useState<PersonalForm>({
+    name: '',
+    email: '',
+    cpf: '',
+    phone: '',
+  });
+
+  useEffect(() => {
+    if (session?.user?.role === 'customer') {
+      setPersonal(prev => ({
+        name: prev.name || session.user.name || '',
+        email: prev.email || session.user.email || '',
+        cpf: prev.cpf || (session.user as { cpf?: string }).cpf || '',
+        phone: prev.phone || (session.user as { phone?: string }).phone || '',
+      }));
+    }
+  }, [session]);
+
   const [address, setAddress] = useState<AddressForm>({
     street: '',
     number: '',
@@ -134,13 +171,11 @@ export function CheckoutForm() {
     cep: '',
   });
 
-  // Frete (calculado via API)
   const [freteOpcoes, setFreteOpcoes] = useState<FreteOpcao[]>([]);
   const [freteRegiao, setFreteRegiao] = useState('');
   const [freteLoading, setFreteLoading] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('PAC');
 
-  // Pagamento
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>('credit_card');
   const [card, setCard] = useState<CardForm>({
@@ -152,18 +187,15 @@ export function CheckoutForm() {
     installments: 1,
   });
 
-  // Resultado
   const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
   const [pixCopied, setPixCopied] = useState(false);
 
-  // Preco do frete selecionado
   const fretePrice =
     freteOpcoes.find(f => f.method === shippingMethod)?.price || 0;
   const freteDays =
     freteOpcoes.find(f => f.method === shippingMethod)?.days || '';
   const total = totalPrice + fretePrice;
 
-  // Parcelas
   const installmentOptions = useMemo(() => {
     const opts = [];
     const max = total >= 100 ? 12 : total >= 50 ? 6 : total >= 30 ? 3 : 1;
@@ -180,23 +212,12 @@ export function CheckoutForm() {
     return opts;
   }, [total]);
 
-  // Redirecionar se carrinho vazio ou nao logado
   useEffect(() => {
     if (items.length === 0 && !orderResult) {
       router.push('/livros');
     }
   }, [items, orderResult, router]);
 
-  useEffect(() => {
-    if (sessionStatus === 'unauthenticated') {
-      const timer = setTimeout(() => {
-        router.push('/conta/login?redirect=/checkout');
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [sessionStatus, router]);
-
-  // Buscar CEP via ViaCEP
   const handleCepBlur = useCallback(async () => {
     const cepDigits = address.cep.replace(/\D/g, '');
     if (cepDigits.length !== 8) return;
@@ -213,11 +234,8 @@ export function CheckoutForm() {
           state: data.uf || prev.state,
         }));
       }
-    } catch {
-      // Silencioso
-    }
+    } catch {}
 
-    // Calcular frete automaticamente
     setFreteLoading(true);
     try {
       const res = await fetch('/api/shipping', {
@@ -230,15 +248,27 @@ export function CheckoutForm() {
         setFreteOpcoes(data.opcoes);
         setFreteRegiao(data.regiao || '');
       }
-    } catch {
-      // Silencioso
-    } finally {
-      setFreteLoading(false);
-    }
+    } catch {}
+    setFreteLoading(false);
   }, [address.cep, totalWeight]);
 
-  // Validar step 1
   const validateDados = (): boolean => {
+    if (!personal.name || personal.name.trim().length < 2) {
+      setError('Nome completo e obrigatorio.');
+      return false;
+    }
+    if (!personal.email || !/^\S+@\S+\.\S+$/.test(personal.email)) {
+      setError('Email invalido.');
+      return false;
+    }
+    if (!personal.cpf || personal.cpf.replace(/\D/g, '').length !== 11) {
+      setError('CPF invalido.');
+      return false;
+    }
+    if (!personal.phone || personal.phone.replace(/\D/g, '').length < 10) {
+      setError('Telefone invalido.');
+      return false;
+    }
     if (!address.cep || address.cep.replace(/\D/g, '').length !== 8) {
       setError('Preencha o CEP corretamente.');
       return false;
@@ -267,37 +297,32 @@ export function CheckoutForm() {
     return true;
   };
 
-  // Submeter pedido
-  const handleSubmit = async () => {
+  const validatePayment = (): boolean => {
     if (paymentMethod === 'credit_card') {
       const cardDigits = card.number.replace(/\s/g, '');
       if (cardDigits.length < 13 || cardDigits.length > 19) {
         setError('Numero do cartao invalido.');
-        return;
+        return false;
       }
       if (!card.holderName.trim()) {
         setError('Nome no cartao e obrigatorio.');
-        return;
+        return false;
       }
       if (!card.expMonth || !card.expYear || !card.cvv) {
         setError('Preencha validade e CVV do cartao.');
-        return;
+        return false;
       }
     }
+    setError('');
+    return true;
+  };
 
+  const submitOrder = async () => {
     setLoading(true);
     setError('');
 
     try {
-      const user = session?.user as { id?: string } | undefined;
-      if (!user?.id) {
-        setError('Sessao expirada. Faca login novamente.');
-        setLoading(false);
-        return;
-      }
-
       const payload = {
-        customerId: user.id,
         items: items.map(i => ({ slug: i.livro.slug, quantity: i.quantity })),
         shipping: {
           method: shippingMethod,
@@ -331,7 +356,6 @@ export function CheckoutForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
@@ -351,7 +375,26 @@ export function CheckoutForm() {
     }
   };
 
-  // Copiar PIX
+  const handleAuthenticated = async () => {
+    setGateOpen(false);
+    await updateSession();
+    setTimeout(() => {
+      submitOrder();
+    }, 300);
+  };
+
+  const handleSubmit = () => {
+    if (!validatePayment()) return;
+    if (
+      sessionStatus !== 'authenticated' ||
+      session?.user?.role !== 'customer'
+    ) {
+      setGateOpen(true);
+      return;
+    }
+    submitOrder();
+  };
+
   const handleCopyPix = () => {
     if (orderResult?.pixQrCode) {
       navigator.clipboard.writeText(orderResult.pixQrCode);
@@ -361,14 +404,16 @@ export function CheckoutForm() {
     }
   };
 
-  // Loading state
-  if (sessionStatus === 'loading' || (items.length === 0 && !orderResult)) {
+  if (items.length === 0 && !orderResult) {
     return (
       <section className='flex min-h-screen items-center justify-center'>
         <Loader2 size={24} className='animate-spin text-gold-500' />
       </section>
     );
   }
+
+  const headerTitle =
+    step === 'confirmacao' ? 'Pedido realizado' : 'Finalizar compra';
 
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28'>
@@ -391,41 +436,48 @@ export function CheckoutForm() {
           </Link>
 
           <h1 className='mt-4 font-[family-name:var(--font-cormorant)] text-2xl text-cream-100 sm:text-3xl'>
-            {step === 'confirmacao' ? 'Pedido realizado' : 'Finalizar compra'}
+            {headerTitle}
           </h1>
 
-          {step !== 'confirmacao' && (
+          {step !== 'confirmacao' ? (
             <div className='mt-4 flex items-center gap-3'>
-              {(['dados', 'pagamento'] as const).map((s, i) => (
-                <div key={s} className='flex items-center gap-3'>
-                  <button
-                    onClick={() => {
-                      if (s === 'dados') setStep('dados');
-                    }}
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs transition-colors ${
-                      step === s
-                        ? 'bg-gold-500 text-navy-950'
-                        : i < (['dados', 'pagamento'] as const).indexOf(step)
-                          ? 'bg-gold-500/20 text-gold-500'
-                          : 'bg-navy-800 text-txt-muted'
-                    }`}
-                  >
-                    {i + 1}
-                  </button>
-                  <span
-                    className={`text-xs uppercase tracking-[1px] ${step === s ? 'text-cream-100' : 'text-txt-muted'}`}
-                  >
-                    {s === 'dados' ? 'Endereco e Frete' : 'Pagamento'}
-                  </span>
-                  {i < 1 && <div className='h-px w-8 bg-gold-500/15' />}
-                </div>
-              ))}
+              {(['dados', 'pagamento'] as const).map((s, i) => {
+                const currentIndex = (['dados', 'pagamento'] as const).indexOf(
+                  step as 'dados' | 'pagamento',
+                );
+                const stepClass =
+                  step === s
+                    ? 'bg-gold-500 text-navy-950'
+                    : i < currentIndex
+                      ? 'bg-gold-500/20 text-gold-500'
+                      : 'bg-navy-800 text-txt-muted';
+                const labelClass =
+                  step === s ? 'text-cream-100' : 'text-txt-muted';
+                const label = s === 'dados' ? 'Dados e Endereco' : 'Pagamento';
+                return (
+                  <div key={s} className='flex items-center gap-3'>
+                    <button
+                      onClick={() => {
+                        if (s === 'dados') setStep('dados');
+                      }}
+                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs transition-colors ${stepClass}`}
+                    >
+                      {i + 1}
+                    </button>
+                    <span
+                      className={`text-xs uppercase tracking-[1px] ${labelClass}`}
+                    >
+                      {label}
+                    </span>
+                    {i < 1 ? <div className='h-px w-8 bg-gold-500/15' /> : null}
+                  </div>
+                );
+              })}
             </div>
-          )}
+          ) : null}
         </motion.div>
 
-        {/* Error */}
-        {error && (
+        {error ? (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -434,17 +486,84 @@ export function CheckoutForm() {
             <AlertCircle size={16} className='mt-0.5 shrink-0 text-red-400' />
             <p className='text-sm text-red-300'>{error}</p>
           </motion.div>
-        )}
+        ) : null}
 
         <div className='grid gap-8 lg:grid-cols-3'>
           <div className='lg:col-span-2'>
-            {/* ========== STEP 1: Endereco + Frete ========== */}
-            {step === 'dados' && (
+            {/* STEP 1: Dados + Endereco + Frete */}
+            {step === 'dados' ? (
               <motion.div
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 className='space-y-6'
               >
+                {/* Dados pessoais */}
+                <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
+                  <h2 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
+                    <User size={14} />
+                    Seus dados
+                  </h2>
+                  <div className='grid gap-4 sm:grid-cols-2'>
+                    <div className='sm:col-span-2'>
+                      <label className='mb-1 block text-xs text-txt-muted'>
+                        Nome completo *
+                      </label>
+                      <input
+                        type='text'
+                        value={personal.name}
+                        onChange={e =>
+                          setPersonal(p => ({ ...p, name: e.target.value }))
+                        }
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                      />
+                    </div>
+                    <div>
+                      <label className='mb-1 block text-xs text-txt-muted'>
+                        Email *
+                      </label>
+                      <input
+                        type='email'
+                        value={personal.email}
+                        onChange={e =>
+                          setPersonal(p => ({ ...p, email: e.target.value }))
+                        }
+                        placeholder='seu@email.com'
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                      />
+                    </div>
+                    <div>
+                      <label className='mb-1 block text-xs text-txt-muted'>
+                        Telefone *
+                      </label>
+                      <input
+                        type='text'
+                        value={formatPhone(personal.phone)}
+                        onChange={e =>
+                          setPersonal(p => ({ ...p, phone: e.target.value }))
+                        }
+                        placeholder='(00) 00000-0000'
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                      />
+                    </div>
+                    <div className='sm:col-span-2'>
+                      <label className='mb-1 block text-xs text-txt-muted'>
+                        CPF *
+                      </label>
+                      <input
+                        type='text'
+                        value={formatCpf(personal.cpf)}
+                        onChange={e =>
+                          setPersonal(p => ({ ...p, cpf: e.target.value }))
+                        }
+                        placeholder='000.000.000-00'
+                        maxLength={14}
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Endereco */}
                 <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
                   <h2 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
                     <Truck size={14} />
@@ -464,7 +583,7 @@ export function CheckoutForm() {
                         onBlur={handleCepBlur}
                         placeholder='00000-000'
                         maxLength={9}
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                       />
                     </div>
                     <div>
@@ -502,7 +621,7 @@ export function CheckoutForm() {
                             street: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                       />
                     </div>
                     <div>
@@ -518,7 +637,7 @@ export function CheckoutForm() {
                             number: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                       />
                     </div>
                     <div>
@@ -535,7 +654,7 @@ export function CheckoutForm() {
                           }))
                         }
                         placeholder='Apto, sala...'
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                       />
                     </div>
                     <div>
@@ -551,7 +670,7 @@ export function CheckoutForm() {
                             neighborhood: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                       />
                     </div>
                     <div>
@@ -567,7 +686,7 @@ export function CheckoutForm() {
                             city: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                       />
                     </div>
                   </div>
@@ -579,7 +698,7 @@ export function CheckoutForm() {
                     Metodo de envio
                   </h2>
 
-                  {freteLoading && (
+                  {freteLoading ? (
                     <div className='flex items-center gap-2 py-4'>
                       <Loader2
                         size={16}
@@ -589,48 +708,50 @@ export function CheckoutForm() {
                         Calculando frete...
                       </span>
                     </div>
-                  )}
+                  ) : null}
 
-                  {!freteLoading && freteOpcoes.length === 0 && (
+                  {!freteLoading && freteOpcoes.length === 0 ? (
                     <p className='py-4 text-sm text-txt-muted'>
                       Preencha o CEP acima para calcular o frete.
                     </p>
-                  )}
+                  ) : null}
 
-                  {!freteLoading && freteOpcoes.length > 0 && (
-                    <>
-                      {freteRegiao && (
+                  {!freteLoading && freteOpcoes.length > 0 ? (
+                    <div>
+                      {freteRegiao ? (
                         <p className='mb-3 text-xs text-txt-muted'>
                           Regiao: {freteRegiao}
                         </p>
-                      )}
+                      ) : null}
                       <div className='space-y-2'>
-                        {freteOpcoes.map(opt => (
-                          <button
-                            key={opt.method}
-                            onClick={() => setShippingMethod(opt.method)}
-                            className={`flex w-full items-center justify-between border px-4 py-3 text-left transition-colors ${
-                              shippingMethod === opt.method
-                                ? 'border-gold-500/40 bg-gold-500/5'
-                                : 'border-gold-500/10 hover:border-gold-500/20'
-                            }`}
-                          >
-                            <div>
-                              <span className='text-sm text-cream-100'>
-                                {opt.method}
+                        {freteOpcoes.map(opt => {
+                          const selected = shippingMethod === opt.method;
+                          const btnClass = selected
+                            ? 'border-gold-500/40 bg-gold-500/5'
+                            : 'border-gold-500/10 hover:border-gold-500/20';
+                          return (
+                            <button
+                              key={opt.method}
+                              onClick={() => setShippingMethod(opt.method)}
+                              className={`flex w-full items-center justify-between border px-4 py-3 text-left transition-colors ${btnClass}`}
+                            >
+                              <div>
+                                <span className='text-sm text-cream-100'>
+                                  {opt.method}
+                                </span>
+                                <span className='ml-2 text-xs text-txt-muted'>
+                                  {opt.days}
+                                </span>
+                              </div>
+                              <span className='text-sm text-gold-500'>
+                                R$ {formatCurrency(opt.price)}
                               </span>
-                              <span className='ml-2 text-xs text-txt-muted'>
-                                {opt.days}
-                              </span>
-                            </div>
-                            <span className='text-sm text-gold-500'>
-                              R$ {formatCurrency(opt.price)}
-                            </span>
-                          </button>
-                        ))}
+                            </button>
+                          );
+                        })}
                       </div>
-                    </>
-                  )}
+                    </div>
+                  ) : null}
                 </div>
 
                 <button
@@ -642,10 +763,10 @@ export function CheckoutForm() {
                   Continuar para pagamento
                 </button>
               </motion.div>
-            )}
+            ) : null}
 
-            {/* ========== STEP 2: Pagamento ========== */}
-            {step === 'pagamento' && (
+            {/* STEP 2: Pagamento */}
+            {step === 'pagamento' ? (
               <motion.div
                 initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -670,35 +791,39 @@ export function CheckoutForm() {
                         label: 'Boleto',
                         icon: FileText,
                       },
-                    ].map(({ value, label, icon: Icon }) => (
-                      <button
-                        key={value}
-                        onClick={() => setPaymentMethod(value)}
-                        className={`flex flex-col items-center gap-2 border py-3 text-center transition-colors ${
-                          paymentMethod === value
-                            ? 'border-gold-500/40 bg-gold-500/5'
-                            : 'border-gold-500/10 hover:border-gold-500/20'
-                        }`}
-                      >
-                        <Icon
-                          size={20}
-                          strokeWidth={1.5}
-                          className={
-                            paymentMethod === value
-                              ? 'text-gold-500'
-                              : 'text-txt-muted'
-                          }
-                        />
-                        <span
-                          className={`text-xs uppercase tracking-[1px] ${paymentMethod === value ? 'text-cream-100' : 'text-txt-muted'}`}
+                    ].map(({ value, label, icon: Icon }) => {
+                      const selected = paymentMethod === value;
+                      const btnClass = selected
+                        ? 'border-gold-500/40 bg-gold-500/5'
+                        : 'border-gold-500/10 hover:border-gold-500/20';
+                      const iconColor = selected
+                        ? 'text-gold-500'
+                        : 'text-txt-muted';
+                      const labelColor = selected
+                        ? 'text-cream-100'
+                        : 'text-txt-muted';
+                      return (
+                        <button
+                          key={value}
+                          onClick={() => setPaymentMethod(value)}
+                          className={`flex flex-col items-center gap-2 border py-3 text-center transition-colors ${btnClass}`}
                         >
-                          {label}
-                        </span>
-                      </button>
-                    ))}
+                          <Icon
+                            size={20}
+                            strokeWidth={1.5}
+                            className={iconColor}
+                          />
+                          <span
+                            className={`text-xs uppercase tracking-[1px] ${labelColor}`}
+                          >
+                            {label}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  {paymentMethod === 'credit_card' && (
+                  {paymentMethod === 'credit_card' ? (
                     <div className='space-y-4'>
                       <div>
                         <label className='mb-1 block text-xs text-txt-muted'>
@@ -715,7 +840,7 @@ export function CheckoutForm() {
                           }
                           placeholder='0000 0000 0000 0000'
                           maxLength={19}
-                          className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                          className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                         />
                       </div>
                       <div>
@@ -732,7 +857,7 @@ export function CheckoutForm() {
                             }))
                           }
                           placeholder='NOME COMO NO CARTAO'
-                          className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                          className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                         />
                       </div>
                       <div className='grid grid-cols-3 gap-3'>
@@ -802,7 +927,7 @@ export function CheckoutForm() {
                             }
                             placeholder='000'
                             maxLength={4}
-                            className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                            className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
                           />
                         </div>
                       </div>
@@ -828,9 +953,9 @@ export function CheckoutForm() {
                         </select>
                       </div>
                     </div>
-                  )}
+                  ) : null}
 
-                  {paymentMethod === 'pix' && (
+                  {paymentMethod === 'pix' ? (
                     <div className='rounded border border-gold-500/8 bg-navy-800/20 p-4'>
                       <div className='flex items-start gap-3'>
                         <QrCode size={20} className='mt-0.5 text-gold-600' />
@@ -845,9 +970,9 @@ export function CheckoutForm() {
                         </div>
                       </div>
                     </div>
-                  )}
+                  ) : null}
 
-                  {paymentMethod === 'boleto' && (
+                  {paymentMethod === 'boleto' ? (
                     <div className='rounded border border-gold-500/8 bg-navy-800/20 p-4'>
                       <div className='flex items-start gap-3'>
                         <FileText size={20} className='mt-0.5 text-gold-600' />
@@ -862,7 +987,7 @@ export function CheckoutForm() {
                         </div>
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className='flex gap-3'>
@@ -878,23 +1003,23 @@ export function CheckoutForm() {
                     className='flex flex-1 items-center justify-center gap-2 bg-gold-500 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 disabled:opacity-50'
                   >
                     {loading ? (
-                      <>
+                      <span className='flex items-center gap-2'>
                         <Loader2 size={16} className='animate-spin' />
                         Processando...
-                      </>
+                      </span>
                     ) : (
-                      <>
+                      <span className='flex items-center gap-2'>
                         <Lock size={14} />
                         Confirmar pedido — R$ {formatCurrency(total)}
-                      </>
+                      </span>
                     )}
                   </button>
                 </div>
               </motion.div>
-            )}
+            ) : null}
 
-            {/* ========== STEP 3: Confirmacao ========== */}
-            {step === 'confirmacao' && orderResult && (
+            {/* STEP 3: Confirmacao */}
+            {step === 'confirmacao' && orderResult ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -921,82 +1046,83 @@ export function CheckoutForm() {
                   </p>
 
                   {orderResult.paymentMethod === 'pix' &&
-                    orderResult.pixQrCode && (
-                      <div className='mt-6 space-y-4'>
-                        {orderResult.pixQrCodeUrl && (
-                          <div className='mx-auto w-fit border border-gold-500/10 bg-white p-3'>
-                            <img
-                              src={orderResult.pixQrCodeUrl}
-                              alt='QR Code PIX'
-                              width={200}
-                              height={200}
-                            />
-                          </div>
-                        )}
-                        <div>
-                          <p className='mb-2 text-xs uppercase tracking-[1px] text-gold-600'>
-                            Ou copie o codigo PIX
-                          </p>
-                          <div className='mx-auto flex max-w-md items-center gap-2'>
-                            <input
-                              type='text'
-                              readOnly
-                              value={orderResult.pixQrCode}
-                              className='flex-1 truncate border border-gold-500/12 bg-navy-800/30 px-3 py-2 text-xs text-cream-100 outline-none'
-                            />
-                            <button
-                              onClick={handleCopyPix}
-                              className='flex items-center gap-1.5 border border-gold-500/30 px-3 py-2 text-xs text-gold-500 transition-colors hover:bg-gold-500/5'
-                            >
-                              <Copy size={14} />
-                              {pixCopied ? 'Copiado!' : 'Copiar'}
-                            </button>
-                          </div>
-                          {orderResult.pixExpiresAt && (
-                            <p className='mt-2 text-xs text-txt-muted'>
-                              Valido ate:{' '}
-                              {new Date(
-                                orderResult.pixExpiresAt,
-                              ).toLocaleString('pt-BR')}
-                            </p>
-                          )}
+                  orderResult.pixQrCode ? (
+                    <div className='mt-6 space-y-4'>
+                      {orderResult.pixQrCodeUrl ? (
+                        <div className='mx-auto w-fit border border-gold-500/10 bg-white p-3'>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={orderResult.pixQrCodeUrl}
+                            alt='QR Code PIX'
+                            width={200}
+                            height={200}
+                          />
                         </div>
+                      ) : null}
+                      <div>
+                        <p className='mb-2 text-xs uppercase tracking-[1px] text-gold-600'>
+                          Ou copie o codigo PIX
+                        </p>
+                        <div className='mx-auto flex max-w-md items-center gap-2'>
+                          <input
+                            type='text'
+                            readOnly
+                            value={orderResult.pixQrCode}
+                            className='flex-1 truncate border border-gold-500/12 bg-navy-800/30 px-3 py-2 text-xs text-cream-100 outline-none'
+                          />
+                          <button
+                            onClick={handleCopyPix}
+                            className='flex items-center gap-1.5 border border-gold-500/30 px-3 py-2 text-xs text-gold-500 transition-colors hover:bg-gold-500/5'
+                          >
+                            <Copy size={14} />
+                            {pixCopied ? 'Copiado!' : 'Copiar'}
+                          </button>
+                        </div>
+                        {orderResult.pixExpiresAt ? (
+                          <p className='mt-2 text-xs text-txt-muted'>
+                            Valido ate:{' '}
+                            {new Date(orderResult.pixExpiresAt).toLocaleString(
+                              'pt-BR',
+                            )}
+                          </p>
+                        ) : null}
                       </div>
-                    )}
+                    </div>
+                  ) : null}
 
                   {orderResult.paymentMethod === 'boleto' &&
-                    orderResult.boletoUrl && (
-                      <div className='mt-6'>
-                        <a
-                          href={orderResult.boletoUrl}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          className='inline-flex items-center gap-2 bg-gold-500 px-8 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'
-                        >
-                          <FileText size={16} />
-                          Visualizar boleto
-                        </a>
-                        {orderResult.boletoBarcode && (
-                          <p className='mt-3 font-mono text-xs text-txt-muted'>
-                            {orderResult.boletoBarcode}
-                          </p>
-                        )}
-                        {orderResult.boletoDueDate && (
-                          <p className='mt-2 text-xs text-txt-muted'>
-                            Vencimento:{' '}
-                            {new Date(
-                              orderResult.boletoDueDate,
-                            ).toLocaleDateString('pt-BR')}
-                          </p>
-                        )}
-                      </div>
-                    )}
+                  orderResult.boletoUrl ? (
+                    <div className='mt-6'>
+                      <a
+                        href={orderResult.boletoUrl}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='inline-flex items-center gap-2 bg-gold-500 px-8 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'
+                      >
+                        <FileText size={16} />
+                        Visualizar boleto
+                      </a>
+                      {orderResult.boletoBarcode ? (
+                        <p className='mt-3 font-mono text-xs text-txt-muted'>
+                          {orderResult.boletoBarcode}
+                        </p>
+                      ) : null}
+                      {orderResult.boletoDueDate ? (
+                        <p className='mt-2 text-xs text-txt-muted'>
+                          Vencimento:{' '}
+                          {new Date(
+                            orderResult.boletoDueDate,
+                          ).toLocaleDateString('pt-BR')}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
 
-                  {orderResult.paymentMethod === 'credit_card' && (
+                  {orderResult.paymentMethod === 'credit_card' ? (
                     <p className='mt-4 text-sm text-txt-muted'>
                       Voce recebera um email de confirmacao em breve.
                     </p>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className='flex flex-col items-center gap-3 sm:flex-row sm:justify-center'>
@@ -1014,11 +1140,11 @@ export function CheckoutForm() {
                   </Link>
                 </div>
               </motion.div>
-            )}
+            ) : null}
           </div>
 
-          {/* ========== SIDEBAR: Resumo ========== */}
-          {step !== 'confirmacao' && (
+          {/* SIDEBAR: Resumo */}
+          {step !== 'confirmacao' ? (
             <div className='lg:col-span-1'>
               <div className='sticky top-28 border border-gold-500/10 bg-navy-900/30 p-5'>
                 <h3 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
@@ -1052,7 +1178,7 @@ export function CheckoutForm() {
                       R$ {formatCurrency(totalPrice)}
                     </span>
                   </div>
-                  {fretePrice > 0 && (
+                  {fretePrice > 0 ? (
                     <div className='flex justify-between text-[13px]'>
                       <span className='text-txt-muted'>
                         Frete ({shippingMethod})
@@ -1061,13 +1187,13 @@ export function CheckoutForm() {
                         R$ {formatCurrency(fretePrice)}
                       </span>
                     </div>
-                  )}
-                  {freteDays && (
+                  ) : null}
+                  {freteDays ? (
                     <div className='flex justify-between text-[13px] text-txt-muted'>
                       <span>Prazo</span>
                       <span>{freteDays}</span>
                     </div>
-                  )}
+                  ) : null}
                   <div className='flex justify-between border-t border-gold-500/8 pt-2'>
                     <span className='text-sm text-cream-100'>Total</span>
                     <span className='font-[family-name:var(--font-cormorant)] text-xl text-gold-500'>
@@ -1081,9 +1207,20 @@ export function CheckoutForm() {
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
+
+      {/* Modal de login/cadastro */}
+      <CheckoutLoginGate
+        open={gateOpen}
+        onClose={() => setGateOpen(false)}
+        prefilledEmail={personal.email}
+        prefilledName={personal.name}
+        prefilledCpf={personal.cpf}
+        prefilledPhone={personal.phone}
+        onAuthenticated={handleAuthenticated}
+      />
     </section>
   );
 }

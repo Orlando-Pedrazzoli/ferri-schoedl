@@ -1,4 +1,7 @@
+// src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
 import Customer from '@/models/Customer';
@@ -6,24 +9,19 @@ import Book from '@/models/Book';
 import { sendOrderConfirmation } from '@/lib/resend';
 import { calcularFreteReal } from '@/lib/shipping';
 
-// --- Helpers ---
-
+// --- Helpers (mantidos do original) ---
 function toAmountCents(value: number): number {
   return Math.round(value * 100);
 }
-
 function cleanCpf(cpf: string): string {
   return cpf.replace(/\D/g, '');
 }
-
 function cleanCep(cep: string): string {
   return cep.replace(/\D/g, '');
 }
-
 function cleanPhone(phone: string): string {
   return phone.replace(/\D/g, '');
 }
-
 function parsePhone(phone: string): {
   country_code: string;
   area_code: string;
@@ -44,27 +42,16 @@ function parsePhone(phone: string): {
       number: digits.slice(2),
     };
   }
-  return {
-    country_code: '55',
-    area_code: '11',
-    number: digits,
-  };
+  return { country_code: '55', area_code: '11', number: digits };
 }
-
 function buildPagarmeAuth(): string {
   const sk = process.env.PAGARME_SECRET_KEY;
   if (!sk) throw new Error('PAGARME_SECRET_KEY nao configurada');
   return 'Basic ' + Buffer.from(`${sk}:`).toString('base64');
 }
 
-// --- Validacao do body ---
-
 interface CheckoutBody {
-  customerId: string;
-  items: Array<{
-    slug: string;
-    quantity: number;
-  }>;
+  items: Array<{ slug: string; quantity: number }>;
   shipping: {
     method: 'PAC' | 'SEDEX';
     address: {
@@ -90,21 +77,23 @@ interface CheckoutBody {
   };
 }
 
-// --- POST /api/checkout ---
-
 export async function POST(request: NextRequest) {
   try {
+    // SEGURANÇA: customerId vem da sessão, NUNCA do body
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id || session.user.role !== 'customer') {
+      return NextResponse.json(
+        { error: 'Autenticação necessária.' },
+        { status: 401 },
+      );
+    }
+    const customerId = session.user.id;
+
     await dbConnect();
 
     const body: CheckoutBody = await request.json();
 
-    // 1. Validacoes basicas
-    if (
-      !body.customerId ||
-      !body.items?.length ||
-      !body.shipping ||
-      !body.payment
-    ) {
+    if (!body.items?.length || !body.shipping || !body.payment) {
       return NextResponse.json(
         { error: 'Dados incompletos. Preencha todos os campos obrigatorios.' },
         { status: 400 },
@@ -132,8 +121,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Buscar customer
-    const customer = await Customer.findById(body.customerId);
+    // Buscar customer pela sessão
+    const customer = await Customer.findById(customerId);
     if (!customer) {
       return NextResponse.json(
         { error: 'Cliente nao encontrado.' },
@@ -150,7 +139,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Buscar livros e validar estoque/precos
+    // Buscar livros e validar
     const bookSlugs = body.items.map(i => i.slug);
     const books = await Book.find({
       slug: { $in: bookSlugs },
@@ -183,7 +172,6 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    // 4. Calcular totais com frete real por regiao
     const subtotal = orderItems.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
@@ -208,7 +196,6 @@ export async function POST(request: NextRequest) {
 
     const total = subtotal + freteSelecionado.price;
 
-    // 5. Criar order no MongoDB (status pendente)
     const order = new Order({
       customerId: customer._id,
       customerName: customer.name,
@@ -245,7 +232,7 @@ export async function POST(request: NextRequest) {
 
     await order.save();
 
-    // 6. Montar payload Pagar.me V5
+    // A partir daqui, payload Pagar.me (idêntico ao original)
     const phone = parsePhone(customer.phone);
     const shippingAddr = body.shipping.address;
 
@@ -294,7 +281,6 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Montar payment conforme metodo
     const totalCents = toAmountCents(total);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let pagarmePayment: Record<string, any>;
@@ -337,9 +323,7 @@ export async function POST(request: NextRequest) {
     } else {
       pagarmePayment = {
         payment_method: 'pix',
-        pix: {
-          expires_in: 3600,
-        },
+        pix: { expires_in: 3600 },
       };
     }
 
@@ -349,15 +333,9 @@ export async function POST(request: NextRequest) {
       items: pagarmeItems,
       customer: pagarmeCustomer,
       shipping: pagarmeShipping,
-      payments: [
-        {
-          ...pagarmePayment,
-          amount: totalCents,
-        },
-      ],
+      payments: [{ ...pagarmePayment, amount: totalCents }],
     };
 
-    // 7. Enviar para Pagar.me V5
     const pagarmeResponse = await fetch('https://api.pagar.me/core/v5/orders', {
       method: 'POST',
       headers: {
@@ -388,7 +366,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 8. Atualizar order com dados do Pagar.me
     order.payment.pagarmeOrderId = pagarmeData.id;
 
     const charge = pagarmeData.charges?.[0];
@@ -407,21 +384,18 @@ export async function POST(request: NextRequest) {
       } else if (body.payment.method === 'boleto') {
         order.payment.boletoUrl = lastTx?.url || lastTx?.pdf || '';
         order.payment.boletoBarcode = lastTx?.line || lastTx?.barcode || '';
-        if (lastTx?.due_at) {
+        if (lastTx?.due_at)
           order.payment.boletoDueDate = new Date(lastTx.due_at);
-        }
       } else if (body.payment.method === 'pix') {
         order.payment.pixQrCode = lastTx?.qr_code || '';
         order.payment.pixQrCodeUrl = lastTx?.qr_code_url || '';
-        if (lastTx?.expires_at) {
+        if (lastTx?.expires_at)
           order.payment.pixExpiresAt = new Date(lastTx.expires_at);
-        }
       }
     }
 
     await order.save();
 
-    // 9. Se cartao e ja pago, enviar email de confirmacao
     if (order.status === 'pago') {
       await sendOrderConfirmation(
         customer.email,
@@ -440,7 +414,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 10. Retornar resposta
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const responseData: Record<string, any> = {
       success: true,

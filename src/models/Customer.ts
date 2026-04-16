@@ -1,3 +1,4 @@
+// src/models/Customer.ts
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -23,6 +24,11 @@ export interface ICustomerDocument extends Document {
   emailVerified: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
+  // --- Novos campos para OTP de checkout ---
+  otpCode?: string;
+  otpExpires?: Date;
+  otpAttempts?: number;
+  // ------------------------------------------
   addresses: IAddress[];
   orders: Types.ObjectId[];
   createdAt: Date;
@@ -97,6 +103,21 @@ const CustomerSchema = new Schema<ICustomerDocument>(
       type: Date,
       select: false,
     },
+    // --- OTP para checkout (zero-fricção) ---
+    otpCode: {
+      type: String,
+      select: false,
+    },
+    otpExpires: {
+      type: Date,
+      select: false,
+    },
+    otpAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+    // ----------------------------------------
     addresses: {
       type: [AddressSchema],
       default: [],
