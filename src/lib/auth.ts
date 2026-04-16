@@ -6,11 +6,21 @@ import dbConnect from '@/lib/mongodb';
 import User from '@/models/User';
 import Customer from '@/models/Customer';
 
+export function generateOtpSignature(
+  customerId: string,
+  email: string,
+): string {
+  const secret = process.env.NEXTAUTH_SECRET;
+  if (!secret) throw new Error('NEXTAUTH_SECRET não configurado');
+  return crypto
+    .createHmac('sha256', secret)
+    .update(`${customerId}:${email.toLowerCase()}`)
+    .digest('hex');
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
-    // Provider padrão: email + password
     CredentialsProvider({
-      id: 'credentials',
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
@@ -56,7 +66,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Credenciais inválidas');
         }
 
-        // Verificar se o email foi verificado
         if (!customer.emailVerified) {
           throw new Error(
             'Verifique seu email antes de fazer login. Confira sua caixa de entrada.',
@@ -74,10 +83,10 @@ export const authOptions: NextAuthOptions = {
       },
     }),
 
-    // Provider OTP: login sem password após verificação por código
+    // Provider separado para login via OTP após verificação de código no checkout
     CredentialsProvider({
-      id: 'otp',
-      name: 'OTP',
+      id: 'otp-login',
+      name: 'OTP Login',
       credentials: {
         email: { label: 'Email', type: 'email' },
         customerId: { label: 'Customer ID', type: 'text' },
@@ -95,24 +104,18 @@ export const authOptions: NextAuthOptions = {
         await dbConnect();
 
         const customer = await Customer.findById(credentials.customerId);
-        if (!customer || customer.email !== credentials.email.toLowerCase()) {
+        if (
+          !customer ||
+          customer.email !== credentials.email.toLowerCase().trim()
+        ) {
           throw new Error('Credenciais inválidas');
         }
 
-        // Verificar assinatura: HMAC do customerId+email com NEXTAUTH_SECRET
-        // Gerada no endpoint /verify após OTP correto.
-        const secret = process.env.NEXTAUTH_SECRET;
-        if (!secret) throw new Error('NEXTAUTH_SECRET não configurado');
-
-        const expectedSig = crypto
-          .createHmac('sha256', secret)
-          .update(`${customer._id.toString()}:${customer.email}`)
-          .digest('hex');
-
-        // Assinatura vale apenas nos 5 minutos seguintes à verificação.
-        // Como a assinatura em si não tem timestamp, dependemos de `emailVerified`
-        // e do fato de o cliente chamar signIn imediatamente após o verify.
-        if (expectedSig !== credentials.otpSignature) {
+        const expected = generateOtpSignature(
+          customer._id.toString(),
+          customer.email,
+        );
+        if (expected !== credentials.otpSignature) {
           throw new Error('Assinatura inválida');
         }
 
@@ -133,7 +136,7 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 horas
+    maxAge: 24 * 60 * 60,
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -165,20 +168,3 @@ export const authOptions: NextAuthOptions = {
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
-
-/**
- * Helper usado no endpoint /api/auth/checkout-otp/verify.
- * Gera a assinatura HMAC que o frontend usará em signIn('otp', {...}).
- */
-export function generateOtpSignature(
-  customerId: string,
-  email: string,
-): string {
-  const secret = process.env.NEXTAUTH_SECRET;
-  if (!secret) throw new Error('NEXTAUTH_SECRET não configurado');
-
-  return crypto
-    .createHmac('sha256', secret)
-    .update(`${customerId}:${email.toLowerCase()}`)
-    .digest('hex');
-}

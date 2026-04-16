@@ -165,7 +165,7 @@ export function CheckoutLoginGate({
         setLoading(false);
         return;
       }
-      const signInResult = await signIn('otp', {
+      const signInResult = await signIn('otp-login', {
         email,
         customerId: data.customerId,
         otpSignature: data.otpSignature,
