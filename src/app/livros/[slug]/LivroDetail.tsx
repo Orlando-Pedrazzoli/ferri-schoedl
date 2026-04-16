@@ -1,3 +1,4 @@
+// src/app/livros/[slug]/LivroDetail.tsx
 'use client';
 
 import Link from 'next/link';
@@ -93,6 +94,13 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                   Destaque
                 </span>
               )}
+              {!livro.inStock && (
+                <div className='absolute inset-0 flex items-center justify-center bg-navy-950/60 backdrop-blur-[2px]'>
+                  <span className='border border-red-500/40 bg-red-500/10 px-4 py-2 text-[11px] font-medium uppercase tracking-[2px] text-red-300'>
+                    Indisponivel
+                  </span>
+                </div>
+              )}
               <div className='absolute -bottom-3 -right-3 hidden h-16 w-16 border-b border-r border-gold-500/15 sm:block' />
             </div>
           </Reveal>
@@ -142,7 +150,7 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                     <span className='text-green-400'>Em estoque</span>
                   </span>
                 ) : (
-                  <span className='text-red-400'>Indisponivel</span>
+                  <span className='font-medium text-red-400'>Indisponivel</span>
                 )}
                 <span className='text-txt-muted'>·</span>
                 <span className='text-txt-muted'>{livro.saleNote}</span>
@@ -154,12 +162,17 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                   <button
                     onClick={() => addItem(livro)}
                     disabled={!livro.inStock}
-                    className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 disabled:cursor-not-allowed disabled:opacity-50 sm:px-10 sm:py-4'
+                    className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 disabled:cursor-not-allowed disabled:bg-navy-700 disabled:text-txt-muted disabled:hover:bg-navy-700 sm:px-10 sm:py-4'
+                    aria-label={
+                      livro.inStock
+                        ? 'Adicionar ao carrinho'
+                        : 'Produto indisponivel'
+                    }
                   >
                     <ShoppingCart size={16} />
-                    Adicionar ao carrinho
+                    {livro.inStock ? 'Adicionar ao carrinho' : 'Indisponivel'}
                   </button>
-                ) : (
+                ) : livro.inStock && editoraLink ? (
                   <a
                     href={editoraLink}
                     target='_blank'
@@ -169,6 +182,23 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                     <ExternalLink size={16} />
                     Comprar na editora
                   </a>
+                ) : (
+                  <button
+                    type='button'
+                    disabled
+                    className='inline-flex cursor-not-allowed items-center gap-3 bg-navy-700 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-txt-muted sm:px-10 sm:py-4'
+                    aria-label='Produto indisponivel'
+                  >
+                    <ExternalLink size={16} />
+                    Indisponivel
+                  </button>
+                )}
+
+                {!livro.inStock && (
+                  <p className='mt-3 text-xs text-txt-muted'>
+                    Este titulo esta temporariamente indisponivel. Volte em
+                    breve.
+                  </p>
                 )}
               </div>
             </Reveal>
