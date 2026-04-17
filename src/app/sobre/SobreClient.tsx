@@ -31,6 +31,12 @@ export function SobreClient({
   timeline,
   siteConfig,
 }: SobreClientProps) {
+  // Split bio into paragraphs by double newline
+  const bioParagraphs = bio
+    .split(/\n\n+/)
+    .map(p => p.trim())
+    .filter(Boolean);
+
   return (
     <section className='pb-24 pt-32 lg:pb-32'>
       <div className='mx-auto max-w-7xl px-6 lg:px-8'>
@@ -70,37 +76,9 @@ export function SobreClient({
           <div className='lg:col-span-3'>
             <Reveal>
               <div className='space-y-4 text-[15px] leading-relaxed text-txt-muted'>
-                <p>{bio}</p>
-                <p>
-                  Graduado em Direito pela Universidade Presbiteriana Mackenzie
-                  (2001), Especialista em Direito Penal e Processual Penal pela
-                  Mackenzie (2007) e Mestre em Desenvolvimento e Gestão Social
-                  pela Escola de Administração da Universidade Federal da Bahia
-                  — UFBA (2017). Participou de seminários doutorais na Faculdade
-                  de Direito da Universidad de Buenos Aires (UBA), Argentina.
-                </p>
-                <p>
-                  Atualmente é Professor de Direito Penal, Processual Penal,
-                  Constitucional e Administrativo da Academia Del Guercio SPCM,
-                  e coordenador das bancas de exame oral simulado na mesma
-                  instituição. Palestrante e Coach nas áreas de Direito
-                  Constitucional, Administrativo, Penal e Processual Penal, com
-                  enfoque nos concursos públicos e Exame de Ordem.
-                </p>
-                <p>
-                  Foi professor voluntário da Associação Cruz Verde, destinada a
-                  pessoas com paralisia cerebral grave, entre 2007 e 2014 — uma
-                  atuação que reflete seu compromisso com a responsabilidade
-                  social e a dignidade humana.
-                </p>
-                <p>
-                  Autor de mais de {siteConfig.stats.livrosPublicados} livros e
-                  mais de {siteConfig.stats.artigosPublicados} artigos jurídicos
-                  publicados em veículos como Carta Forense, Migalhas,
-                  Jus.com.br e Despertar Jurídico, com temas que vão do controle
-                  de constitucionalidade dos tipos penais à liberdade de
-                  imprensa e direitos da personalidade.
-                </p>
+                {bioParagraphs.map((paragraph, i) => (
+                  <p key={i}>{paragraph}</p>
+                ))}
               </div>
             </Reveal>
 

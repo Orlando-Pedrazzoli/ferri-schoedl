@@ -496,7 +496,11 @@ export const artigos: Artigo[] = [
   },
 ];
 
-// ===== TIMELINE (SOBRE — corrigido: Promotoria, não Magistratura) =====
+// ===== TIMELINE (SOBRE) =====
+// Item 14: Removido "Substituto" do período 2003-2016
+// Item 14: Removido "Seminários Doutorais"
+// Item 14: Separado VFK Educação (2015-2018) e UNIESP (2017-2018)
+// Item 14: Acrescentado VFK Educação como entrada separada
 
 export const timeline: TimelineItem[] = [
   {
@@ -506,7 +510,7 @@ export const timeline: TimelineItem[] = [
   },
   {
     period: '2003 — 2016',
-    title: 'Promotor de Justiça Substituto',
+    title: 'Promotor de Justiça',
     description:
       'Ministério Público do Estado de São Paulo. Atuação na Promotoria de Justiça em processos criminais e do Tribunal do Júri.',
   },
@@ -526,19 +530,19 @@ export const timeline: TimelineItem[] = [
     period: '2015 — 2018',
     title: 'Professor',
     description:
-      'Direito Penal e Processual Penal no VFK Educação. Direito Penal, Administrativo, Civil Contemporâneo e Prática Jurídica na UNIESP.',
+      'Direito Penal e Processual Penal no Curso Preparatório VFK Educação. Coordenador de bancas de exame oral simuladas na mesma instituição.',
+  },
+  {
+    period: '2017 — 2018',
+    title: 'Professor',
+    description:
+      'Direito Penal, Administrativo, Civil Contemporâneo e Prática Jurídica na UNIESP.',
   },
   {
     period: '2017',
     title: 'Mestrado',
     description:
       'Desenvolvimento e Gestão Social pela Escola de Administração da Universidade Federal da Bahia (UFBA).',
-  },
-  {
-    period: 'Seminários doutorais',
-    title: 'Universidad de Buenos Aires (UBA)',
-    description:
-      'Participação em seminários doutorais na Faculdade de Direito da Universidad de Buenos Aires, Argentina.',
   },
   {
     period: 'Atual',
@@ -548,16 +552,18 @@ export const timeline: TimelineItem[] = [
   },
 ];
 
-// ===== ABOUT (Dados do Thales — corrigido: Promotoria de Justiça) =====
+// ===== ABOUT (Dados do Thales) =====
+// Item 12: Bio completa atualizada conforme texto do Dr. Thales
+// Item 13: Diferenciais — "ex-promotor de justiça" em minúsculo, removido Buenos Aires
 
 export const aboutData = {
   name: 'Thales Ferri Schoedl',
   title: 'Advogado, Jurista, Professor e Palestrante',
   oab: 'OAB/SP 196.377',
   birthDate: '1978-05-21',
-  bio: 'Ex-Promotor de Justiça do Estado de São Paulo, autor de diversas obras e artigos jurídicos, com trajetória dedicada à defesa de servidores públicos. Experiência na Promotoria de Justiça em processos criminais e do Tribunal do Júri, oferecendo uma perspectiva única — a visão de quem já esteve do lado da acusação.',
+  bio: 'Advogado, jurista, autor de diversas obras e artigos jurídicos, e ex-promotor de justiça do Estado de São Paulo, com trajetória dedicada à defesa de servidores públicos. Experiência na Promotoria de Justiça em processos criminais e do Tribunal do Júri, oferecendo uma perspectiva única — a visão de quem já esteve do lado da acusação.\n\nGraduado em Direito pela Universidade Presbiteriana Mackenzie (2001), Especialista em Direito Penal e Processual Penal pela Mackenzie (2007) e Mestre em Desenvolvimento e Gestão Social pela Escola de Administração da Universidade Federal da Bahia — UFBA (2017).\n\nAtualmente é professor de Direito Penal, Processual Penal, Constitucional e Administrativo da Academia Del Guércio SPCM, e coordenador das bancas de exame oral simulado na mesma instituição. Palestrante e coach nas áreas de Direito Constitucional, Administrativo, Penal e Processual Penal, com enfoque nos concursos públicos e Exame de Ordem.\n\nEx-professor de Direito Penal e Processual Penal do Curso Preparatório VFK Educação, e coordenador de bancas de exame oral simuladas na mesma instituição (2015/2018), e de Direito Penal, Administrativo, Civil Contemporâneo e Prática Jurídica da UNIESP (2017/2018).\n\nFoi professor voluntário da Associação Cruz Verde, destinada a pessoas com paralisia cerebral grave, entre 2007 e 2014 — uma atuação que reflete seu compromisso com a responsabilidade social e a dignidade humana.\n\nAutor de mais de 10 livros e mais de 22 artigos jurídicos publicados em veículos como Carta Forense, Migalhas, Jus.com.br e Blog do DG, com temas de natureza multi e interdisciplinar, ligados à Teoria Geral do Crime, Liberdade de Imprensa, Relação entre as Esferas de Responsabilidade e Controle de Constitucionalidade de Decisões Inconstitucionais do STF.',
   shortBio:
-    'Advogado, jurista, professor, palestrante e ex-Promotor de Justiça do Estado de São Paulo, autor de mais de 10 livros e mais de 22 artigos jurídicos publicados.',
+    'Advogado, jurista, autor de diversas obras e artigos jurídicos, e ex-promotor de justiça do Estado de São Paulo, com trajetória dedicada à defesa de servidores públicos.',
   education: [
     {
       degree: 'Graduação em Direito',
@@ -575,12 +581,6 @@ export const aboutData = {
         'Escola de Administração da Universidade Federal da Bahia (UFBA)',
       year: 2017,
     },
-    {
-      degree: 'Seminários Doutorais',
-      institution:
-        'Faculdade de Direito da Universidad de Buenos Aires (UBA), Argentina',
-      year: null,
-    },
   ],
   teachingRoles: [
     {
@@ -597,10 +597,11 @@ export const aboutData = {
         'Professor e coordenador de bancas de exame oral simulado para concursos de cartórios.',
     },
     {
-      role: 'Professor',
-      institution: 'VFK Educação',
+      role: 'Professor e Coordenador de Bancas',
+      institution: 'Curso Preparatório VFK Educação',
       subjects: ['Direito Penal', 'Processual Penal'],
       period: '2015 — 2018',
+      description: 'Professor e coordenador de bancas de exame oral simuladas.',
     },
     {
       role: 'Professor',
@@ -618,18 +619,18 @@ export const aboutData = {
       institution: 'Associação Cruz Verde',
       subjects: [],
       period: '2007 — 2014',
-      description: 'Dedicada a pessoas com paralisia cerebral grave.',
+      description:
+        'Dedicada a pessoas com paralisia cerebral grave — uma atuação que reflete seu compromisso com a responsabilidade social e a dignidade humana.',
     },
   ],
   coaching:
     'Preparação para concursos públicos (magistratura, Ministério Público, procuradorias, defensorias) e Exame de Ordem (OAB) nas áreas de Direito Constitucional, Administrativo, Penal e Processual Penal.',
   differentials: [
-    'Ex-Promotor de Justiça — visão estratégica de quem conhece a perspectiva da acusação',
+    'Ex-promotor de justiça — visão estratégica de quem conhece a perspectiva da acusação',
     'Autor de mais de 10 livros e mais de 22 artigos jurídicos publicados',
     'Professor universitário e coordenador de bancas de exame oral',
     'Atuação nacional com sede em São Paulo',
     'Atendimento técnico, responsável e humanizado',
-    'Experiência em seminários doutorais na Universidad de Buenos Aires',
   ],
 };
 
@@ -667,7 +668,8 @@ export const faqItems = [
   },
 ];
 
-// ===== LIVROS (STORE — Ordem solicitada pelo Thales: mais recentes primeiro, priorizando autoria solo) =====
+// ===== LIVROS (STORE) =====
+// Item 10: Reflexiones Vol. 11 e Vol. 15 marcados como inStock: false (esgotados)
 
 export type SaleType = 'direto' | 'editora';
 
@@ -964,7 +966,7 @@ export const livros: Livro[] = [
     saleType: 'editora',
     saleNote: 'Disponível na GZ Editora e livrarias',
   },
-  // 9) Reflexiones sobre Derecho Latinoamericano Vol. 11 (2013) — Editora/net
+  // 9) Reflexiones sobre Derecho Latinoamericano Vol. 11 (2013) — ESGOTADO (Item 10)
   {
     slug: 'reflexiones-derecho-latinoamericano-vol-11',
     title: 'Reflexiones sobre Derecho Latinoamericano',
@@ -991,12 +993,11 @@ export const livros: Livro[] = [
     weight: 580,
     weightUnit: 'g',
     image: '/livros/reflexiones-derecho.jpg',
-    inStock: true,
+    inStock: false,
     saleType: 'editora',
-    saleNote:
-      'Disponível na Editorial Derecho Latino e livrarias internacionais',
+    saleNote: 'Esgotado',
   },
-  // 10) Reflexiones sobre Derecho Latinoamericano Vol. 15 (2014) — Editora/net
+  // 10) Reflexiones sobre Derecho Latinoamericano Vol. 15 (2014) — ESGOTADO (Item 10)
   {
     slug: 'reflexiones-derecho-latinoamericano-vol-15',
     title: 'Reflexiones sobre Derecho Latinoamericano',
@@ -1022,9 +1023,8 @@ export const livros: Livro[] = [
     weight: 610,
     weightUnit: 'g',
     image: '/livros/reflexoes-sobre.jpg',
-    inStock: true,
+    inStock: false,
     saleType: 'editora',
-    saleNote:
-      'Disponível na Editorial Derecho Latino e livrarias internacionais',
+    saleNote: 'Esgotado',
   },
 ];

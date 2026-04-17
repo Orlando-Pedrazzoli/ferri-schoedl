@@ -257,21 +257,17 @@ export function PublicacoesContent({
         </div>
       )}
 
-      {/* ONDE ENCONTRAR */}
+      {/* ONDE ENCONTRAR — Item 9: Jusbrasil removido */}
       <Reveal className='mt-12 sm:mt-16'>
         <div className='border border-gold-500/10 bg-navy-900/40 p-5 sm:p-6'>
           <p className='mb-4 text-xs font-medium uppercase tracking-[3px] text-gold-500'>
             Onde encontrar
           </p>
-          <div className='grid gap-4 md:grid-cols-3'>
+          <div className='grid gap-4 md:grid-cols-2'>
             {[
               {
                 name: 'Migalhas',
                 desc: 'Pesquise "Thales Ferri Schoedl" em migalhas.com.br',
-              },
-              {
-                name: 'Jusbrasil',
-                desc: 'Acórdãos e decisões sobre liberdade de imprensa',
               },
               {
                 name: 'Livrarias',
