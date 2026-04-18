@@ -108,6 +108,7 @@ export async function POST(request: NextRequest) {
       emailVerified: false,
       emailVerificationToken: verificationToken,
       emailVerificationExpires: verificationExpires,
+      hasPassword: true, // ← ADICIONAR ESTA LINHA
     });
 
     // --- Enviar email de verificação ---

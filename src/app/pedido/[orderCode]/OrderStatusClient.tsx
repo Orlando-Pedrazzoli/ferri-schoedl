@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Package,
@@ -15,10 +17,8 @@ import {
   Copy,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 import toast from 'react-hot-toast';
-
-// --- Tipos ---
+import { CreatePasswordBanner } from '@/components/CreatePasswordBanner';
 
 interface OrderData {
   orderCode: string;
@@ -60,7 +60,11 @@ interface OrderData {
   createdAt: string;
 }
 
-// --- Helpers ---
+interface Props {
+  order: OrderData;
+  showPasswordSetup: boolean;
+  setupToken?: string;
+}
 
 function formatCurrency(value: number): string {
   return value.toFixed(2).replace('.', ',');
@@ -85,10 +89,15 @@ const PAYMENT_LABEL: Record<string, string> = {
   pix: 'PIX',
 };
 
-// --- Componente ---
-
-export function OrderStatusClient({ order }: { order: OrderData }) {
+export function OrderStatusClient({
+  order,
+  showPasswordSetup,
+  setupToken,
+}: Props) {
+  const router = useRouter();
   const [pixCopied, setPixCopied] = useState(false);
+  const [bannerVisible, setBannerVisible] = useState(showPasswordSetup);
+
   const statusInfo = STATUS_MAP[order.status] || STATUS_MAP.pendente;
   const StatusIcon = statusInfo.icon;
 
@@ -101,9 +110,31 @@ export function OrderStatusClient({ order }: { order: OrderData }) {
     }
   };
 
+  const paymentIcon =
+    order.payment.method === 'credit_card' ? (
+      <CreditCard size={16} className='text-gold-600' />
+    ) : order.payment.method === 'pix' ? (
+      <QrCode size={16} className='text-gold-600' />
+    ) : order.payment.method === 'boleto' ? (
+      <FileText size={16} className='text-gold-600' />
+    ) : null;
+
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28'>
       <div className='mx-auto max-w-3xl px-4 sm:px-6 lg:px-8'>
+        {/* Banner de criacao de senha */}
+        {bannerVisible ? (
+          <CreatePasswordBanner
+            orderCode={order.orderCode}
+            setupToken={setupToken}
+            onDismiss={() => setBannerVisible(false)}
+            onSuccess={() => {
+              setBannerVisible(false);
+              router.push('/conta');
+            }}
+          />
+        ) : null}
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -136,7 +167,6 @@ export function OrderStatusClient({ order }: { order: OrderData }) {
               </p>
             </div>
 
-            {/* Status badge */}
             <div
               className={`inline-flex items-center gap-2 border border-current/20 px-3 py-1.5 ${statusInfo.color}`}
             >
@@ -183,7 +213,6 @@ export function OrderStatusClient({ order }: { order: OrderData }) {
               ))}
             </div>
 
-            {/* Totais */}
             <div className='mt-4 space-y-2 border-t border-gold-500/8 pt-3'>
               <div className='flex justify-between text-[13px]'>
                 <span className='text-txt-muted'>Subtotal</span>
@@ -221,70 +250,59 @@ export function OrderStatusClient({ order }: { order: OrderData }) {
 
             <div className='space-y-2 text-sm'>
               <div className='flex items-center gap-2'>
-                {order.payment.method === 'credit_card' && (
-                  <CreditCard size={16} className='text-gold-600' />
-                )}
-                {order.payment.method === 'pix' && (
-                  <QrCode size={16} className='text-gold-600' />
-                )}
-                {order.payment.method === 'boleto' && (
-                  <FileText size={16} className='text-gold-600' />
-                )}
+                {paymentIcon}
                 <span className='text-cream-100'>
                   {PAYMENT_LABEL[order.payment.method] || order.payment.method}
                 </span>
               </div>
 
-              {/* Detalhes por metodo */}
-              {order.payment.method === 'credit_card' && (
-                <>
-                  {order.payment.cardLastDigits && (
-                    <p className='text-txt-muted'>
-                      {order.payment.cardBrand
-                        ? `${order.payment.cardBrand.charAt(0).toUpperCase() + order.payment.cardBrand.slice(1)} `
-                        : ''}
-                      **** {order.payment.cardLastDigits}
-                      {order.payment.installments > 1 &&
-                        ` em ${order.payment.installments}x`}
-                    </p>
-                  )}
-                </>
-              )}
+              {order.payment.method === 'credit_card' &&
+              order.payment.cardLastDigits ? (
+                <p className='text-txt-muted'>
+                  {order.payment.cardBrand
+                    ? `${order.payment.cardBrand.charAt(0).toUpperCase() + order.payment.cardBrand.slice(1)} `
+                    : ''}
+                  **** {order.payment.cardLastDigits}
+                  {order.payment.installments > 1
+                    ? ` em ${order.payment.installments}x`
+                    : ''}
+                </p>
+              ) : null}
 
               {order.payment.method === 'pix' &&
-                order.payment.status !== 'paid' &&
-                order.payment.pixQrCode && (
-                  <div className='mt-3 space-y-3'>
-                    {order.payment.pixQrCodeUrl && (
-                      <div className='w-fit border border-gold-500/10 bg-white p-3'>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={order.payment.pixQrCodeUrl}
-                          alt='QR Code PIX'
-                          width={180}
-                          height={180}
-                        />
-                      </div>
-                    )}
-                    <div className='flex items-center gap-2'>
-                      <input
-                        type='text'
-                        readOnly
-                        value={order.payment.pixQrCode}
-                        className='flex-1 truncate border border-gold-500/12 bg-navy-800/30 px-3 py-2 text-xs text-cream-100 outline-none'
+              order.payment.status !== 'paid' &&
+              order.payment.pixQrCode ? (
+                <div className='mt-3 space-y-3'>
+                  {order.payment.pixQrCodeUrl ? (
+                    <div className='w-fit border border-gold-500/10 bg-white p-3'>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={order.payment.pixQrCodeUrl}
+                        alt='QR Code PIX'
+                        width={180}
+                        height={180}
                       />
-                      <button
-                        onClick={handleCopyPix}
-                        className='flex items-center gap-1.5 border border-gold-500/30 px-3 py-2 text-xs text-gold-500 transition-colors hover:bg-gold-500/5'
-                      >
-                        <Copy size={14} />
-                        {pixCopied ? 'Copiado!' : 'Copiar'}
-                      </button>
                     </div>
+                  ) : null}
+                  <div className='flex items-center gap-2'>
+                    <input
+                      type='text'
+                      readOnly
+                      value={order.payment.pixQrCode}
+                      className='flex-1 truncate border border-gold-500/12 bg-navy-800/30 px-3 py-2 text-xs text-cream-100 outline-none'
+                    />
+                    <button
+                      onClick={handleCopyPix}
+                      className='flex items-center gap-1.5 border border-gold-500/30 px-3 py-2 text-xs text-gold-500 transition-colors hover:bg-gold-500/5'
+                    >
+                      <Copy size={14} />
+                      {pixCopied ? 'Copiado!' : 'Copiar'}
+                    </button>
                   </div>
-                )}
+                </div>
+              ) : null}
 
-              {order.payment.method === 'boleto' && order.payment.boletoUrl && (
+              {order.payment.method === 'boleto' && order.payment.boletoUrl ? (
                 <a
                   href={order.payment.boletoUrl}
                   target='_blank'
@@ -294,14 +312,14 @@ export function OrderStatusClient({ order }: { order: OrderData }) {
                   <FileText size={14} />
                   Visualizar boleto
                 </a>
-              )}
+              ) : null}
 
-              {order.payment.paidAt && (
+              {order.payment.paidAt ? (
                 <p className='text-xs text-txt-muted'>
                   Pago em{' '}
                   {new Date(order.payment.paidAt).toLocaleString('pt-BR')}
                 </p>
-              )}
+              ) : null}
             </div>
           </motion.div>
 
@@ -335,7 +353,7 @@ export function OrderStatusClient({ order }: { order: OrderData }) {
                 CEP: {order.shipping.address.cep}
               </p>
 
-              {order.shipping.trackingCode && (
+              {order.shipping.trackingCode ? (
                 <div className='mt-3 border-t border-gold-500/8 pt-3'>
                   <p className='text-xs uppercase tracking-[1px] text-gold-600'>
                     Codigo de rastreio
@@ -344,7 +362,7 @@ export function OrderStatusClient({ order }: { order: OrderData }) {
                     {order.shipping.trackingCode}
                   </p>
                 </div>
-              )}
+              ) : null}
             </div>
           </motion.div>
         </div>

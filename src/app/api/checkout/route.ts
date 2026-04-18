@@ -1,5 +1,6 @@
 // src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { generateSetupToken } from '@/lib/setup-token';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
@@ -422,6 +423,14 @@ export async function POST(request: NextRequest) {
       paymentMethod: body.payment.method,
       total,
     };
+
+    // Se customer nao tem senha propria, gerar setupToken para facilitar criacao pos-compra
+    if (!customer.hasPassword) {
+      responseData.setupToken = generateSetupToken(
+        customer._id.toString(),
+        order.orderCode,
+      );
+    }
 
     if (body.payment.method === 'boleto') {
       responseData.boletoUrl = order.payment.boletoUrl;

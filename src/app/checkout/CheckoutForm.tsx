@@ -70,6 +70,7 @@ interface OrderResult {
   pixQrCode?: string;
   pixQrCodeUrl?: string;
   pixExpiresAt?: string;
+  setupToken?: string; // ← ADICIONAR
 }
 
 function formatCurrency(value: number): string {
@@ -1127,8 +1128,12 @@ export function CheckoutForm() {
 
                 <div className='flex flex-col items-center gap-3 sm:flex-row sm:justify-center'>
                   <Link
-                    href={`/pedido/${orderResult.orderCode}`}
-                    className='inline-flex items-center gap-2 border border-gold-500/30 px-6 py-3 text-[13px] uppercase tracking-[2px] text-gold-500 transition-colors hover:bg-gold-500/5'
+                    href={
+                      orderResult.setupToken
+                        ? `/pedido/${orderResult.orderCode}?setup=${orderResult.setupToken}`
+                        : `/pedido/${orderResult.orderCode}`
+                    }
+                    className='inline-flex items-center gap-2 border border-gold-500/30 ...'
                   >
                     Acompanhar pedido
                   </Link>

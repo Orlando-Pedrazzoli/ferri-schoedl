@@ -24,11 +24,15 @@ export interface ICustomerDocument extends Document {
   emailVerified: boolean;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
-  // --- Novos campos para OTP de checkout ---
+  // --- OTP de checkout ---
   otpCode?: string;
   otpExpires?: Date;
   otpAttempts?: number;
-  // ------------------------------------------
+  // --- Flag de senha definida pelo usuario ---
+  hasPassword: boolean;
+  // --- Snooze do banner de criacao de senha ---
+  passwordReminderSnoozedUntil?: Date;
+  // -------------------------------------------
   addresses: IAddress[];
   orders: Types.ObjectId[];
   createdAt: Date;
@@ -103,7 +107,6 @@ const CustomerSchema = new Schema<ICustomerDocument>(
       type: Date,
       select: false,
     },
-    // --- OTP para checkout (zero-fricção) ---
     otpCode: {
       type: String,
       select: false,
@@ -117,7 +120,16 @@ const CustomerSchema = new Schema<ICustomerDocument>(
       default: 0,
       select: false,
     },
-    // ----------------------------------------
+    // Indica se o customer definiu uma senha propria.
+    // false = conta criada via OTP com senha aleatoria interna (deve criar senha)
+    // true = customer definiu senha (via /conta/registro ou banner pos-compra)
+    hasPassword: {
+      type: Boolean,
+      default: false,
+    },
+    passwordReminderSnoozedUntil: {
+      type: Date,
+    },
     addresses: {
       type: [AddressSchema],
       default: [],
@@ -134,21 +146,18 @@ const CustomerSchema = new Schema<ICustomerDocument>(
   },
 );
 
-// Hash password antes de salvar
 CustomerSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Método para comparar password
 CustomerSchema.methods.comparePassword = async function (
   candidatePassword: string,
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Índices
 CustomerSchema.index({ email: 1 });
 CustomerSchema.index({ cpf: 1 });
 CustomerSchema.index({ createdAt: -1 });

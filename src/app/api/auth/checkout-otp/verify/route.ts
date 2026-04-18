@@ -202,8 +202,9 @@ export async function POST(request: NextRequest) {
       password: randomPassword,
       cpf: sanitizedCPF,
       phone: phone.replace(/\D/g, ''),
-      emailVerified: true, // OTP já verificou o email
+      emailVerified: true,
       role: 'customer',
+      hasPassword: false, // ← ADICIONAR (customer devera definir senha pos-compra)
     });
 
     // Limpar PendingOtp
