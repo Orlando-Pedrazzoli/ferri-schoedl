@@ -130,7 +130,7 @@ export function OrderStatusClient({
             onDismiss={() => setBannerVisible(false)}
             onSuccess={() => {
               setBannerVisible(false);
-              router.push('/conta');
+              router.push('/conta/pedidos');
             }}
           />
         ) : null}

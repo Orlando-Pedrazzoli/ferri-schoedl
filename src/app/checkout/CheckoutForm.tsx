@@ -70,7 +70,7 @@ interface OrderResult {
   pixQrCode?: string;
   pixQrCodeUrl?: string;
   pixExpiresAt?: string;
-  setupToken?: string; // ← ADICIONAR
+  setupToken?: string;
 }
 
 function formatCurrency(value: number): string {
@@ -1133,16 +1133,20 @@ export function CheckoutForm() {
                         ? `/pedido/${orderResult.orderCode}?setup=${orderResult.setupToken}`
                         : `/pedido/${orderResult.orderCode}`
                     }
-                    className='inline-flex items-center gap-2 border border-gold-500/30 ...'
+                    className='inline-flex items-center gap-2 bg-gold-500 px-8 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'
                   >
-                    Acompanhar pedido
+                    {orderResult.setupToken
+                      ? 'Aceder a minha conta'
+                      : 'Acompanhar pedido'}
                   </Link>
-                  <Link
-                    href='/livros'
-                    className='text-[13px] text-txt-muted transition-colors hover:text-cream-100'
-                  >
-                    Continuar comprando
-                  </Link>
+                  {!orderResult.setupToken ? (
+                    <Link
+                      href='/livros'
+                      className='text-[13px] text-txt-muted transition-colors hover:text-cream-100'
+                    >
+                      Continuar comprando
+                    </Link>
+                  ) : null}
                 </div>
               </motion.div>
             ) : null}
