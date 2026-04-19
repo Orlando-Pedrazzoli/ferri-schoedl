@@ -396,6 +396,36 @@ export async function POST(request: NextRequest) {
     }
 
     await order.save();
+    // Salvar endereco de entrega no perfil do customer (para auto-fill futuro)
+    try {
+      const addrToSave = {
+        label: `${shippingAddr.city} — ${shippingAddr.state}`,
+        street: shippingAddr.street,
+        number: shippingAddr.number,
+        complement: shippingAddr.complement || '',
+        neighborhood: shippingAddr.neighborhood,
+        city: shippingAddr.city,
+        state: shippingAddr.state.toUpperCase(),
+        cep: cepDestino,
+        isDefault: true,
+      };
+      // So salva se o customer nao tem nenhum endereco ainda
+      const customerForAddr = await Customer.findById(customer._id).select(
+        'addresses',
+      );
+      if (
+        customerForAddr &&
+        (!customerForAddr.addresses || customerForAddr.addresses.length === 0)
+      ) {
+        await Customer.updateOne(
+          { _id: customer._id },
+          { $push: { addresses: addrToSave } },
+        );
+      }
+    } catch (addrErr) {
+      // Nao bloqueia o checkout se falhar
+      console.error('[Checkout] Erro ao salvar endereco:', addrErr);
+    }
 
     if (order.status === 'pago') {
       await sendOrderConfirmation(

@@ -15,7 +15,7 @@ export async function GET() {
     await dbConnect();
 
     const customer = await Customer.findById(session.user.id).select(
-      'name email cpf phone',
+      'name email cpf phone addresses',
     );
 
     if (!customer) {
@@ -30,6 +30,7 @@ export async function GET() {
       email: customer.email,
       cpf: customer.cpf,
       phone: customer.phone,
+      addresses: customer.addresses || [],
     });
   } catch (error) {
     console.error('[Conta/Perfil] GET erro:', error);

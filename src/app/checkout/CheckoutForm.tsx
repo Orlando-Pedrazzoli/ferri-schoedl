@@ -159,6 +159,29 @@ export function CheckoutForm() {
         cpf: prev.cpf || (session.user as { cpf?: string }).cpf || '',
         phone: prev.phone || (session.user as { phone?: string }).phone || '',
       }));
+
+      // Buscar endereco salvo para auto-preenchimento
+      fetch('/api/conta/perfil')
+        .then(res => res.json())
+        .then(data => {
+          if (data.addresses && data.addresses.length > 0) {
+            const defaultAddr =
+              data.addresses.find((a: { isDefault: boolean }) => a.isDefault) ||
+              data.addresses[0];
+            setAddress(prev => ({
+              street: prev.street || defaultAddr.street || '',
+              number: prev.number || defaultAddr.number || '',
+              complement: prev.complement || defaultAddr.complement || '',
+              neighborhood: prev.neighborhood || defaultAddr.neighborhood || '',
+              city: prev.city || defaultAddr.city || '',
+              state: prev.state || defaultAddr.state || '',
+              cep: prev.cep || defaultAddr.cep || '',
+            }));
+          }
+        })
+        .catch(() => {
+          // Silencioso: se falhar, customer preenche manualmente
+        });
     }
   }, [session]);
 
