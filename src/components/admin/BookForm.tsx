@@ -75,17 +75,33 @@ const defaultBook: BookData = {
 };
 
 interface BookFormProps {
-  initialData?: BookData;
+  initialData?: Partial<BookData>;
   isEditing?: boolean;
 }
 
 export function BookForm({ initialData, isEditing = false }: BookFormProps) {
   // Coalesce com defaultBook para garantir que campos novos (eBook) existam
   // mesmo se o initialData vier de um documento antigo sem eles.
-  const [form, setForm] = useState<BookData>({
-    ...defaultBook,
-    ...(initialData || {}),
+  const [form, setForm] = useState<BookData>(
+    () => ({ ...defaultBook, ...(initialData || {}) }) as BookData,
+  );
+
+  // Estados de texto para os campos numéricos, para permitir apagar/digitar.
+  const [numbers, setNumbers] = useState(() => {
+    const init = { ...defaultBook, ...(initialData || {}) } as BookData;
+    return {
+      year: String(init.year),
+      pages: init.pages ? String(init.pages) : '',
+      price: init.price ? String(init.price) : '',
+      originalPrice: init.originalPrice ? String(init.originalPrice) : '',
+      weight: init.weight ? String(init.weight) : '',
+      width: String(init.dimensions.width),
+      height: String(init.dimensions.height),
+      depth: String(init.dimensions.depth),
+      order: init.order ? String(init.order) : '',
+    };
   });
+
   const [topicsText, setTopicsText] = useState(
     (initialData?.topics || []).join(', '),
   );
@@ -102,6 +118,23 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
       ...prev,
       dimensions: { ...prev.dimensions, [field]: value },
     }));
+  };
+
+  // Atualiza o texto exibido E o número no form
+  const handleNum = (
+    field: 'year' | 'pages' | 'price' | 'originalPrice' | 'weight' | 'order',
+    value: string,
+    kind: 'int' | 'float',
+  ) => {
+    setNumbers(prev => ({ ...prev, [field]: value }));
+    const parsed = kind === 'int' ? parseInt(value, 10) : parseFloat(value);
+    updateField(field, Number.isNaN(parsed) ? 0 : parsed);
+  };
+
+  const handleDim = (field: 'width' | 'height' | 'depth', value: string) => {
+    setNumbers(prev => ({ ...prev, [field]: value }));
+    const parsed = parseFloat(value);
+    updateDimension(field, Number.isNaN(parsed) ? 0 : parsed);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -231,10 +264,8 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                 <label className={labelClass}>Ano *</label>
                 <input
                   type='number'
-                  value={form.year}
-                  onChange={e =>
-                    updateField('year', parseInt(e.target.value) || 0)
-                  }
+                  value={numbers.year}
+                  onChange={e => handleNum('year', e.target.value, 'int')}
                   required
                   className={inputClass}
                 />
@@ -266,10 +297,8 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                 <label className={labelClass}>Páginas *</label>
                 <input
                   type='number'
-                  value={form.pages}
-                  onChange={e =>
-                    updateField('pages', parseInt(e.target.value) || 0)
-                  }
+                  value={numbers.pages}
+                  onChange={e => handleNum('pages', e.target.value, 'int')}
                   required
                   className={inputClass}
                 />
@@ -338,10 +367,8 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                 <input
                   type='number'
                   step='0.1'
-                  value={form.dimensions.width}
-                  onChange={e =>
-                    updateDimension('width', parseFloat(e.target.value) || 0)
-                  }
+                  value={numbers.width}
+                  onChange={e => handleDim('width', e.target.value)}
                   className={inputClass}
                 />
               </div>
@@ -350,10 +377,8 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                 <input
                   type='number'
                   step='0.1'
-                  value={form.dimensions.height}
-                  onChange={e =>
-                    updateDimension('height', parseFloat(e.target.value) || 0)
-                  }
+                  value={numbers.height}
+                  onChange={e => handleDim('height', e.target.value)}
                   className={inputClass}
                 />
               </div>
@@ -362,10 +387,8 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                 <input
                   type='number'
                   step='0.1'
-                  value={form.dimensions.depth}
-                  onChange={e =>
-                    updateDimension('depth', parseFloat(e.target.value) || 0)
-                  }
+                  value={numbers.depth}
+                  onChange={e => handleDim('depth', e.target.value)}
                   className={inputClass}
                 />
               </div>
@@ -373,10 +396,8 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                 <label className={labelClass}>Peso (g)</label>
                 <input
                   type='number'
-                  value={form.weight}
-                  onChange={e =>
-                    updateField('weight', parseInt(e.target.value) || 0)
-                  }
+                  value={numbers.weight}
+                  onChange={e => handleNum('weight', e.target.value, 'int')}
                   className={inputClass}
                 />
               </div>
@@ -406,10 +427,9 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
               <input
                 type='number'
                 step='0.01'
-                value={form.price}
-                onChange={e =>
-                  updateField('price', parseFloat(e.target.value) || 0)
-                }
+                value={numbers.price}
+                onChange={e => handleNum('price', e.target.value, 'float')}
+                placeholder='Ex: 99.90'
                 required
                 className={inputClass}
               />
@@ -420,10 +440,11 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
               <input
                 type='number'
                 step='0.01'
-                value={form.originalPrice}
+                value={numbers.originalPrice}
                 onChange={e =>
-                  updateField('originalPrice', parseFloat(e.target.value) || 0)
+                  handleNum('originalPrice', e.target.value, 'float')
                 }
+                placeholder='Opcional'
                 className={inputClass}
               />
             </div>
@@ -542,10 +563,9 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
               <label className={labelClass}>Ordem</label>
               <input
                 type='number'
-                value={form.order}
-                onChange={e =>
-                  updateField('order', parseInt(e.target.value) || 0)
-                }
+                value={numbers.order}
+                onChange={e => handleNum('order', e.target.value, 'int')}
+                placeholder='0'
                 className={inputClass}
               />
             </div>
