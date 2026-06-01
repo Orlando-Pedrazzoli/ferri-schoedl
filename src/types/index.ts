@@ -28,6 +28,12 @@ export interface IBook {
   featured: boolean;
   saleType: 'direto' | 'editora';
   saleNote?: string;
+  // --- Ebook (mesmo preço do físico) ---
+  hasEbook: boolean;
+  ebookFileId?: string;
+  ebookFileName?: string;
+  ebookSize?: number;
+  // -------------------------------------
   order: number;
   isActive: boolean;
 }
@@ -49,10 +55,17 @@ export interface IArticle {
 }
 
 // --- Courses ---
+export interface ICourseLesson {
+  title: string;
+  videoId: string; // ID do vídeo no YouTube (não listado)
+  duration: string;
+  isPreview: boolean;
+}
+
 export interface ICourseModule {
   title: string;
   description: string;
-  lessons: string[];
+  lessons: ICourseLesson[];
   duration: string;
 }
 

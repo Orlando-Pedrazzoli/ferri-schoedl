@@ -1,6 +1,7 @@
 // src/app/livros/[slug]/LivroDetail.tsx
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -12,6 +13,10 @@ import {
   Truck,
   Check,
   ExternalLink,
+  BookOpen,
+  Download,
+  FileText,
+  Smartphone,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Reveal } from '@/components/Reveal';
@@ -50,10 +55,16 @@ interface LivroDetailProps {
   outrosLivros: RelatedBook[];
 }
 
+type Formato = 'physical' | 'ebook';
+
 export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
   const { addItem } = useCart();
 
   const editoraLink = EDITORA_LINKS[livro.slug] || '';
+  const hasEbook = !!livro.hasEbook;
+
+  const [formato, setFormato] = useState<Formato>('physical');
+  const isEbook = formato === 'ebook';
 
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28 lg:pb-32'>
@@ -94,7 +105,7 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                   Destaque
                 </span>
               )}
-              {!livro.inStock && (
+              {!isEbook && !livro.inStock && (
                 <div className='absolute inset-0 flex items-center justify-center bg-navy-950/60 backdrop-blur-[2px]'>
                   <span className='border border-red-500/40 bg-red-500/10 px-4 py-2 text-[11px] font-medium uppercase tracking-[2px] text-red-300'>
                     Indisponivel
@@ -130,10 +141,49 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
               <div className='mt-3 h-px w-12 bg-gold-500/40' />
             </Reveal>
 
+            {/* Format selector (apenas quando há ebook) */}
+            {hasEbook && (
+              <Reveal delay={0.08}>
+                <div className='mt-6'>
+                  <p className='mb-2 text-xs uppercase tracking-[2px] text-gold-600'>
+                    Escolha o formato
+                  </p>
+                  <div className='inline-flex border border-gold-500/20'>
+                    <button
+                      type='button'
+                      onClick={() => setFormato('physical')}
+                      aria-pressed={!isEbook}
+                      className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium uppercase tracking-[1px] transition-colors sm:px-5 ${
+                        !isEbook
+                          ? 'bg-gold-500 text-navy-950'
+                          : 'bg-transparent text-txt-muted hover:text-cream-100'
+                      }`}
+                    >
+                      <BookOpen size={15} />
+                      Livro físico
+                    </button>
+                    <button
+                      type='button'
+                      onClick={() => setFormato('ebook')}
+                      aria-pressed={isEbook}
+                      className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium uppercase tracking-[1px] transition-colors sm:px-5 ${
+                        isEbook
+                          ? 'bg-gold-500 text-navy-950'
+                          : 'bg-transparent text-txt-muted hover:text-cream-100'
+                      }`}
+                    >
+                      <Download size={15} />
+                      eBook (PDF)
+                    </button>
+                  </div>
+                </div>
+              </Reveal>
+            )}
+
             {/* Price block */}
             <Reveal delay={0.1}>
               <div className='mt-6 flex items-end gap-4'>
-                {livro.originalPrice && (
+                {livro.originalPrice && !isEbook && (
                   <span className='text-base text-txt-muted line-through'>
                     R$ {livro.originalPrice.toFixed(2).replace('.', ',')}
                   </span>
@@ -141,26 +191,49 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                 <span className='font-[family-name:var(--font-cormorant)] text-3xl text-gold-500 sm:text-4xl'>
                   R$ {livro.price.toFixed(2).replace('.', ',')}
                 </span>
+                {hasEbook && (
+                  <span className='pb-1 text-xs uppercase tracking-[1px] text-txt-muted'>
+                    {isEbook ? 'eBook (PDF)' : 'Livro físico'}
+                  </span>
+                )}
               </div>
 
               <div className='mt-2 flex flex-wrap items-center gap-3 text-[13px]'>
-                {livro.inStock ? (
+                {isEbook ? (
                   <span className='flex items-center gap-1.5'>
                     <Check size={14} className='text-green-500' />
-                    <span className='text-green-400'>Em estoque</span>
+                    <span className='text-green-400'>
+                      Entrega imediata por download
+                    </span>
                   </span>
+                ) : livro.inStock ? (
+                  <>
+                    <span className='flex items-center gap-1.5'>
+                      <Check size={14} className='text-green-500' />
+                      <span className='text-green-400'>Em estoque</span>
+                    </span>
+                    <span className='text-txt-muted'>·</span>
+                    <span className='text-txt-muted'>{livro.saleNote}</span>
+                  </>
                 ) : (
                   <span className='font-medium text-red-400'>Indisponivel</span>
                 )}
-                <span className='text-txt-muted'>·</span>
-                <span className='text-txt-muted'>{livro.saleNote}</span>
               </div>
 
               {/* CTA */}
               <div className='mt-6'>
-                {livro.saleType === 'direto' ? (
+                {isEbook ? (
                   <button
-                    onClick={() => addItem(livro)}
+                    onClick={() => addItem(livro, 'ebook')}
+                    className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-10 sm:py-4'
+                    aria-label='Adicionar eBook ao carrinho'
+                  >
+                    <ShoppingCart size={16} />
+                    Adicionar eBook ao carrinho
+                  </button>
+                ) : livro.saleType === 'direto' ? (
+                  <button
+                    onClick={() => addItem(livro, 'physical')}
                     disabled={!livro.inStock}
                     className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 disabled:cursor-not-allowed disabled:bg-navy-700 disabled:text-txt-muted disabled:hover:bg-navy-700 sm:px-10 sm:py-4'
                     aria-label={
@@ -174,7 +247,6 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                   </button>
                 ) : livro.inStock && editoraLink ? (
                   <a
-                    href={editoraLink}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-10 sm:py-4'
@@ -194,7 +266,7 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                   </button>
                 )}
 
-                {!livro.inStock && (
+                {!isEbook && !livro.inStock && (
                   <p className='mt-3 text-xs text-txt-muted'>
                     Este titulo esta temporariamente indisponivel. Volte em
                     breve.
@@ -234,61 +306,118 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
               </div>
             </Reveal>
 
-            {/* Specs grid */}
+            {/* Specs grid — muda conforme o formato */}
             <Reveal delay={0.25}>
-              <div className='mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4'>
-                <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
-                  <Package
-                    size={16}
-                    strokeWidth={1.2}
-                    className='mb-2 text-gold-600'
-                  />
-                  <p className='text-xs uppercase tracking-[1px] text-gold-600'>
-                    Paginas
-                  </p>
-                  <p className='mt-1 text-base text-cream-100'>{livro.pages}</p>
+              {isEbook ? (
+                <div className='mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4'>
+                  <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
+                    <Package
+                      size={16}
+                      strokeWidth={1.2}
+                      className='mb-2 text-gold-600'
+                    />
+                    <p className='text-xs uppercase tracking-[1px] text-gold-600'>
+                      Paginas
+                    </p>
+                    <p className='mt-1 text-base text-cream-100'>
+                      {livro.pages}
+                    </p>
+                  </div>
+                  <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
+                    <FileText
+                      size={16}
+                      strokeWidth={1.2}
+                      className='mb-2 text-gold-600'
+                    />
+                    <p className='text-xs uppercase tracking-[1px] text-gold-600'>
+                      Formato
+                    </p>
+                    <p className='mt-1 text-base text-cream-100'>PDF</p>
+                  </div>
+                  <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
+                    <Download
+                      size={16}
+                      strokeWidth={1.2}
+                      className='mb-2 text-gold-600'
+                    />
+                    <p className='text-xs uppercase tracking-[1px] text-gold-600'>
+                      Entrega
+                    </p>
+                    <p className='mt-1 text-sm text-cream-100'>
+                      Download imediato
+                    </p>
+                  </div>
+                  <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
+                    <Smartphone
+                      size={16}
+                      strokeWidth={1.2}
+                      className='mb-2 text-gold-600'
+                    />
+                    <p className='text-xs uppercase tracking-[1px] text-gold-600'>
+                      Leitura
+                    </p>
+                    <p className='mt-1 text-sm text-cream-100'>
+                      Qualquer dispositivo
+                    </p>
+                  </div>
                 </div>
-                <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
-                  <Ruler
-                    size={16}
-                    strokeWidth={1.2}
-                    className='mb-2 text-gold-600'
-                  />
-                  <p className='text-xs uppercase tracking-[1px] text-gold-600'>
-                    Dimensoes
-                  </p>
-                  <p className='mt-1 text-sm text-cream-100'>
-                    {livro.dimensions.width} x {livro.dimensions.height} x{' '}
-                    {livro.dimensions.depth} {livro.dimensions.unit}
-                  </p>
+              ) : (
+                <div className='mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4'>
+                  <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
+                    <Package
+                      size={16}
+                      strokeWidth={1.2}
+                      className='mb-2 text-gold-600'
+                    />
+                    <p className='text-xs uppercase tracking-[1px] text-gold-600'>
+                      Paginas
+                    </p>
+                    <p className='mt-1 text-base text-cream-100'>
+                      {livro.pages}
+                    </p>
+                  </div>
+                  <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
+                    <Ruler
+                      size={16}
+                      strokeWidth={1.2}
+                      className='mb-2 text-gold-600'
+                    />
+                    <p className='text-xs uppercase tracking-[1px] text-gold-600'>
+                      Dimensoes
+                    </p>
+                    <p className='mt-1 text-sm text-cream-100'>
+                      {livro.dimensions.width} x {livro.dimensions.height} x{' '}
+                      {livro.dimensions.depth} {livro.dimensions.unit}
+                    </p>
+                  </div>
+                  <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
+                    <Weight
+                      size={16}
+                      strokeWidth={1.2}
+                      className='mb-2 text-gold-600'
+                    />
+                    <p className='text-xs uppercase tracking-[1px] text-gold-600'>
+                      Peso
+                    </p>
+                    <p className='mt-1 text-base text-cream-100'>
+                      {livro.weight >= 1000
+                        ? `${(livro.weight / 1000).toFixed(1).replace('.', ',')}kg`
+                        : `${livro.weight}g`}
+                    </p>
+                  </div>
+                  <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
+                    <Truck
+                      size={16}
+                      strokeWidth={1.2}
+                      className='mb-2 text-gold-600'
+                    />
+                    <p className='text-xs uppercase tracking-[1px] text-gold-600'>
+                      Envio
+                    </p>
+                    <p className='mt-1 text-sm text-cream-100'>Todo Brasil</p>
+                  </div>
                 </div>
-                <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
-                  <Weight
-                    size={16}
-                    strokeWidth={1.2}
-                    className='mb-2 text-gold-600'
-                  />
-                  <p className='text-xs uppercase tracking-[1px] text-gold-600'>
-                    Peso
-                  </p>
-                  <p className='mt-1 text-base text-cream-100'>
-                    {livro.weight >= 1000
-                      ? `${(livro.weight / 1000).toFixed(1).replace('.', ',')}kg`
-                      : `${livro.weight}g`}
-                  </p>
-                </div>
-                <div className='border border-gold-500/8 bg-navy-800/20 p-3 sm:p-4'>
-                  <Truck
-                    size={16}
-                    strokeWidth={1.2}
-                    className='mb-2 text-gold-600'
-                  />
-                  <p className='text-xs uppercase tracking-[1px] text-gold-600'>
-                    Envio
-                  </p>
-                  <p className='mt-1 text-sm text-cream-100'>Todo Brasil</p>
-                </div>
-              </div>
+              )}
             </Reveal>
 
             {/* Edition details */}

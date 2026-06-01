@@ -6,10 +6,17 @@ import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
+interface CourseLesson {
+  title: string;
+  videoId: string;
+  duration: string;
+  isPreview: boolean;
+}
+
 interface CourseModule {
   title: string;
   description: string;
-  lessons: string[];
+  lessons: CourseLesson[];
   duration: string;
 }
 
@@ -35,6 +42,13 @@ interface CourseData {
   order: number;
 }
 
+const emptyLesson: CourseLesson = {
+  title: '',
+  videoId: '',
+  duration: '',
+  isPreview: false,
+};
+
 const defaultCourse: CourseData = {
   slug: '',
   title: '',
@@ -56,6 +70,40 @@ const defaultCourse: CourseData = {
   order: 0,
 };
 
+// Extrai o ID de uma URL do YouTube; se já for um ID puro, devolve igual.
+function extractYouTubeId(input: string): string {
+  const s = input.trim();
+  const m = s.match(
+    /(?:youtu\.be\/|v=|\/embed\/|\/shorts\/)([A-Za-z0-9_-]{11})/,
+  );
+  if (m) return m[1];
+  return s;
+}
+
+// Normaliza initialData (inclusive aulas no formato antigo de texto)
+function normalizeCourse(data?: CourseData): CourseData {
+  if (!data) return defaultCourse;
+  return {
+    ...defaultCourse,
+    ...data,
+    modules: (data.modules || []).map(m => ({
+      title: m.title || '',
+      description: m.description || '',
+      duration: m.duration || '',
+      lessons: (m.lessons || []).map((l: unknown) =>
+        typeof l === 'string'
+          ? { title: l, videoId: '', duration: '', isPreview: false }
+          : {
+              title: (l as CourseLesson).title || '',
+              videoId: (l as CourseLesson).videoId || '',
+              duration: (l as CourseLesson).duration || '',
+              isPreview: !!(l as CourseLesson).isPreview,
+            },
+      ),
+    })),
+  };
+}
+
 interface CourseFormProps {
   initialData?: CourseData;
   isEditing?: boolean;
@@ -65,7 +113,7 @@ export function CourseForm({
   initialData,
   isEditing = false,
 }: CourseFormProps) {
-  const [form, setForm] = useState<CourseData>(initialData || defaultCourse);
+  const [form, setForm] = useState<CourseData>(normalizeCourse(initialData));
   const [topicsText, setTopicsText] = useState(
     (initialData?.topics || []).join(', '),
   );
@@ -82,7 +130,12 @@ export function CourseForm({
       ...prev,
       modules: [
         ...prev.modules,
-        { title: '', description: '', lessons: [''], duration: '' },
+        {
+          title: '',
+          description: '',
+          lessons: [{ ...emptyLesson }],
+          duration: '',
+        },
       ],
     }));
   };
@@ -105,12 +158,13 @@ export function CourseForm({
   const updateLesson = (
     modIndex: number,
     lessonIndex: number,
-    value: string,
+    field: keyof CourseLesson,
+    value: string | boolean,
   ) => {
     setForm(prev => {
       const modules = [...prev.modules];
       const lessons = [...modules[modIndex].lessons];
-      lessons[lessonIndex] = value;
+      lessons[lessonIndex] = { ...lessons[lessonIndex], [field]: value };
       modules[modIndex] = { ...modules[modIndex], lessons };
       return { ...prev, modules };
     });
@@ -121,7 +175,18 @@ export function CourseForm({
       const modules = [...prev.modules];
       modules[modIndex] = {
         ...modules[modIndex],
-        lessons: [...modules[modIndex].lessons, ''],
+        lessons: [...modules[modIndex].lessons, { ...emptyLesson }],
+      };
+      return { ...prev, modules };
+    });
+  };
+
+  const removeLesson = (modIndex: number, lessonIndex: number) => {
+    setForm(prev => {
+      const modules = [...prev.modules];
+      modules[modIndex] = {
+        ...modules[modIndex],
+        lessons: modules[modIndex].lessons.filter((_, i) => i !== lessonIndex),
       };
       return { ...prev, modules };
     });
@@ -285,7 +350,7 @@ export function CourseForm({
           <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
             <div className='flex items-center justify-between'>
               <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
-                Módulos
+                Módulos e aulas
               </h3>
               <button
                 type='button'
@@ -335,7 +400,7 @@ export function CourseForm({
                       onChange={e =>
                         updateModule(modIndex, 'duration', e.target.value)
                       }
-                      placeholder='Ex: 2h30'
+                      placeholder='Ex: 1h30'
                       className={inputClass}
                     />
                   </div>
@@ -354,18 +419,90 @@ export function CourseForm({
                 </div>
 
                 <div>
-                  <label className={labelClass}>Aulas</label>
+                  <label className={labelClass}>Aulas (vídeo do YouTube)</label>
                   {mod.lessons.map((lesson, lessonIndex) => (
-                    <input
+                    <div
                       key={lessonIndex}
-                      type='text'
-                      value={lesson}
-                      onChange={e =>
-                        updateLesson(modIndex, lessonIndex, e.target.value)
-                      }
-                      placeholder={`Aula ${lessonIndex + 1}`}
-                      className={`${inputClass} mb-2`}
-                    />
+                      className='mb-3 rounded-lg border border-gold-500/10 p-3 space-y-2'
+                    >
+                      <div className='flex items-center justify-between'>
+                        <span className='text-[11px] text-txt-muted'>
+                          Aula {lessonIndex + 1}
+                        </span>
+                        <button
+                          type='button'
+                          onClick={() => removeLesson(modIndex, lessonIndex)}
+                          className='p-1 text-txt-muted hover:text-red-400 transition-colors'
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </div>
+
+                      <input
+                        type='text'
+                        value={lesson.title}
+                        onChange={e =>
+                          updateLesson(
+                            modIndex,
+                            lessonIndex,
+                            'title',
+                            e.target.value,
+                          )
+                        }
+                        placeholder='Título da aula (ex: Parte I)'
+                        className={inputClass}
+                      />
+
+                      <div className='grid grid-cols-2 gap-2'>
+                        <input
+                          type='text'
+                          value={lesson.videoId}
+                          onChange={e =>
+                            updateLesson(
+                              modIndex,
+                              lessonIndex,
+                              'videoId',
+                              extractYouTubeId(e.target.value),
+                            )
+                          }
+                          placeholder='ID do YouTube (ex: wyGB6S4BUDY)'
+                          className={inputClass}
+                        />
+                        <input
+                          type='text'
+                          value={lesson.duration}
+                          onChange={e =>
+                            updateLesson(
+                              modIndex,
+                              lessonIndex,
+                              'duration',
+                              e.target.value,
+                            )
+                          }
+                          placeholder='Duração (ex: 36 min)'
+                          className={inputClass}
+                        />
+                      </div>
+
+                      <label className='flex items-center gap-2 cursor-pointer'>
+                        <input
+                          type='checkbox'
+                          checked={lesson.isPreview}
+                          onChange={e =>
+                            updateLesson(
+                              modIndex,
+                              lessonIndex,
+                              'isPreview',
+                              e.target.checked,
+                            )
+                          }
+                          className='w-4 h-4 rounded border-navy-600 text-gold-500 focus:ring-gold-500/50 bg-navy-950'
+                        />
+                        <span className='text-xs text-cream-200'>
+                          Amostra grátis (pode assistir sem comprar)
+                        </span>
+                      </label>
+                    </div>
                   ))}
                   <button
                     type='button'
@@ -428,7 +565,7 @@ export function CourseForm({
                 type='text'
                 value={form.duration}
                 onChange={e => updateField('duration', e.target.value)}
-                placeholder='Ex: 40 horas'
+                placeholder='Ex: 1h26'
                 required
                 className={inputClass}
               />

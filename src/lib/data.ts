@@ -702,6 +702,7 @@ export interface Livro {
   featured?: boolean;
   saleType: SaleType;
   saleNote?: string;
+  hasEbook?: boolean; // ← adicionar: liga a opção de compra do ebook
 }
 
 export const livros: Livro[] = [
@@ -735,6 +736,7 @@ export const livros: Livro[] = [
     featured: false,
     saleType: 'direto',
     saleNote: 'Venda direta com o autor',
+    hasEbook: true, // ← adicionar
   },
   // 2) Liberdade de imprensa e direitos da personalidade (2019) — Venda direta
   {
@@ -769,6 +771,7 @@ export const livros: Livro[] = [
     featured: false,
     saleType: 'direto',
     saleNote: 'Venda direta com o autor',
+    hasEbook: true, // ← adicionar
   },
   // 3) Responsabilidade Penal dos Notários e Registradores (2017) — Editora/net
   {
@@ -802,6 +805,7 @@ export const livros: Livro[] = [
     featured: false,
     saleType: 'editora',
     saleNote: 'Disponível na YK Editora e livrarias',
+    hasEbook: true, // ← adicionar
   },
   // 4) 2243 Questões para Concursos Públicos (2015) — Venda direta
   {
@@ -839,6 +843,7 @@ export const livros: Livro[] = [
     featured: false,
     saleType: 'direto',
     saleNote: 'Venda direta com o autor',
+    hasEbook: true, // ← adicionar
   },
   // 5) Questões do Exame Oral de Cartórios (2017) — Editora/net
   {

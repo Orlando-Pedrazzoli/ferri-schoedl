@@ -27,6 +27,20 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+interface CourseLesson {
+  title: string;
+  videoId: string;
+  duration: string;
+  isPreview: boolean;
+}
+
+interface CourseModule {
+  title: string;
+  description: string;
+  lessons: CourseLesson[];
+  duration: string;
+}
+
 async function getCourse(slug: string) {
   try {
     await dbConnect();
@@ -198,16 +212,8 @@ export default async function CursoSlugPage({ params }: PageProps) {
                     Programa do curso
                   </h2>
                   <RevealStagger className='space-y-4'>
-                    {course.modules.map(
-                      (
-                        mod: {
-                          title: string;
-                          description: string;
-                          lessons: string[];
-                          duration: string;
-                        },
-                        i: number,
-                      ) => (
+                    {(course.modules as CourseModule[]).map(
+                      (mod: CourseModule, i: number) => (
                         <RevealItem key={i}>
                           <div className='border border-gold-500/8 bg-navy-800/20 p-5 transition-all duration-300 hover:border-gold-500/15'>
                             <div className='flex items-start justify-between gap-4'>
@@ -234,8 +240,8 @@ export default async function CursoSlugPage({ params }: PageProps) {
                             {mod.lessons && mod.lessons.length > 0 && (
                               <ul className='mt-3 space-y-1.5 border-t border-gold-500/5 pt-3'>
                                 {mod.lessons
-                                  .filter((l: string) => l.trim())
-                                  .map((lesson: string, j: number) => (
+                                  .filter((l: CourseLesson) => l.title?.trim())
+                                  .map((lesson: CourseLesson, j: number) => (
                                     <li
                                       key={j}
                                       className='flex items-center gap-2 text-sm text-txt-muted'
@@ -244,7 +250,17 @@ export default async function CursoSlugPage({ params }: PageProps) {
                                         size={12}
                                         className='shrink-0 text-gold-500/40'
                                       />
-                                      {lesson}
+                                      <span>{lesson.title}</span>
+                                      {lesson.duration && (
+                                        <span className='text-xs text-txt-muted/60'>
+                                          · {lesson.duration}
+                                        </span>
+                                      )}
+                                      {lesson.isPreview && (
+                                        <span className='ml-1 border border-gold-500/30 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-gold-500'>
+                                          Amostra
+                                        </span>
+                                      )}
                                     </li>
                                   ))}
                               </ul>
@@ -302,7 +318,6 @@ export default async function CursoSlugPage({ params }: PageProps) {
                     </div>
 
                     <a
-                      href={whatsappLink}
                       target='_blank'
                       rel='noopener noreferrer'
                       className='flex w-full items-center justify-center gap-2 bg-gold-500 px-6 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'

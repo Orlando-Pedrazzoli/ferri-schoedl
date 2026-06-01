@@ -29,6 +29,12 @@ export interface IBookDocument extends Document {
   featured: boolean;
   saleType: 'direto' | 'editora';
   saleNote?: string;
+  // --- Ebook (mesmo preço do físico; arquivo privado) ---
+  hasEbook: boolean;
+  ebookFileId?: string; // public_id do PDF privado no Cloudinary
+  ebookFileName?: string; // nome original, usado no download
+  ebookSize?: number; // bytes (opcional, só para exibição)
+  // -----------------------------------------------------
   order: number;
   isActive: boolean;
   createdAt: Date;
@@ -137,6 +143,23 @@ const BookSchema = new Schema<IBookDocument>(
       type: String,
       trim: true,
     },
+    // --- Ebook ---
+    hasEbook: {
+      type: Boolean,
+      default: false,
+    },
+    ebookFileId: {
+      type: String,
+      trim: true,
+    },
+    ebookFileName: {
+      type: String,
+      trim: true,
+    },
+    ebookSize: {
+      type: Number,
+    },
+    // -------------
     order: {
       type: Number,
       default: 0,

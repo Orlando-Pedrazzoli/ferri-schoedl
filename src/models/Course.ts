@@ -1,9 +1,16 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
+export interface ICourseLessonDoc {
+  title: string;
+  videoId: string; // ID do vídeo no YouTube (não listado)
+  duration: string;
+  isPreview: boolean; // se true, pode ser assistida sem comprar (amostra)
+}
+
 export interface ICourseModuleDoc {
   title: string;
   description: string;
-  lessons: string[];
+  lessons: ICourseLessonDoc[];
   duration: string;
 }
 
@@ -30,11 +37,21 @@ export interface ICourseDocument extends Document {
   updatedAt: Date;
 }
 
+const CourseLessonSchema = new Schema<ICourseLessonDoc>(
+  {
+    title: { type: String, required: true, trim: true },
+    videoId: { type: String, trim: true, default: '' },
+    duration: { type: String, trim: true, default: '' },
+    isPreview: { type: Boolean, default: false },
+  },
+  { _id: false },
+);
+
 const CourseModuleSchema = new Schema<ICourseModuleDoc>(
   {
     title: { type: String, required: true, trim: true },
     description: { type: String, trim: true },
-    lessons: [{ type: String, trim: true }],
+    lessons: [CourseLessonSchema],
     duration: { type: String, trim: true },
   },
   { _id: false },

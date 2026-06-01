@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ImageUpload } from '@/components/admin/ImageUpload';
+import { EbookUpload } from '@/components/admin/EbookUpload';
 import { Save, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
@@ -31,6 +32,12 @@ interface BookData {
   featured: boolean;
   saleType: 'direto' | 'editora';
   saleNote: string;
+  // --- eBook ---
+  hasEbook: boolean;
+  ebookFileId: string;
+  ebookFileName: string;
+  ebookSize: number;
+  // -------------
   order: number;
   isActive: boolean;
 }
@@ -59,6 +66,10 @@ const defaultBook: BookData = {
   featured: false,
   saleType: 'direto',
   saleNote: '',
+  hasEbook: false,
+  ebookFileId: '',
+  ebookFileName: '',
+  ebookSize: 0,
   order: 0,
   isActive: true,
 };
@@ -69,7 +80,12 @@ interface BookFormProps {
 }
 
 export function BookForm({ initialData, isEditing = false }: BookFormProps) {
-  const [form, setForm] = useState<BookData>(initialData || defaultBook);
+  // Coalesce com defaultBook para garantir que campos novos (eBook) existam
+  // mesmo se o initialData vier de um documento antigo sem eles.
+  const [form, setForm] = useState<BookData>({
+    ...defaultBook,
+    ...(initialData || {}),
+  });
   const [topicsText, setTopicsText] = useState(
     (initialData?.topics || []).join(', '),
   );
@@ -434,6 +450,45 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
                 className={inputClass}
               />
             </div>
+          </div>
+
+          {/* --- eBook (PDF) --- */}
+          <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>
+            <h3 className='text-xs font-semibold text-txt-muted uppercase tracking-wider'>
+              eBook (PDF)
+            </h3>
+
+            <label className='flex items-center gap-3 cursor-pointer'>
+              <input
+                type='checkbox'
+                checked={form.hasEbook}
+                onChange={e => updateField('hasEbook', e.target.checked)}
+                className='w-4 h-4 rounded border-navy-600 text-gold-500 focus:ring-gold-500/50 bg-navy-950'
+              />
+              <span className='text-sm text-cream-200'>
+                Vender também em eBook
+              </span>
+            </label>
+
+            {form.hasEbook && (
+              <>
+                <p className='text-xs text-txt-muted'>
+                  Mesmo preço do físico. Entrega digital com download protegido
+                  após o pagamento.
+                </p>
+                <EbookUpload
+                  fileId={form.ebookFileId}
+                  fileName={form.ebookFileName}
+                  size={form.ebookSize}
+                  onChange={({ fileId, fileName, size }) => {
+                    updateField('ebookFileId', fileId);
+                    updateField('ebookFileName', fileName);
+                    updateField('ebookSize', size);
+                  }}
+                  folder='ferri-schoedl/ebooks'
+                />
+              </>
+            )}
           </div>
 
           <div className='bg-navy-900 border border-gold-500/10 rounded-xl p-5 space-y-4'>

@@ -87,6 +87,7 @@ function dbBookToLivro(book: Record<string, unknown>) {
     featured: book.featured as boolean,
     saleType: book.saleType as 'direto' | 'editora',
     saleNote: (book.saleNote as string) || undefined,
+    hasEbook: (book.hasEbook as boolean) || false,
   };
 }
 
