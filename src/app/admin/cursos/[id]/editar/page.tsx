@@ -3,40 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { AdminHeader } from '@/components/admin/AdminHeader';
-import { CourseForm } from '@/components/admin/CourseForm';
-
-interface CourseModule {
-  title: string;
-  description: string;
-  lessons: string[];
-  duration: string;
-}
-
-interface CourseData {
-  _id?: string;
-  slug: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  longDescription: string;
-  instructor: string;
-  image: string;
-  price: number;
-  originalPrice: number;
-  duration: string;
-  modules: CourseModule[];
-  level: 'iniciante' | 'intermediario' | 'avancado';
-  category: string;
-  topics: string[];
-  featured: boolean;
-  isActive: boolean;
-  status: 'rascunho' | 'publicado' | 'arquivado';
-  order: number;
-}
+import { CourseForm, type CourseInput } from '@/components/admin/CourseForm';
 
 export default function EditCoursePage() {
   const params = useParams();
-  const [course, setCourse] = useState<CourseData | null>(null);
+  const [course, setCourse] = useState<CourseInput | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 

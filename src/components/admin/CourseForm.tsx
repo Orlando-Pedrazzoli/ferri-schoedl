@@ -6,21 +6,21 @@ import { ImageUpload } from '@/components/admin/ImageUpload';
 import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
-interface CourseLesson {
+export interface CourseLesson {
   title: string;
   videoId: string;
   duration: string;
   isPreview: boolean;
 }
 
-interface CourseModule {
+export interface CourseModule {
   title: string;
   description: string;
   lessons: CourseLesson[];
   duration: string;
 }
 
-interface CourseData {
+export interface CourseData {
   _id?: string;
   slug: string;
   title: string;
@@ -40,6 +40,18 @@ interface CourseData {
   isActive: boolean;
   status: 'rascunho' | 'publicado' | 'arquivado';
   order: number;
+}
+
+// Aceita initialData no formato novo OU antigo (aulas como texto)
+export type LessonInput = string | Partial<CourseLesson>;
+
+export interface CourseInput extends Partial<Omit<CourseData, 'modules'>> {
+  modules?: Array<{
+    title?: string;
+    description?: string;
+    duration?: string;
+    lessons?: LessonInput[];
+  }>;
 }
 
 const emptyLesson: CourseLesson = {
@@ -81,31 +93,32 @@ function extractYouTubeId(input: string): string {
 }
 
 // Normaliza initialData (inclusive aulas no formato antigo de texto)
-function normalizeCourse(data?: CourseData): CourseData {
+function normalizeCourse(data?: CourseInput): CourseData {
   if (!data) return defaultCourse;
+  const { modules: rawModules, ...rest } = data;
   return {
     ...defaultCourse,
-    ...data,
-    modules: (data.modules || []).map(m => ({
+    ...rest,
+    modules: (rawModules || []).map(m => ({
       title: m.title || '',
       description: m.description || '',
       duration: m.duration || '',
-      lessons: (m.lessons || []).map((l: unknown) =>
+      lessons: (m.lessons || []).map(l =>
         typeof l === 'string'
           ? { title: l, videoId: '', duration: '', isPreview: false }
           : {
-              title: (l as CourseLesson).title || '',
-              videoId: (l as CourseLesson).videoId || '',
-              duration: (l as CourseLesson).duration || '',
-              isPreview: !!(l as CourseLesson).isPreview,
+              title: l.title || '',
+              videoId: l.videoId || '',
+              duration: l.duration || '',
+              isPreview: !!l.isPreview,
             },
       ),
     })),
-  };
+  } as CourseData;
 }
 
 interface CourseFormProps {
-  initialData?: CourseData;
+  initialData?: CourseInput;
   isEditing?: boolean;
 }
 
@@ -116,6 +129,15 @@ export function CourseForm({
   const [form, setForm] = useState<CourseData>(normalizeCourse(initialData));
   const [topicsText, setTopicsText] = useState(
     (initialData?.topics || []).join(', '),
+  );
+  const [priceText, setPriceText] = useState(
+    initialData?.price ? String(initialData.price) : '',
+  );
+  const [originalPriceText, setOriginalPriceText] = useState(
+    initialData?.originalPrice ? String(initialData.originalPrice) : '',
+  );
+  const [orderText, setOrderText] = useState(
+    initialData?.order ? String(initialData.order) : '',
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -539,10 +561,12 @@ export function CourseForm({
               <input
                 type='number'
                 step='0.01'
-                value={form.price}
-                onChange={e =>
-                  updateField('price', parseFloat(e.target.value) || 0)
-                }
+                value={priceText}
+                onChange={e => {
+                  setPriceText(e.target.value);
+                  updateField('price', parseFloat(e.target.value) || 0);
+                }}
+                placeholder='Ex: 500'
                 required
                 className={inputClass}
               />
@@ -552,10 +576,12 @@ export function CourseForm({
               <input
                 type='number'
                 step='0.01'
-                value={form.originalPrice}
-                onChange={e =>
-                  updateField('originalPrice', parseFloat(e.target.value) || 0)
-                }
+                value={originalPriceText}
+                onChange={e => {
+                  setOriginalPriceText(e.target.value);
+                  updateField('originalPrice', parseFloat(e.target.value) || 0);
+                }}
+                placeholder='Opcional'
                 className={inputClass}
               />
             </div>
@@ -637,10 +663,12 @@ export function CourseForm({
               <label className={labelClass}>Ordem</label>
               <input
                 type='number'
-                value={form.order}
-                onChange={e =>
-                  updateField('order', parseInt(e.target.value) || 0)
-                }
+                value={orderText}
+                onChange={e => {
+                  setOrderText(e.target.value);
+                  updateField('order', parseInt(e.target.value) || 0);
+                }}
+                placeholder='0'
                 className={inputClass}
               />
             </div>
