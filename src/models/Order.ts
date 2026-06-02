@@ -1,8 +1,7 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
 // --- Tipos ---
-
-export type PaymentMethod = 'credit_card' | 'boleto' | 'pix';
+export type PaymentMethod = 'card' | 'credit_card' | 'boleto' | 'pix';
 
 export type OrderStatus =
   | 'pendente'
@@ -20,15 +19,18 @@ export type PaymentStatus =
   | 'canceled'
   | 'chargedback';
 
-// --- Interfaces ---
+export type OrderItemType = 'physical' | 'ebook' | 'course';
 
+// --- Interfaces ---
 export interface IOrderItem {
-  bookId: Types.ObjectId;
+  type: OrderItemType;
+  bookId?: Types.ObjectId;
+  courseId?: Types.ObjectId;
   slug: string;
   title: string;
-  price: number; // preco unitario em reais
+  price: number;
   quantity: number;
-  weight: number; // peso unitario em gramas
+  weight: number;
 }
 
 export interface IOrderAddress {
@@ -52,18 +54,22 @@ export interface IOrderShipping {
 export interface IOrderPayment {
   method: PaymentMethod;
   status: PaymentStatus;
+  // Stripe
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+  cardBrand?: string;
+  cardLastDigits?: string;
+  paidAt?: Date;
+  // Legado (Pagar.me) — mantidos por compatibilidade com pedidos antigos
   pagarmeOrderId?: string;
   pagarmeChargeId?: string;
   installments?: number;
-  cardLastDigits?: string;
-  cardBrand?: string;
   boletoUrl?: string;
   boletoBarcode?: string;
   boletoDueDate?: Date;
   pixQrCode?: string;
   pixQrCodeUrl?: string;
   pixExpiresAt?: Date;
-  paidAt?: Date;
 }
 
 export interface IOrderDocument extends Document {
@@ -74,9 +80,9 @@ export interface IOrderDocument extends Document {
   customerCpf: string;
   customerPhone: string;
   items: IOrderItem[];
-  subtotal: number; // em reais
-  shipping: IOrderShipping;
-  total: number; // subtotal + shipping.price
+  subtotal: number;
+  shipping?: IOrderShipping;
+  total: number;
   payment: IOrderPayment;
   status: OrderStatus;
   notes?: string;
@@ -85,15 +91,20 @@ export interface IOrderDocument extends Document {
 }
 
 // --- Schemas ---
-
 const OrderItemSchema = new Schema<IOrderItem>(
   {
-    bookId: { type: Schema.Types.ObjectId, ref: 'Book', required: true },
+    type: {
+      type: String,
+      enum: ['physical', 'ebook', 'course'],
+      default: 'physical',
+    },
+    bookId: { type: Schema.Types.ObjectId, ref: 'Book' },
+    courseId: { type: Schema.Types.ObjectId, ref: 'Course' },
     slug: { type: String, required: true },
     title: { type: String, required: true },
     price: { type: Number, required: true },
     quantity: { type: Number, required: true, min: 1 },
-    weight: { type: Number, required: true },
+    weight: { type: Number, default: 0 },
   },
   { _id: false },
 );
@@ -124,39 +135,35 @@ const OrderShippingSchema = new Schema<IOrderShipping>(
 
 const OrderPaymentSchema = new Schema<IOrderPayment>(
   {
-    method: {
-      type: String,
-      enum: ['credit_card', 'boleto', 'pix'],
-      required: true,
-    },
+    method: { type: String, default: 'card' },
     status: {
       type: String,
       enum: ['pending', 'paid', 'failed', 'canceled', 'chargedback'],
       default: 'pending',
     },
+    // Stripe
+    stripeSessionId: { type: String, default: '' },
+    stripePaymentIntentId: { type: String, default: '' },
+    cardBrand: { type: String, default: '' },
+    cardLastDigits: { type: String, default: '' },
+    paidAt: { type: Date },
+    // Legado
     pagarmeOrderId: { type: String, default: '' },
     pagarmeChargeId: { type: String, default: '' },
     installments: { type: Number, default: 1 },
-    cardLastDigits: { type: String, default: '' },
-    cardBrand: { type: String, default: '' },
     boletoUrl: { type: String, default: '' },
     boletoBarcode: { type: String, default: '' },
     boletoDueDate: { type: Date },
     pixQrCode: { type: String, default: '' },
     pixQrCodeUrl: { type: String, default: '' },
     pixExpiresAt: { type: Date },
-    paidAt: { type: Date },
   },
   { _id: false },
 );
 
 const OrderSchema = new Schema<IOrderDocument>(
   {
-    orderCode: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+    orderCode: { type: String, unique: true, index: true },
     customerId: {
       type: Schema.Types.ObjectId,
       ref: 'Customer',
@@ -175,7 +182,7 @@ const OrderSchema = new Schema<IOrderDocument>(
       ],
     },
     subtotal: { type: Number, required: true },
-    shipping: { type: OrderShippingSchema, required: true },
+    shipping: { type: OrderShippingSchema, required: false },
     total: { type: Number, required: true },
     payment: { type: OrderPaymentSchema, required: true },
     status: {
@@ -193,20 +200,17 @@ const OrderSchema = new Schema<IOrderDocument>(
     },
     notes: { type: String, default: '' },
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true },
 );
 
 // --- Indices ---
-OrderSchema.index({ orderCode: 1 });
 OrderSchema.index({ customerId: 1 });
-OrderSchema.index({ 'payment.pagarmeOrderId': 1 });
+OrderSchema.index({ 'payment.stripeSessionId': 1 });
 OrderSchema.index({ status: 1 });
 OrderSchema.index({ createdAt: -1 });
 
-// --- Gerar orderCode unico ---
-OrderSchema.pre('validate', async function () {
+// --- Gerar orderCode unico (pre save, Mongoose 9) ---
+OrderSchema.pre('save', async function () {
   if (!this.orderCode) {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = 'FS-';

@@ -1,59 +1,25 @@
 // src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { generateSetupToken } from '@/lib/setup-token';
+import type Stripe from 'stripe';
+import type { Types } from 'mongoose';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
-import Order from '@/models/Order';
+import Order, { IOrderItem } from '@/models/Order';
 import Customer from '@/models/Customer';
 import Book from '@/models/Book';
-import { sendOrderConfirmation } from '@/lib/resend';
+import Course from '@/models/Course';
+import { stripe, SITE_URL } from '@/lib/stripe';
 import { calcularFreteReal } from '@/lib/shipping';
+import { generateSetupToken } from '@/lib/setup-token';
 
-// --- Helpers (mantidos do original) ---
-function toAmountCents(value: number): number {
-  return Math.round(value * 100);
-}
-function cleanCpf(cpf: string): string {
-  return cpf.replace(/\D/g, '');
-}
-function cleanCep(cep: string): string {
-  return cep.replace(/\D/g, '');
-}
-function cleanPhone(phone: string): string {
-  return phone.replace(/\D/g, '');
-}
-function parsePhone(phone: string): {
-  country_code: string;
-  area_code: string;
-  number: string;
-} {
-  const digits = cleanPhone(phone);
-  if (digits.length >= 12) {
-    return {
-      country_code: digits.slice(0, 2),
-      area_code: digits.slice(2, 4),
-      number: digits.slice(4),
-    };
-  }
-  if (digits.length >= 10) {
-    return {
-      country_code: '55',
-      area_code: digits.slice(0, 2),
-      number: digits.slice(2),
-    };
-  }
-  return { country_code: '55', area_code: '11', number: digits };
-}
-function buildPagarmeAuth(): string {
-  const sk = process.env.PAGARME_SECRET_KEY;
-  if (!sk) throw new Error('PAGARME_SECRET_KEY nao configurada');
-  return 'Basic ' + Buffer.from(`${sk}:`).toString('base64');
-}
+export const runtime = 'nodejs';
+
+type ItemFormat = 'physical' | 'ebook' | 'course';
 
 interface CheckoutBody {
-  items: Array<{ slug: string; quantity: number }>;
-  shipping: {
+  items: Array<{ slug: string; quantity: number; format: ItemFormat }>;
+  shipping?: {
     method: 'PAC' | 'SEDEX';
     address: {
       street: string;
@@ -65,22 +31,17 @@ interface CheckoutBody {
       cep: string;
     };
   };
-  payment: {
-    method: 'credit_card' | 'boleto' | 'pix';
-    card?: {
-      number: string;
-      holderName: string;
-      expMonth: number;
-      expYear: number;
-      cvv: string;
-      installments: number;
-    };
-  };
+}
+
+function cleanCep(cep: string): string {
+  return cep.replace(/\D/g, '');
+}
+function toCents(value: number): number {
+  return Math.round(value * 100);
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // SEGURANÇA: customerId vem da sessão, NUNCA do body
     const session = await getServerSession(authOptions);
     if (!session?.user?.id || session.user.role !== 'customer') {
       return NextResponse.json(
@@ -91,112 +52,222 @@ export async function POST(request: NextRequest) {
     const customerId = session.user.id;
 
     await dbConnect();
-
     const body: CheckoutBody = await request.json();
 
-    if (!body.items?.length || !body.shipping || !body.payment) {
-      return NextResponse.json(
-        { error: 'Dados incompletos. Preencha todos os campos obrigatorios.' },
-        { status: 400 },
-      );
+    if (!body.items?.length) {
+      return NextResponse.json({ error: 'Carrinho vazio.' }, { status: 400 });
     }
 
-    if (!['PAC', 'SEDEX'].includes(body.shipping.method)) {
-      return NextResponse.json(
-        { error: 'Metodo de envio invalido.' },
-        { status: 400 },
-      );
-    }
-
-    if (!['credit_card', 'boleto', 'pix'].includes(body.payment.method)) {
-      return NextResponse.json(
-        { error: 'Metodo de pagamento invalido.' },
-        { status: 400 },
-      );
-    }
-
-    if (body.payment.method === 'credit_card' && !body.payment.card) {
-      return NextResponse.json(
-        { error: 'Dados do cartao sao obrigatorios.' },
-        { status: 400 },
-      );
-    }
-
-    // Buscar customer pela sessão
     const customer = await Customer.findById(customerId);
     if (!customer) {
       return NextResponse.json(
-        { error: 'Cliente nao encontrado.' },
+        { error: 'Cliente não encontrado.' },
         { status: 404 },
       );
     }
-
     if (!customer.emailVerified) {
       return NextResponse.json(
         {
-          error: 'Email nao verificado. Verifique seu email antes de comprar.',
+          error: 'Email não verificado. Verifique seu email antes de comprar.',
         },
         { status: 403 },
       );
     }
 
-    // Buscar livros e validar
-    const bookSlugs = body.items.map(i => i.slug);
-    const books = await Book.find({
-      slug: { $in: bookSlugs },
-      isActive: true,
-      saleType: 'direto',
-    });
+    const hasPhysical = body.items.some(i => i.format === 'physical');
 
-    if (books.length !== bookSlugs.length) {
-      return NextResponse.json(
-        {
-          error: 'Um ou mais livros nao estao disponiveis para venda directa.',
-        },
-        { status: 400 },
-      );
+    // Buscar produtos do banco
+    const bookSlugs = body.items
+      .filter(i => i.format !== 'course')
+      .map(i => i.slug);
+    const courseSlugs = body.items
+      .filter(i => i.format === 'course')
+      .map(i => i.slug);
+
+    const books = bookSlugs.length
+      ? await Book.find({ slug: { $in: bookSlugs }, isActive: true })
+      : [];
+    const courses = courseSlugs.length
+      ? await Course.find({
+          slug: { $in: courseSlugs },
+          isActive: true,
+          status: 'publicado',
+        })
+      : [];
+
+    // Validar e montar itens + line items do Stripe
+    const orderItems: IOrderItem[] = [];
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+
+    for (const ci of body.items) {
+      if (ci.format === 'course') {
+        const course = courses.find(c => c.slug === ci.slug);
+        if (!course) {
+          return NextResponse.json(
+            { error: `Curso indisponível: ${ci.slug}` },
+            { status: 400 },
+          );
+        }
+        orderItems.push({
+          type: 'course',
+          courseId: course._id as Types.ObjectId,
+          slug: course.slug,
+          title: course.title,
+          price: course.price,
+          quantity: 1,
+          weight: 0,
+        });
+        lineItems.push({
+          quantity: 1,
+          price_data: {
+            currency: 'brl',
+            unit_amount: toCents(course.price),
+            product_data: {
+              name: `${course.title} (Curso online)`,
+              ...(course.image ? { images: [course.image] } : {}),
+            },
+          },
+        });
+      } else {
+        const book = books.find(b => b.slug === ci.slug);
+        if (!book) {
+          return NextResponse.json(
+            { error: `Produto indisponível: ${ci.slug}` },
+            { status: 400 },
+          );
+        }
+
+        if (ci.format === 'physical') {
+          if (book.saleType !== 'direto') {
+            return NextResponse.json(
+              {
+                error: `"${book.title}" não está disponível para venda direta.`,
+              },
+              { status: 400 },
+            );
+          }
+          if (!book.inStock) {
+            return NextResponse.json(
+              { error: `"${book.title}" está fora de estoque.` },
+              { status: 400 },
+            );
+          }
+          orderItems.push({
+            type: 'physical',
+            bookId: book._id as Types.ObjectId,
+            slug: book.slug,
+            title: book.title,
+            price: book.price,
+            quantity: ci.quantity,
+            weight: book.weight,
+          });
+          lineItems.push({
+            quantity: ci.quantity,
+            price_data: {
+              currency: 'brl',
+              unit_amount: toCents(book.price),
+              product_data: {
+                name: book.title,
+                ...(book.image ? { images: [book.image] } : {}),
+              },
+            },
+          });
+        } else {
+          // ebook
+          if (!book.hasEbook) {
+            return NextResponse.json(
+              { error: `"${book.title}" não está disponível em eBook.` },
+              { status: 400 },
+            );
+          }
+          orderItems.push({
+            type: 'ebook',
+            bookId: book._id as Types.ObjectId,
+            slug: book.slug,
+            title: book.title,
+            price: book.price,
+            quantity: 1,
+            weight: 0,
+          });
+          lineItems.push({
+            quantity: 1,
+            price_data: {
+              currency: 'brl',
+              unit_amount: toCents(book.price),
+              product_data: {
+                name: `${book.title} (eBook)`,
+                ...(book.image ? { images: [book.image] } : {}),
+              },
+            },
+          });
+        }
+      }
     }
-
-    const orderItems = body.items.map(cartItem => {
-      const book = books.find(b => b.slug === cartItem.slug);
-      if (!book) throw new Error(`Livro ${cartItem.slug} nao encontrado`);
-      if (!book.inStock)
-        throw new Error(`Livro "${book.title}" fora de estoque`);
-
-      return {
-        bookId: book._id,
-        slug: book.slug,
-        title: book.title,
-        price: book.price,
-        quantity: cartItem.quantity,
-        weight: book.weight,
-      };
-    });
 
     const subtotal = orderItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0,
-    );
-    const totalWeight = orderItems.reduce(
-      (sum, item) => sum + item.weight * item.quantity,
+      (sum, i) => sum + i.price * i.quantity,
       0,
     );
 
-    const cepDestino = cleanCep(body.shipping.address.cep);
-    const freteOpcoes = calcularFreteReal(cepDestino, totalWeight);
-    const freteSelecionado = freteOpcoes.find(
-      f => f.method === body.shipping.method,
-    );
+    // Frete: somente quando há item físico
+    let shipping: IOrderItem extends never
+      ? never
+      : undefined | NonNullable<unknown>;
+    // Frete: somente quando há item físico
+    let shippingPrice = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let shippingDoc: any = undefined;
 
-    if (!freteSelecionado) {
-      return NextResponse.json(
-        { error: 'Nao foi possivel calcular o frete para este CEP.' },
-        { status: 400 },
+    if (hasPhysical) {
+      if (!body.shipping || !['PAC', 'SEDEX'].includes(body.shipping.method)) {
+        return NextResponse.json(
+          { error: 'Selecione o método de envio.' },
+          { status: 400 },
+        );
+      }
+      const totalWeight = orderItems.reduce(
+        (sum, i) => (i.type === 'physical' ? sum + i.weight * i.quantity : sum),
+        0,
       );
+      const cep = cleanCep(body.shipping.address.cep);
+      const opcoes = calcularFreteReal(cep, totalWeight);
+      const sel = opcoes.find(f => f.method === body.shipping!.method);
+      if (!sel) {
+        return NextResponse.json(
+          { error: 'Não foi possível calcular o frete para este CEP.' },
+          { status: 400 },
+        );
+      }
+      shippingPrice = sel.price;
+      const addr = body.shipping.address;
+      shippingDoc = {
+        method: body.shipping.method,
+        price: sel.price,
+        estimatedDays: sel.days,
+        address: {
+          street: addr.street,
+          number: addr.number,
+          complement: addr.complement || '',
+          neighborhood: addr.neighborhood,
+          city: addr.city,
+          state: addr.state.toUpperCase(),
+          cep,
+        },
+      };
+
+      lineItems.push({
+        quantity: 1,
+        price_data: {
+          currency: 'brl',
+          unit_amount: toCents(sel.price),
+          product_data: { name: `Frete (${body.shipping.method})` },
+        },
+      });
     }
 
-    const total = subtotal + freteSelecionado.price;
+    const total = subtotal + shippingPrice;
 
+    // Criar pedido pendente
     const order = new Order({
       customerId: customer._id,
       customerName: customer.name,
@@ -205,279 +276,50 @@ export async function POST(request: NextRequest) {
       customerPhone: customer.phone,
       items: orderItems,
       subtotal,
-      shipping: {
-        method: body.shipping.method,
-        price: freteSelecionado.price,
-        estimatedDays: freteSelecionado.days,
-        address: {
-          street: body.shipping.address.street,
-          number: body.shipping.address.number,
-          complement: body.shipping.address.complement || '',
-          neighborhood: body.shipping.address.neighborhood,
-          city: body.shipping.address.city,
-          state: body.shipping.address.state.toUpperCase(),
-          cep: cepDestino,
-        },
-      },
+      shipping: shippingDoc,
       total,
-      payment: {
-        method: body.payment.method,
-        status: 'pending',
-        installments:
-          body.payment.method === 'credit_card'
-            ? body.payment.card?.installments || 1
-            : 1,
-      },
+      payment: { method: 'card', status: 'pending' },
       status: 'pendente',
     });
-
     await order.save();
 
-    // A partir daqui, payload Pagar.me (idêntico ao original)
-    const phone = parsePhone(customer.phone);
-    const shippingAddr = body.shipping.address;
-
-    const pagarmeItems = orderItems.map(item => ({
-      amount: toAmountCents(item.price),
-      description: item.title,
-      quantity: item.quantity,
-      code: item.slug,
-    }));
-
-    const pagarmeCustomer = {
-      name: customer.name,
-      email: customer.email,
-      type: 'individual' as const,
-      document: cleanCpf(customer.cpf),
-      document_type: 'CPF',
-      phones: {
-        mobile_phone: {
-          country_code: phone.country_code,
-          area_code: phone.area_code,
-          number: phone.number,
-        },
-      },
-      address: {
-        country: 'BR',
-        state: shippingAddr.state.toUpperCase(),
-        city: shippingAddr.city,
-        zip_code: cepDestino,
-        line_1: `${shippingAddr.number}, ${shippingAddr.street}, ${shippingAddr.neighborhood}`,
-        line_2: shippingAddr.complement || '',
-      },
-    };
-
-    const pagarmeShipping = {
-      amount: toAmountCents(freteSelecionado.price),
-      description: `Envio ${body.shipping.method}`,
-      recipient_name: customer.name,
-      recipient_phone: cleanPhone(customer.phone),
-      address: {
-        country: 'BR',
-        state: shippingAddr.state.toUpperCase(),
-        city: shippingAddr.city,
-        zip_code: cepDestino,
-        line_1: `${shippingAddr.number}, ${shippingAddr.street}, ${shippingAddr.neighborhood}`,
-        line_2: shippingAddr.complement || '',
-      },
-    };
-
-    const totalCents = toAmountCents(total);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let pagarmePayment: Record<string, any>;
-
-    if (body.payment.method === 'credit_card') {
-      const card = body.payment.card!;
-      pagarmePayment = {
-        payment_method: 'credit_card',
-        credit_card: {
-          installments: card.installments || 1,
-          statement_descriptor: 'FERRISCHOEDL',
-          card: {
-            number: card.number.replace(/\s/g, ''),
-            holder_name: card.holderName.toUpperCase(),
-            exp_month: card.expMonth,
-            exp_year: card.expYear,
-            cvv: card.cvv,
-            billing_address: {
-              country: 'BR',
-              state: shippingAddr.state.toUpperCase(),
-              city: shippingAddr.city,
-              zip_code: cepDestino,
-              line_1: `${shippingAddr.number}, ${shippingAddr.street}, ${shippingAddr.neighborhood}`,
-              line_2: shippingAddr.complement || '',
-            },
-          },
-        },
-      };
-    } else if (body.payment.method === 'boleto') {
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 3);
-      pagarmePayment = {
-        payment_method: 'boleto',
-        boleto: {
-          instructions:
-            'Pagamento referente a compra de livros - Ferri Schoedl Advocacia',
-          due_at: dueDate.toISOString(),
-        },
-      };
-    } else {
-      pagarmePayment = {
-        payment_method: 'pix',
-        pix: { expires_in: 3600 },
-      };
-    }
-
-    const pagarmeOrderPayload = {
-      code: order.orderCode,
-      closed: true,
-      items: pagarmeItems,
-      customer: pagarmeCustomer,
-      shipping: pagarmeShipping,
-      payments: [{ ...pagarmePayment, amount: totalCents }],
-    };
-
-    const pagarmeResponse = await fetch('https://api.pagar.me/core/v5/orders', {
-      method: 'POST',
-      headers: {
-        Authorization: buildPagarmeAuth(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(pagarmeOrderPayload),
-    });
-
-    const pagarmeData = await pagarmeResponse.json();
-
-    if (!pagarmeResponse.ok) {
-      console.error(
-        '[Checkout] Pagar.me erro:',
-        JSON.stringify(pagarmeData, null, 2),
-      );
-      order.payment.status = 'failed';
-      order.status = 'falhou';
-      await order.save();
-
-      return NextResponse.json(
-        {
-          error: 'Erro ao processar pagamento. Tente novamente.',
-          details:
-            pagarmeData.message || pagarmeData.errors || 'Erro desconhecido',
-        },
-        { status: 400 },
-      );
-    }
-
-    order.payment.pagarmeOrderId = pagarmeData.id;
-
-    const charge = pagarmeData.charges?.[0];
-    if (charge) {
-      order.payment.pagarmeChargeId = charge.id;
-      const lastTx = charge.last_transaction;
-
-      if (body.payment.method === 'credit_card') {
-        order.payment.cardLastDigits = lastTx?.card?.last_four_digits || '';
-        order.payment.cardBrand = lastTx?.card?.brand || '';
-        if (pagarmeData.status === 'paid') {
-          order.payment.status = 'paid';
-          order.payment.paidAt = new Date();
-          order.status = 'pago';
-        }
-      } else if (body.payment.method === 'boleto') {
-        order.payment.boletoUrl = lastTx?.url || lastTx?.pdf || '';
-        order.payment.boletoBarcode = lastTx?.line || lastTx?.barcode || '';
-        if (lastTx?.due_at)
-          order.payment.boletoDueDate = new Date(lastTx.due_at);
-      } else if (body.payment.method === 'pix') {
-        order.payment.pixQrCode = lastTx?.qr_code || '';
-        order.payment.pixQrCodeUrl = lastTx?.qr_code_url || '';
-        if (lastTx?.expires_at)
-          order.payment.pixExpiresAt = new Date(lastTx.expires_at);
-      }
-    }
-
-    await order.save();
-    // Salvar endereco de entrega no perfil do customer (para auto-fill futuro)
-    try {
-      const addrToSave = {
-        label: `${shippingAddr.city} — ${shippingAddr.state}`,
-        street: shippingAddr.street,
-        number: shippingAddr.number,
-        complement: shippingAddr.complement || '',
-        neighborhood: shippingAddr.neighborhood,
-        city: shippingAddr.city,
-        state: shippingAddr.state.toUpperCase(),
-        cep: cepDestino,
-        isDefault: true,
-      };
-      // So salva se o customer nao tem nenhum endereco ainda
-      const customerForAddr = await Customer.findById(customer._id).select(
-        'addresses',
-      );
-      if (
-        customerForAddr &&
-        (!customerForAddr.addresses || customerForAddr.addresses.length === 0)
-      ) {
-        await Customer.updateOne(
-          { _id: customer._id },
-          { $push: { addresses: addrToSave } },
-        );
-      }
-    } catch (addrErr) {
-      // Nao bloqueia o checkout se falhar
-      console.error('[Checkout] Erro ao salvar endereco:', addrErr);
-    }
-
-    if (order.status === 'pago') {
-      await sendOrderConfirmation(
-        customer.email,
-        customer.name,
-        order.orderCode,
-        orderItems.map(i => ({
-          title: i.title,
-          quantity: i.quantity,
-          price: i.price,
-        })),
-        total,
-      ).catch(err => console.error('[Checkout] Erro ao enviar email:', err));
-
-      await Customer.findByIdAndUpdate(customer._id, {
-        $push: { orders: order._id },
-      });
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const responseData: Record<string, any> = {
-      success: true,
-      orderCode: order.orderCode,
-      status: order.status,
-      paymentMethod: body.payment.method,
-      total,
-    };
-
-    // Se customer nao tem senha propria, gerar setupToken para facilitar criacao pos-compra
+    // URL de sucesso (com setupToken se o cliente ainda não tem senha)
+    let successUrl = `${SITE_URL}/pedido/${order.orderCode}?session_id={CHECKOUT_SESSION_ID}`;
     if (!customer.hasPassword) {
-      responseData.setupToken = generateSetupToken(
+      const setupToken = generateSetupToken(
         customer._id.toString(),
         order.orderCode,
       );
+      successUrl += `&setup=${setupToken}`;
     }
 
-    if (body.payment.method === 'boleto') {
-      responseData.boletoUrl = order.payment.boletoUrl;
-      responseData.boletoBarcode = order.payment.boletoBarcode;
-      responseData.boletoDueDate = order.payment.boletoDueDate;
-    } else if (body.payment.method === 'pix') {
-      responseData.pixQrCode = order.payment.pixQrCode;
-      responseData.pixQrCodeUrl = order.payment.pixQrCodeUrl;
-      responseData.pixExpiresAt = order.payment.pixExpiresAt;
-    }
+    // Criar Checkout Session (somente cartão)
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      locale: 'pt-BR',
+      line_items: lineItems,
+      customer_email: customer.email,
+      client_reference_id: order.orderCode,
+      metadata: {
+        orderId: order._id.toString(),
+        orderCode: order.orderCode,
+      },
+      success_url: successUrl,
+      cancel_url: `${SITE_URL}/checkout?canceled=1`,
+    });
 
-    return NextResponse.json(responseData, { status: 201 });
-  } catch (error) {
-    console.error('[Checkout] Erro interno:', error);
+    order.payment.stripeSessionId = checkoutSession.id;
+    await order.save();
+
     return NextResponse.json(
-      { error: 'Erro interno do servidor.' },
-      { status: 500 },
+      { url: checkoutSession.url, orderCode: order.orderCode },
+      { status: 201 },
     );
+  } catch (error) {
+    console.error('[Checkout] Erro:', error);
+    const message =
+      error instanceof Error ? error.message : 'Erro interno do servidor.';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

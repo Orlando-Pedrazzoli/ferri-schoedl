@@ -10,6 +10,7 @@ import {
   User,
   LogOut,
   ShoppingBag,
+  BookOpen,
 } from 'lucide-react';
 
 const navItems = [
@@ -24,6 +25,12 @@ const navItems = [
     href: '/conta/cursos',
     label: 'Meus Cursos',
     icon: GraduationCap,
+    exact: false,
+  },
+  {
+    href: '/conta/ebooks',
+    label: 'Meus eBooks',
+    icon: BookOpen,
     exact: false,
   },
   { href: '/conta/perfil', label: 'Meus Dados', icon: User, exact: false },

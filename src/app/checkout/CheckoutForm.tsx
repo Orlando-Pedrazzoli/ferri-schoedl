@@ -1,31 +1,25 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import {
   ArrowLeft,
-  CreditCard,
-  QrCode,
-  FileText,
   Truck,
   Lock,
   ShoppingBag,
   Loader2,
   AlertCircle,
-  Check,
-  Copy,
   User,
+  CreditCard,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '@/components/CartProvider';
 import { CheckoutLoginGate } from '@/components/CheckoutLoginGate';
 import toast from 'react-hot-toast';
 
-type PaymentMethod = 'credit_card' | 'boleto' | 'pix';
 type ShippingMethod = 'PAC' | 'SEDEX';
-type CheckoutStep = 'dados' | 'pagamento' | 'confirmacao';
 
 interface FreteOpcao {
   method: ShippingMethod;
@@ -50,35 +44,8 @@ interface AddressForm {
   cep: string;
 }
 
-interface CardForm {
-  number: string;
-  holderName: string;
-  expMonth: string;
-  expYear: string;
-  cvv: string;
-  installments: number;
-}
-
-interface OrderResult {
-  orderCode: string;
-  status: string;
-  paymentMethod: PaymentMethod;
-  total: number;
-  boletoUrl?: string;
-  boletoBarcode?: string;
-  boletoDueDate?: string;
-  pixQrCode?: string;
-  pixQrCodeUrl?: string;
-  pixExpiresAt?: string;
-  setupToken?: string;
-}
-
 function formatCurrency(value: number): string {
   return value.toFixed(2).replace('.', ',');
-}
-function formatCardNumber(value: string): string {
-  const digits = value.replace(/\D/g, '').slice(0, 16);
-  return digits.replace(/(\d{4})(?=\d)/g, '$1 ');
 }
 function formatCep(value: string): string {
   const digits = value.replace(/\D/g, '').slice(0, 8);
@@ -98,6 +65,12 @@ function formatPhone(value: string): string {
     return d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{4})(\d)/, '$1-$2');
   }
   return d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2');
+}
+
+function formatTipo(format: string): string | null {
+  if (format === 'ebook') return 'eBook';
+  if (format === 'course') return 'Curso online';
+  return null;
 }
 
 const ESTADOS_BR = [
@@ -137,9 +110,9 @@ export function CheckoutForm() {
     status: sessionStatus,
     update: updateSession,
   } = useSession();
-  const { items, totalPrice, totalWeight, clearCart } = useCart();
+  const { items, totalPrice, totalWeight } = useCart();
+  const hasPhysical = items.some(i => i.format === 'physical');
 
-  const [step, setStep] = useState<CheckoutStep>('dados');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [gateOpen, setGateOpen] = useState(false);
@@ -150,40 +123,6 @@ export function CheckoutForm() {
     cpf: '',
     phone: '',
   });
-
-  useEffect(() => {
-    if (session?.user?.role === 'customer') {
-      setPersonal(prev => ({
-        name: prev.name || session.user.name || '',
-        email: prev.email || session.user.email || '',
-        cpf: prev.cpf || (session.user as { cpf?: string }).cpf || '',
-        phone: prev.phone || (session.user as { phone?: string }).phone || '',
-      }));
-
-      // Buscar endereco salvo para auto-preenchimento
-      fetch('/api/conta/perfil')
-        .then(res => res.json())
-        .then(data => {
-          if (data.addresses && data.addresses.length > 0) {
-            const defaultAddr =
-              data.addresses.find((a: { isDefault: boolean }) => a.isDefault) ||
-              data.addresses[0];
-            setAddress(prev => ({
-              street: prev.street || defaultAddr.street || '',
-              number: prev.number || defaultAddr.number || '',
-              complement: prev.complement || defaultAddr.complement || '',
-              neighborhood: prev.neighborhood || defaultAddr.neighborhood || '',
-              city: prev.city || defaultAddr.city || '',
-              state: prev.state || defaultAddr.state || '',
-              cep: prev.cep || defaultAddr.cep || '',
-            }));
-          }
-        })
-        .catch(() => {
-          // Silencioso: se falhar, customer preenche manualmente
-        });
-    }
-  }, [session]);
 
   const [address, setAddress] = useState<AddressForm>({
     street: '',
@@ -200,47 +139,60 @@ export function CheckoutForm() {
   const [freteLoading, setFreteLoading] = useState(false);
   const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('PAC');
 
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>('credit_card');
-  const [card, setCard] = useState<CardForm>({
-    number: '',
-    holderName: '',
-    expMonth: '',
-    expYear: '',
-    cvv: '',
-    installments: 1,
-  });
+  // Prefill a partir da sessão + perfil
+  useEffect(() => {
+    if (session?.user?.role === 'customer') {
+      setPersonal(prev => ({
+        name: prev.name || session.user.name || '',
+        email: prev.email || session.user.email || '',
+        cpf: prev.cpf || (session.user as { cpf?: string }).cpf || '',
+        phone: prev.phone || (session.user as { phone?: string }).phone || '',
+      }));
 
-  const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
-  const [pixCopied, setPixCopied] = useState(false);
+      fetch('/api/conta/perfil')
+        .then(res => res.json())
+        .then(data => {
+          if (data.addresses && data.addresses.length > 0) {
+            const def =
+              data.addresses.find((a: { isDefault: boolean }) => a.isDefault) ||
+              data.addresses[0];
+            setAddress(prev => ({
+              street: prev.street || def.street || '',
+              number: prev.number || def.number || '',
+              complement: prev.complement || def.complement || '',
+              neighborhood: prev.neighborhood || def.neighborhood || '',
+              city: prev.city || def.city || '',
+              state: prev.state || def.state || '',
+              cep: prev.cep || def.cep || '',
+            }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [session]);
+
+  // Toast de pagamento cancelado (volta do Stripe com ?canceled=1)
+  useEffect(() => {
+    if (
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('canceled')
+    ) {
+      toast.error('Pagamento cancelado. Você pode tentar novamente.');
+    }
+  }, []);
+
+  // Carrinho vazio -> volta para livros
+  useEffect(() => {
+    if (items.length === 0) {
+      router.push('/livros');
+    }
+  }, [items, router]);
 
   const fretePrice =
     freteOpcoes.find(f => f.method === shippingMethod)?.price || 0;
   const freteDays =
     freteOpcoes.find(f => f.method === shippingMethod)?.days || '';
-  const total = totalPrice + fretePrice;
-
-  const installmentOptions = useMemo(() => {
-    const opts = [];
-    const max = total >= 100 ? 12 : total >= 50 ? 6 : total >= 30 ? 3 : 1;
-    for (let i = 1; i <= max; i++) {
-      const value = total / i;
-      opts.push({
-        value: i,
-        label:
-          i === 1
-            ? `1x de R$ ${formatCurrency(total)} (sem juros)`
-            : `${i}x de R$ ${formatCurrency(value)}`,
-      });
-    }
-    return opts;
-  }, [total]);
-
-  useEffect(() => {
-    if (items.length === 0 && !orderResult) {
-      router.push('/livros');
-    }
-  }, [items, orderResult, router]);
+  const total = totalPrice + (hasPhysical ? fretePrice : 0);
 
   const handleCepBlur = useCallback(async () => {
     const cepDigits = address.cep.replace(/\D/g, '');
@@ -276,64 +228,44 @@ export function CheckoutForm() {
     setFreteLoading(false);
   }, [address.cep, totalWeight]);
 
-  const validateDados = (): boolean => {
+  const validate = (): boolean => {
     if (!personal.name || personal.name.trim().length < 2) {
-      setError('Nome completo e obrigatorio.');
+      setError('Nome completo é obrigatório.');
       return false;
     }
     if (!personal.email || !/^\S+@\S+\.\S+$/.test(personal.email)) {
-      setError('Email invalido.');
+      setError('Email inválido.');
       return false;
     }
     if (!personal.cpf || personal.cpf.replace(/\D/g, '').length !== 11) {
-      setError('CPF invalido.');
+      setError('CPF inválido.');
       return false;
     }
     if (!personal.phone || personal.phone.replace(/\D/g, '').length < 10) {
-      setError('Telefone invalido.');
+      setError('Telefone inválido.');
       return false;
     }
-    if (!address.cep || address.cep.replace(/\D/g, '').length !== 8) {
-      setError('Preencha o CEP corretamente.');
-      return false;
-    }
-    if (
-      !address.street ||
-      !address.number ||
-      !address.neighborhood ||
-      !address.city ||
-      !address.state
-    ) {
-      setError('Preencha todos os campos de endereco obrigatorios.');
-      return false;
-    }
-    if (!ESTADOS_BR.includes(address.state.toUpperCase())) {
-      setError('Estado invalido.');
-      return false;
-    }
-    if (freteOpcoes.length === 0) {
-      setError(
-        'Calcule o frete antes de continuar. Preencha o CEP e clique fora do campo.',
-      );
-      return false;
-    }
-    setError('');
-    return true;
-  };
-
-  const validatePayment = (): boolean => {
-    if (paymentMethod === 'credit_card') {
-      const cardDigits = card.number.replace(/\s/g, '');
-      if (cardDigits.length < 13 || cardDigits.length > 19) {
-        setError('Numero do cartao invalido.');
+    if (hasPhysical) {
+      if (!address.cep || address.cep.replace(/\D/g, '').length !== 8) {
+        setError('Preencha o CEP corretamente.');
         return false;
       }
-      if (!card.holderName.trim()) {
-        setError('Nome no cartao e obrigatorio.');
+      if (
+        !address.street ||
+        !address.number ||
+        !address.neighborhood ||
+        !address.city ||
+        !address.state
+      ) {
+        setError('Preencha todos os campos de endereço obrigatórios.');
         return false;
       }
-      if (!card.expMonth || !card.expYear || !card.cvv) {
-        setError('Preencha validade e CVV do cartao.');
+      if (!ESTADOS_BR.includes(address.state.toUpperCase())) {
+        setError('Estado inválido.');
+        return false;
+      }
+      if (freteOpcoes.length === 0) {
+        setError('Calcule o frete: preencha o CEP e clique fora do campo.');
         return false;
       }
     }
@@ -346,9 +278,22 @@ export function CheckoutForm() {
     setError('');
 
     try {
-      const payload = {
-        items: items.map(i => ({ slug: i.livro.slug, quantity: i.quantity })),
-        shipping: {
+      const payload: {
+        items: Array<{ slug: string; quantity: number; format: string }>;
+        shipping?: {
+          method: ShippingMethod;
+          address: AddressForm & { state: string; cep: string };
+        };
+      } = {
+        items: items.map(i => ({
+          slug: i.livro.slug,
+          quantity: i.quantity,
+          format: i.format,
+        })),
+      };
+
+      if (hasPhysical) {
+        payload.shipping = {
           method: shippingMethod,
           address: {
             street: address.street,
@@ -359,21 +304,8 @@ export function CheckoutForm() {
             state: address.state.toUpperCase(),
             cep: address.cep.replace(/\D/g, ''),
           },
-        },
-        payment: {
-          method: paymentMethod,
-          ...(paymentMethod === 'credit_card' && {
-            card: {
-              number: card.number.replace(/\s/g, ''),
-              holderName: card.holderName,
-              expMonth: parseInt(card.expMonth),
-              expYear: parseInt(card.expYear),
-              cvv: card.cvv,
-              installments: card.installments,
-            },
-          }),
-        },
-      };
+        };
+      }
 
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -388,13 +320,16 @@ export function CheckoutForm() {
         return;
       }
 
-      setOrderResult(data);
-      setStep('confirmacao');
-      clearCart();
-      toast.success('Pedido realizado com sucesso!');
+      if (data.url) {
+        // Redireciona para o checkout do Stripe (mantém loading)
+        window.location.href = data.url;
+        return;
+      }
+
+      setError('Não foi possível iniciar o pagamento. Tente novamente.');
+      setLoading(false);
     } catch {
-      setError('Erro de conexao. Tente novamente.');
-    } finally {
+      setError('Erro de conexão. Tente novamente.');
       setLoading(false);
     }
   };
@@ -407,8 +342,8 @@ export function CheckoutForm() {
     }, 300);
   };
 
-  const handleSubmit = () => {
-    if (!validatePayment()) return;
+  const handlePay = () => {
+    if (!validate()) return;
     if (
       sessionStatus !== 'authenticated' ||
       session?.user?.role !== 'customer'
@@ -419,16 +354,7 @@ export function CheckoutForm() {
     submitOrder();
   };
 
-  const handleCopyPix = () => {
-    if (orderResult?.pixQrCode) {
-      navigator.clipboard.writeText(orderResult.pixQrCode);
-      setPixCopied(true);
-      toast.success('Codigo PIX copiado!');
-      setTimeout(() => setPixCopied(false), 3000);
-    }
-  };
-
-  if (items.length === 0 && !orderResult) {
+  if (items.length === 0) {
     return (
       <section className='flex min-h-screen items-center justify-center'>
         <Loader2 size={24} className='animate-spin text-gold-500' />
@@ -436,13 +362,12 @@ export function CheckoutForm() {
     );
   }
 
-  const headerTitle =
-    step === 'confirmacao' ? 'Pedido realizado' : 'Finalizar compra';
+  const inputCls =
+    'w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30';
 
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28'>
       <div className='mx-auto max-w-5xl px-4 sm:px-6 lg:px-8'>
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -456,49 +381,11 @@ export function CheckoutForm() {
               size={14}
               className='transition-transform group-hover:-translate-x-1'
             />
-            Voltar para livros
+            Continuar comprando
           </Link>
-
           <h1 className='mt-4 font-[family-name:var(--font-cormorant)] text-2xl text-cream-100 sm:text-3xl'>
-            {headerTitle}
+            Finalizar compra
           </h1>
-
-          {step !== 'confirmacao' ? (
-            <div className='mt-4 flex items-center gap-3'>
-              {(['dados', 'pagamento'] as const).map((s, i) => {
-                const currentIndex = (['dados', 'pagamento'] as const).indexOf(
-                  step as 'dados' | 'pagamento',
-                );
-                const stepClass =
-                  step === s
-                    ? 'bg-gold-500 text-navy-950'
-                    : i < currentIndex
-                      ? 'bg-gold-500/20 text-gold-500'
-                      : 'bg-navy-800 text-txt-muted';
-                const labelClass =
-                  step === s ? 'text-cream-100' : 'text-txt-muted';
-                const label = s === 'dados' ? 'Dados e Endereco' : 'Pagamento';
-                return (
-                  <div key={s} className='flex items-center gap-3'>
-                    <button
-                      onClick={() => {
-                        if (s === 'dados') setStep('dados');
-                      }}
-                      className={`flex h-7 w-7 items-center justify-center rounded-full text-xs transition-colors ${stepClass}`}
-                    >
-                      {i + 1}
-                    </button>
-                    <span
-                      className={`text-xs uppercase tracking-[1px] ${labelClass}`}
-                    >
-                      {label}
-                    </span>
-                    {i < 1 ? <div className='h-px w-8 bg-gold-500/15' /> : null}
-                  </div>
-                );
-              })}
-            </div>
-          ) : null}
         </motion.div>
 
         {error ? (
@@ -513,85 +400,80 @@ export function CheckoutForm() {
         ) : null}
 
         <div className='grid gap-8 lg:grid-cols-3'>
-          <div className='lg:col-span-2'>
-            {/* STEP 1: Dados + Endereco + Frete */}
-            {step === 'dados' ? (
-              <motion.div
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                className='space-y-6'
-              >
-                {/* Dados pessoais */}
-                <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
-                  <h2 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
-                    <User size={14} />
-                    Seus dados
-                  </h2>
-                  <div className='grid gap-4 sm:grid-cols-2'>
-                    <div className='sm:col-span-2'>
-                      <label className='mb-1 block text-xs text-txt-muted'>
-                        Nome completo *
-                      </label>
-                      <input
-                        type='text'
-                        value={personal.name}
-                        onChange={e =>
-                          setPersonal(p => ({ ...p, name: e.target.value }))
-                        }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                      />
-                    </div>
-                    <div>
-                      <label className='mb-1 block text-xs text-txt-muted'>
-                        Email *
-                      </label>
-                      <input
-                        type='email'
-                        value={personal.email}
-                        onChange={e =>
-                          setPersonal(p => ({ ...p, email: e.target.value }))
-                        }
-                        placeholder='seu@email.com'
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                      />
-                    </div>
-                    <div>
-                      <label className='mb-1 block text-xs text-txt-muted'>
-                        Telefone *
-                      </label>
-                      <input
-                        type='text'
-                        value={formatPhone(personal.phone)}
-                        onChange={e =>
-                          setPersonal(p => ({ ...p, phone: e.target.value }))
-                        }
-                        placeholder='(00) 00000-0000'
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                      />
-                    </div>
-                    <div className='sm:col-span-2'>
-                      <label className='mb-1 block text-xs text-txt-muted'>
-                        CPF *
-                      </label>
-                      <input
-                        type='text'
-                        value={formatCpf(personal.cpf)}
-                        onChange={e =>
-                          setPersonal(p => ({ ...p, cpf: e.target.value }))
-                        }
-                        placeholder='000.000.000-00'
-                        maxLength={14}
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                      />
-                    </div>
-                  </div>
+          <div className='space-y-6 lg:col-span-2'>
+            {/* Dados pessoais */}
+            <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
+              <h2 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
+                <User size={14} />
+                Seus dados
+              </h2>
+              <div className='grid gap-4 sm:grid-cols-2'>
+                <div className='sm:col-span-2'>
+                  <label className='mb-1 block text-xs text-txt-muted'>
+                    Nome completo *
+                  </label>
+                  <input
+                    type='text'
+                    value={personal.name}
+                    onChange={e =>
+                      setPersonal(p => ({ ...p, name: e.target.value }))
+                    }
+                    className={inputCls}
+                  />
                 </div>
+                <div>
+                  <label className='mb-1 block text-xs text-txt-muted'>
+                    Email *
+                  </label>
+                  <input
+                    type='email'
+                    value={personal.email}
+                    onChange={e =>
+                      setPersonal(p => ({ ...p, email: e.target.value }))
+                    }
+                    placeholder='seu@email.com'
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className='mb-1 block text-xs text-txt-muted'>
+                    Telefone *
+                  </label>
+                  <input
+                    type='text'
+                    value={formatPhone(personal.phone)}
+                    onChange={e =>
+                      setPersonal(p => ({ ...p, phone: e.target.value }))
+                    }
+                    placeholder='(00) 00000-0000'
+                    className={inputCls}
+                  />
+                </div>
+                <div className='sm:col-span-2'>
+                  <label className='mb-1 block text-xs text-txt-muted'>
+                    CPF *
+                  </label>
+                  <input
+                    type='text'
+                    value={formatCpf(personal.cpf)}
+                    onChange={e =>
+                      setPersonal(p => ({ ...p, cpf: e.target.value }))
+                    }
+                    placeholder='000.000.000-00'
+                    maxLength={14}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            </div>
 
-                {/* Endereco */}
+            {/* Endereço + Frete (só com item físico) */}
+            {hasPhysical ? (
+              <>
                 <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
                   <h2 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
                     <Truck size={14} />
-                    Endereco de entrega
+                    Endereço de entrega
                   </h2>
                   <div className='grid gap-4 sm:grid-cols-2'>
                     <div>
@@ -607,7 +489,7 @@ export function CheckoutForm() {
                         onBlur={handleCepBlur}
                         placeholder='00000-000'
                         maxLength={9}
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        className={inputCls}
                       />
                     </div>
                     <div>
@@ -622,7 +504,7 @@ export function CheckoutForm() {
                             state: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        className={inputCls}
                       >
                         <option value=''>Selecione</option>
                         {ESTADOS_BR.map(uf => (
@@ -645,12 +527,12 @@ export function CheckoutForm() {
                             street: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        className={inputCls}
                       />
                     </div>
                     <div>
                       <label className='mb-1 block text-xs text-txt-muted'>
-                        Numero *
+                        Número *
                       </label>
                       <input
                         type='text'
@@ -661,7 +543,7 @@ export function CheckoutForm() {
                             number: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        className={inputCls}
                       />
                     </div>
                     <div>
@@ -678,7 +560,7 @@ export function CheckoutForm() {
                           }))
                         }
                         placeholder='Apto, sala...'
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        className={inputCls}
                       />
                     </div>
                     <div>
@@ -694,7 +576,7 @@ export function CheckoutForm() {
                             neighborhood: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        className={inputCls}
                       />
                     </div>
                     <div>
@@ -710,16 +592,15 @@ export function CheckoutForm() {
                             city: e.target.value,
                           }))
                         }
-                        className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        className={inputCls}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Frete */}
                 <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
                   <h2 className='mb-4 text-xs uppercase tracking-[2px] text-gold-500'>
-                    Metodo de envio
+                    Método de envio
                   </h2>
 
                   {freteLoading ? (
@@ -744,7 +625,7 @@ export function CheckoutForm() {
                     <div>
                       {freteRegiao ? (
                         <p className='mb-3 text-xs text-txt-muted'>
-                          Regiao: {freteRegiao}
+                          Região: {freteRegiao}
                         </p>
                       ) : null}
                       <div className='space-y-2'>
@@ -777,473 +658,101 @@ export function CheckoutForm() {
                     </div>
                   ) : null}
                 </div>
+              </>
+            ) : (
+              <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
+                <p className='text-sm text-txt-muted'>
+                  Itens digitais — sem entrega. O acesso é liberado na sua conta
+                  assim que o pagamento for confirmado.
+                </p>
+              </div>
+            )}
 
-                <button
-                  onClick={() => {
-                    if (validateDados()) setStep('pagamento');
-                  }}
-                  className='w-full bg-gold-500 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'
-                >
-                  Continuar para pagamento
-                </button>
-              </motion.div>
-            ) : null}
-
-            {/* STEP 2: Pagamento */}
-            {step === 'pagamento' ? (
-              <motion.div
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                className='space-y-6'
-              >
-                <div className='border border-gold-500/10 bg-navy-900/30 p-5 sm:p-6'>
-                  <h2 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
-                    <Lock size={14} />
-                    Forma de pagamento
-                  </h2>
-
-                  <div className='mb-6 grid grid-cols-3 gap-2'>
-                    {[
-                      {
-                        value: 'credit_card' as const,
-                        label: 'Cartao',
-                        icon: CreditCard,
-                      },
-                      { value: 'pix' as const, label: 'PIX', icon: QrCode },
-                      {
-                        value: 'boleto' as const,
-                        label: 'Boleto',
-                        icon: FileText,
-                      },
-                    ].map(({ value, label, icon: Icon }) => {
-                      const selected = paymentMethod === value;
-                      const btnClass = selected
-                        ? 'border-gold-500/40 bg-gold-500/5'
-                        : 'border-gold-500/10 hover:border-gold-500/20';
-                      const iconColor = selected
-                        ? 'text-gold-500'
-                        : 'text-txt-muted';
-                      const labelColor = selected
-                        ? 'text-cream-100'
-                        : 'text-txt-muted';
-                      return (
-                        <button
-                          key={value}
-                          onClick={() => setPaymentMethod(value)}
-                          className={`flex flex-col items-center gap-2 border py-3 text-center transition-colors ${btnClass}`}
-                        >
-                          <Icon
-                            size={20}
-                            strokeWidth={1.5}
-                            className={iconColor}
-                          />
-                          <span
-                            className={`text-xs uppercase tracking-[1px] ${labelColor}`}
-                          >
-                            {label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {paymentMethod === 'credit_card' ? (
-                    <div className='space-y-4'>
-                      <div>
-                        <label className='mb-1 block text-xs text-txt-muted'>
-                          Numero do cartao *
-                        </label>
-                        <input
-                          type='text'
-                          value={formatCardNumber(card.number)}
-                          onChange={e =>
-                            setCard(prev => ({
-                              ...prev,
-                              number: e.target.value,
-                            }))
-                          }
-                          placeholder='0000 0000 0000 0000'
-                          maxLength={19}
-                          className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                        />
-                      </div>
-                      <div>
-                        <label className='mb-1 block text-xs text-txt-muted'>
-                          Nome no cartao *
-                        </label>
-                        <input
-                          type='text'
-                          value={card.holderName}
-                          onChange={e =>
-                            setCard(prev => ({
-                              ...prev,
-                              holderName: e.target.value.toUpperCase(),
-                            }))
-                          }
-                          placeholder='NOME COMO NO CARTAO'
-                          className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                        />
-                      </div>
-                      <div className='grid grid-cols-3 gap-3'>
-                        <div>
-                          <label className='mb-1 block text-xs text-txt-muted'>
-                            Mes *
-                          </label>
-                          <select
-                            value={card.expMonth}
-                            onChange={e =>
-                              setCard(prev => ({
-                                ...prev,
-                                expMonth: e.target.value,
-                              }))
-                            }
-                            className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                          >
-                            <option value=''>MM</option>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map(
-                              m => (
-                                <option key={m} value={m}>
-                                  {String(m).padStart(2, '0')}
-                                </option>
-                              ),
-                            )}
-                          </select>
-                        </div>
-                        <div>
-                          <label className='mb-1 block text-xs text-txt-muted'>
-                            Ano *
-                          </label>
-                          <select
-                            value={card.expYear}
-                            onChange={e =>
-                              setCard(prev => ({
-                                ...prev,
-                                expYear: e.target.value,
-                              }))
-                            }
-                            className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                          >
-                            <option value=''>AA</option>
-                            {Array.from({ length: 12 }, (_, i) => {
-                              const y = new Date().getFullYear() + i;
-                              return (
-                                <option key={y} value={y % 100}>
-                                  {y}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </div>
-                        <div>
-                          <label className='mb-1 block text-xs text-txt-muted'>
-                            CVV *
-                          </label>
-                          <input
-                            type='text'
-                            value={card.cvv}
-                            onChange={e =>
-                              setCard(prev => ({
-                                ...prev,
-                                cvv: e.target.value
-                                  .replace(/\D/g, '')
-                                  .slice(0, 4),
-                              }))
-                            }
-                            placeholder='000'
-                            maxLength={4}
-                            className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <label className='mb-1 block text-xs text-txt-muted'>
-                          Parcelas
-                        </label>
-                        <select
-                          value={card.installments}
-                          onChange={e =>
-                            setCard(prev => ({
-                              ...prev,
-                              installments: parseInt(e.target.value),
-                            }))
-                          }
-                          className='w-full border border-gold-500/12 bg-navy-800/30 px-3 py-2.5 text-sm text-cream-100 outline-none focus:border-gold-500/30'
-                        >
-                          {installmentOptions.map(opt => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {paymentMethod === 'pix' ? (
-                    <div className='rounded border border-gold-500/8 bg-navy-800/20 p-4'>
-                      <div className='flex items-start gap-3'>
-                        <QrCode size={20} className='mt-0.5 text-gold-600' />
-                        <div>
-                          <p className='text-sm text-cream-100'>
-                            Pagamento via PIX
-                          </p>
-                          <p className='mt-1 text-xs text-txt-muted'>
-                            Apos confirmar, voce recebera o QR Code e o codigo
-                            PIX para copiar e colar. Validade: 1 hora.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {paymentMethod === 'boleto' ? (
-                    <div className='rounded border border-gold-500/8 bg-navy-800/20 p-4'>
-                      <div className='flex items-start gap-3'>
-                        <FileText size={20} className='mt-0.5 text-gold-600' />
-                        <div>
-                          <p className='text-sm text-cream-100'>
-                            Pagamento via Boleto Bancario
-                          </p>
-                          <p className='mt-1 text-xs text-txt-muted'>
-                            Vencimento em 3 dias uteis. Pedido processado apos
-                            compensacao (1-2 dias uteis).
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-
-                <div className='flex gap-3'>
-                  <button
-                    onClick={() => setStep('dados')}
-                    className='border border-gold-500/30 px-6 py-3.5 text-[13px] uppercase tracking-[2px] text-gold-500 transition-colors hover:bg-gold-500/5'
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className='flex flex-1 items-center justify-center gap-2 bg-gold-500 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 disabled:opacity-50'
-                  >
-                    {loading ? (
-                      <span className='flex items-center gap-2'>
-                        <Loader2 size={16} className='animate-spin' />
-                        Processando...
-                      </span>
-                    ) : (
-                      <span className='flex items-center gap-2'>
-                        <Lock size={14} />
-                        Confirmar pedido — R$ {formatCurrency(total)}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </motion.div>
-            ) : null}
-
-            {/* STEP 3: Confirmacao */}
-            {step === 'confirmacao' && orderResult ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.98 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className='space-y-6'
-              >
-                <div className='border border-gold-500/10 bg-navy-900/30 p-6 text-center sm:p-8'>
-                  <div className='mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gold-500/10'>
-                    <Check
-                      size={28}
-                      strokeWidth={1.5}
-                      className='text-gold-500'
-                    />
-                  </div>
-                  <h2 className='font-[family-name:var(--font-cormorant)] text-2xl text-cream-100'>
-                    {orderResult.paymentMethod === 'credit_card'
-                      ? 'Pagamento confirmado!'
-                      : 'Pedido realizado!'}
-                  </h2>
-                  <p className='mt-2 text-sm text-txt-muted'>
-                    Codigo do pedido:{' '}
-                    <span className='font-mono text-gold-500'>
-                      {orderResult.orderCode}
-                    </span>
-                  </p>
-
-                  {orderResult.paymentMethod === 'pix' &&
-                  orderResult.pixQrCode ? (
-                    <div className='mt-6 space-y-4'>
-                      {orderResult.pixQrCodeUrl ? (
-                        <div className='mx-auto w-fit border border-gold-500/10 bg-white p-3'>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={orderResult.pixQrCodeUrl}
-                            alt='QR Code PIX'
-                            width={200}
-                            height={200}
-                          />
-                        </div>
-                      ) : null}
-                      <div>
-                        <p className='mb-2 text-xs uppercase tracking-[1px] text-gold-600'>
-                          Ou copie o codigo PIX
-                        </p>
-                        <div className='mx-auto flex max-w-md items-center gap-2'>
-                          <input
-                            type='text'
-                            readOnly
-                            value={orderResult.pixQrCode}
-                            className='flex-1 truncate border border-gold-500/12 bg-navy-800/30 px-3 py-2 text-xs text-cream-100 outline-none'
-                          />
-                          <button
-                            onClick={handleCopyPix}
-                            className='flex items-center gap-1.5 border border-gold-500/30 px-3 py-2 text-xs text-gold-500 transition-colors hover:bg-gold-500/5'
-                          >
-                            <Copy size={14} />
-                            {pixCopied ? 'Copiado!' : 'Copiar'}
-                          </button>
-                        </div>
-                        {orderResult.pixExpiresAt ? (
-                          <p className='mt-2 text-xs text-txt-muted'>
-                            Valido ate:{' '}
-                            {new Date(orderResult.pixExpiresAt).toLocaleString(
-                              'pt-BR',
-                            )}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {orderResult.paymentMethod === 'boleto' &&
-                  orderResult.boletoUrl ? (
-                    <div className='mt-6'>
-                      <a
-                        href={orderResult.boletoUrl}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='inline-flex items-center gap-2 bg-gold-500 px-8 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'
-                      >
-                        <FileText size={16} />
-                        Visualizar boleto
-                      </a>
-                      {orderResult.boletoBarcode ? (
-                        <p className='mt-3 font-mono text-xs text-txt-muted'>
-                          {orderResult.boletoBarcode}
-                        </p>
-                      ) : null}
-                      {orderResult.boletoDueDate ? (
-                        <p className='mt-2 text-xs text-txt-muted'>
-                          Vencimento:{' '}
-                          {new Date(
-                            orderResult.boletoDueDate,
-                          ).toLocaleDateString('pt-BR')}
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
-
-                  {orderResult.paymentMethod === 'credit_card' ? (
-                    <p className='mt-4 text-sm text-txt-muted'>
-                      Voce recebera um email de confirmacao em breve.
-                    </p>
-                  ) : null}
-                </div>
-
-                <div className='flex flex-col items-center gap-3 sm:flex-row sm:justify-center'>
-                  <Link
-                    href={
-                      orderResult.setupToken
-                        ? `/pedido/${orderResult.orderCode}?setup=${orderResult.setupToken}`
-                        : `/pedido/${orderResult.orderCode}`
-                    }
-                    className='inline-flex items-center gap-2 bg-gold-500 px-8 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'
-                  >
-                    {orderResult.setupToken
-                      ? 'Aceder a minha conta'
-                      : 'Acompanhar pedido'}
-                  </Link>
-                  {!orderResult.setupToken ? (
-                    <Link
-                      href='/livros'
-                      className='text-[13px] text-txt-muted transition-colors hover:text-cream-100'
-                    >
-                      Continuar comprando
-                    </Link>
-                  ) : null}
-                </div>
-              </motion.div>
-            ) : null}
+            <button
+              onClick={handlePay}
+              disabled={loading}
+              className='flex w-full items-center justify-center gap-2 bg-gold-500 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 disabled:opacity-50'
+            >
+              {loading ? (
+                <span className='flex items-center gap-2'>
+                  <Loader2 size={16} className='animate-spin' />
+                  Redirecionando...
+                </span>
+              ) : (
+                <span className='flex items-center gap-2'>
+                  <CreditCard size={14} />
+                  Pagar com cartão — R$ {formatCurrency(total)}
+                </span>
+              )}
+            </button>
           </div>
 
-          {/* SIDEBAR: Resumo */}
-          {step !== 'confirmacao' ? (
-            <div className='lg:col-span-1'>
-              <div className='sticky top-28 border border-gold-500/10 bg-navy-900/30 p-5'>
-                <h3 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
-                  <ShoppingBag size={14} />
-                  Resumo
-                </h3>
-                <div className='space-y-3'>
-                  {items.map(item => (
-                    <div
-                      key={item.livro.slug}
-                      className='flex justify-between gap-2'
-                    >
+          {/* Resumo */}
+          <div className='lg:col-span-1'>
+            <div className='sticky top-28 border border-gold-500/10 bg-navy-900/30 p-5'>
+              <h3 className='mb-4 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
+                <ShoppingBag size={14} />
+                Resumo
+              </h3>
+              <div className='space-y-3'>
+                {items.map(item => {
+                  const tipo = formatTipo(item.format);
+                  return (
+                    <div key={item.id} className='flex justify-between gap-2'>
                       <div className='min-w-0 flex-1'>
                         <p className='truncate text-sm text-cream-100'>
                           {item.livro.title}
                         </p>
                         <p className='text-xs text-txt-muted'>
-                          Qtd: {item.quantity}
+                          {tipo ? `${tipo}` : `Qtd: ${item.quantity}`}
                         </p>
                       </div>
                       <p className='shrink-0 text-sm text-cream-100'>
                         R$ {formatCurrency(item.livro.price * item.quantity)}
                       </p>
                     </div>
-                  ))}
+                  );
+                })}
+              </div>
+              <div className='mt-4 space-y-2 border-t border-gold-500/8 pt-3'>
+                <div className='flex justify-between text-[13px]'>
+                  <span className='text-txt-muted'>Subtotal</span>
+                  <span className='text-cream-100'>
+                    R$ {formatCurrency(totalPrice)}
+                  </span>
                 </div>
-                <div className='mt-4 space-y-2 border-t border-gold-500/8 pt-3'>
+                {hasPhysical && fretePrice > 0 ? (
                   <div className='flex justify-between text-[13px]'>
-                    <span className='text-txt-muted'>Subtotal</span>
+                    <span className='text-txt-muted'>
+                      Frete ({shippingMethod})
+                    </span>
                     <span className='text-cream-100'>
-                      R$ {formatCurrency(totalPrice)}
+                      R$ {formatCurrency(fretePrice)}
                     </span>
                   </div>
-                  {fretePrice > 0 ? (
-                    <div className='flex justify-between text-[13px]'>
-                      <span className='text-txt-muted'>
-                        Frete ({shippingMethod})
-                      </span>
-                      <span className='text-cream-100'>
-                        R$ {formatCurrency(fretePrice)}
-                      </span>
-                    </div>
-                  ) : null}
-                  {freteDays ? (
-                    <div className='flex justify-between text-[13px] text-txt-muted'>
-                      <span>Prazo</span>
-                      <span>{freteDays}</span>
-                    </div>
-                  ) : null}
-                  <div className='flex justify-between border-t border-gold-500/8 pt-2'>
-                    <span className='text-sm text-cream-100'>Total</span>
-                    <span className='font-[family-name:var(--font-cormorant)] text-xl text-gold-500'>
-                      R$ {formatCurrency(total)}
-                    </span>
+                ) : null}
+                {hasPhysical && freteDays ? (
+                  <div className='flex justify-between text-[13px] text-txt-muted'>
+                    <span>Prazo</span>
+                    <span>{freteDays}</span>
                   </div>
-                </div>
-                <div className='mt-4 flex items-center gap-2 text-[11px] text-txt-muted'>
-                  <Lock size={12} className='text-gold-600' />
-                  Pagamento seguro via Pagar.me
+                ) : null}
+                <div className='flex justify-between border-t border-gold-500/8 pt-2'>
+                  <span className='text-sm text-cream-100'>Total</span>
+                  <span className='font-[family-name:var(--font-cormorant)] text-xl text-gold-500'>
+                    R$ {formatCurrency(total)}
+                  </span>
                 </div>
               </div>
+              <div className='mt-4 flex items-center gap-2 text-[11px] text-txt-muted'>
+                <Lock size={12} className='text-gold-600' />
+                Pagamento seguro via Stripe
+              </div>
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
 
-      {/* Modal de login/cadastro */}
       <CheckoutLoginGate
         open={gateOpen}
         onClose={() => setGateOpen(false)}

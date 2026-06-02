@@ -7,11 +7,12 @@ import connectDB from '@/lib/mongodb';
 import Order from '@/models/Order';
 import Customer from '@/models/Customer';
 import { verifySetupToken } from '@/lib/setup-token';
+import { stripe } from '@/lib/stripe';
 import { OrderStatusClient } from './OrderStatusClient';
 
 interface Props {
   params: Promise<{ orderCode: string }>;
-  searchParams: Promise<{ setup?: string }>;
+  searchParams: Promise<{ setup?: string; session_id?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -24,61 +25,40 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function PedidoPage({ params, searchParams }: Props) {
   const { orderCode } = await params;
-  const { setup: setupTokenRaw } = await searchParams;
+  const { setup: setupTokenRaw, session_id } = await searchParams;
   const setupToken = typeof setupTokenRaw === 'string' ? setupTokenRaw : '';
 
   await connectDB();
 
-  const order = await Order.findOne({ orderCode }).lean<{
-    orderCode: string;
-    status: string;
-    customerId: { toString(): string };
-    items: Array<{
-      title: string;
-      quantity: number;
-      price: number;
-      slug: string;
-    }>;
-    subtotal: number;
-    shipping: {
-      method: string;
-      price: number;
-      estimatedDays: string;
-      trackingCode?: string;
-      address: {
-        street: string;
-        number: string;
-        complement?: string;
-        neighborhood: string;
-        city: string;
-        state: string;
-        cep: string;
-      };
-    };
-    total: number;
-    payment: {
-      method: string;
-      status: string;
-      installments?: number;
-      cardLastDigits?: string;
-      cardBrand?: string;
-      boletoUrl?: string;
-      pixQrCode?: string;
-      pixQrCodeUrl?: string;
-      paidAt?: Date;
-    };
-    createdAt: Date;
-  }>();
-
+  const order = await Order.findOne({ orderCode });
   if (!order) {
     notFound();
   }
 
-  // --- Decidir se mostra banner de criacao de senha ---
+  // Reconciliação: voltou do Stripe com session_id e ainda não está pago?
+  // Consulta a sessão e confirma (fallback caso o webhook ainda não tenha chegado).
+  if (order.payment.status !== 'paid' && session_id) {
+    try {
+      const s = await stripe.checkout.sessions.retrieve(session_id);
+      if (s.payment_status === 'paid') {
+        order.payment.status = 'paid';
+        order.payment.paidAt = new Date();
+        order.payment.stripePaymentIntentId =
+          typeof s.payment_intent === 'string'
+            ? s.payment_intent
+            : s.payment_intent?.id || '';
+        order.status = 'pago';
+        await order.save();
+      }
+    } catch (err) {
+      console.error('[Pedido] Falha ao reconciliar sessão Stripe:', err);
+    }
+  }
+
+  // --- Banner de criação de senha ---
   let showPasswordSetup = false;
   let resolvedCustomerId: string | null = null;
 
-  // 1) Tentar via sessao ativa
   const session = await getServerSession(authOptions);
   if (
     session?.user?.id &&
@@ -87,7 +67,6 @@ export default async function PedidoPage({ params, searchParams }: Props) {
     resolvedCustomerId = session.user.id;
   }
 
-  // 2) Fallback via setupToken no URL
   if (!resolvedCustomerId && setupToken) {
     const payload = verifySetupToken(setupToken);
     if (payload && payload.orderCode === orderCode) {
@@ -110,42 +89,40 @@ export default async function PedidoPage({ params, searchParams }: Props) {
     }
   }
 
-  // Serializar para passar como prop (sem Mongoose types)
   const serialized = {
     orderCode: order.orderCode,
     status: order.status,
     items: order.items.map(i => ({
+      type: i.type || 'physical',
       title: i.title,
       quantity: i.quantity,
       price: i.price,
       slug: i.slug,
     })),
     subtotal: order.subtotal,
-    shipping: {
-      method: order.shipping.method,
-      price: order.shipping.price,
-      estimatedDays: order.shipping.estimatedDays,
-      trackingCode: order.shipping.trackingCode || '',
-      address: {
-        street: order.shipping.address.street,
-        number: order.shipping.address.number,
-        complement: order.shipping.address.complement || '',
-        neighborhood: order.shipping.address.neighborhood,
-        city: order.shipping.address.city,
-        state: order.shipping.address.state,
-        cep: order.shipping.address.cep,
-      },
-    },
+    shipping: order.shipping
+      ? {
+          method: order.shipping.method,
+          price: order.shipping.price,
+          estimatedDays: order.shipping.estimatedDays,
+          trackingCode: order.shipping.trackingCode || '',
+          address: {
+            street: order.shipping.address.street,
+            number: order.shipping.address.number,
+            complement: order.shipping.address.complement || '',
+            neighborhood: order.shipping.address.neighborhood,
+            city: order.shipping.address.city,
+            state: order.shipping.address.state,
+            cep: order.shipping.address.cep,
+          },
+        }
+      : null,
     total: order.total,
     payment: {
-      method: order.payment.method,
+      method: order.payment.method || 'card',
       status: order.payment.status,
-      installments: order.payment.installments || 1,
-      cardLastDigits: order.payment.cardLastDigits || '',
       cardBrand: order.payment.cardBrand || '',
-      boletoUrl: order.payment.boletoUrl || '',
-      pixQrCode: order.payment.pixQrCode || '',
-      pixQrCodeUrl: order.payment.pixQrCodeUrl || '',
+      cardLastDigits: order.payment.cardLastDigits || '',
       paidAt: order.payment.paidAt
         ? new Date(order.payment.paidAt).toISOString()
         : '',
