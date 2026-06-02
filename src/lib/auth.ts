@@ -66,11 +66,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Credenciais inválidas');
         }
 
-        if (!customer.emailVerified) {
-          throw new Error(
-            'Verifique seu email antes de fazer login. Confira sua caixa de entrada.',
-          );
-        }
+        // Verificação de email desativada — login liberado sem confirmação.
 
         return {
           id: customer._id.toString(),
@@ -119,9 +115,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Assinatura inválida');
         }
 
-        if (!customer.emailVerified) {
-          throw new Error('Email não verificado');
-        }
+        // Verificação de email desativada — login liberado sem confirmação.
 
         return {
           id: customer._id.toString(),
