@@ -6,6 +6,7 @@ import { isValidCPF, sanitizeCPF } from '@/lib/cpf';
 import { isDisposableEmail } from '@/lib/disposable-emails';
 import { sendVerificationEmail } from '@/lib/resend';
 import { rateLimit } from '@/lib/rate-limit';
+import { isCompEmail } from '@/lib/access';
 
 export async function POST(request: NextRequest) {
   try {
@@ -94,6 +95,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // --- Conta liberada (COMP_EMAILS): entra já verificada, sem email ---
+    const compAccount = isCompEmail(email);
+
     // --- Gerar token de verificação ---
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -105,24 +109,29 @@ export async function POST(request: NextRequest) {
       password,
       cpf: sanitizedCPF,
       phone: phone.replace(/\D/g, ''),
-      emailVerified: false,
+      emailVerified: compAccount,
       emailVerificationToken: verificationToken,
       emailVerificationExpires: verificationExpires,
-      hasPassword: true, // ← ADICIONAR ESTA LINHA
+      hasPassword: true,
     });
 
-    // --- Enviar email de verificação ---
-    const emailResult = await sendVerificationEmail(
-      customer.email,
-      customer.name,
-      verificationToken,
-    );
+    // --- Enviar email de verificação (exceto contas liberadas) ---
+    let emailResult: { success: boolean; error?: string } = { success: true };
+    if (!compAccount) {
+      emailResult = await sendVerificationEmail(
+        customer.email,
+        customer.name,
+        verificationToken,
+      );
+    }
 
     return NextResponse.json(
       {
-        message:
-          'Registo realizado com sucesso. Verifique seu email para activar a conta.',
+        message: compAccount
+          ? 'Conta criada e já verificada. Você já pode entrar.'
+          : 'Registo realizado com sucesso. Verifique seu email para activar a conta.',
         email: customer.email,
+        emailVerified: compAccount,
         emailSent: emailResult.success,
         emailError: emailResult.error || null,
       },

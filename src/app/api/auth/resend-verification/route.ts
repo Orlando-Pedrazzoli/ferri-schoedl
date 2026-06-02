@@ -56,11 +56,19 @@ export async function POST(request: NextRequest) {
     );
 
     // Enviar email
-    await sendVerificationEmail(
+    const result = await sendVerificationEmail(
       customer.email,
       customer.name,
       verificationToken,
     );
+
+    if (!result.success) {
+      console.error('[ResendVerification] Falha real no envio:', result.error);
+      return NextResponse.json(
+        { error: `Falha no envio: ${result.error}` },
+        { status: 502 },
+      );
+    }
 
     return NextResponse.json({
       message:
