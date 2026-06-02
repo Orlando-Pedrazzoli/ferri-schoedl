@@ -32,10 +32,12 @@ export async function GET() {
           price: i.price,
         }),
       ),
-      shipping: {
-        method: order.shipping.method,
-        price: order.shipping.price,
-      },
+      shipping: order.shipping
+        ? {
+            method: order.shipping.method,
+            price: order.shipping.price,
+          }
+        : null,
       payment: {
         method: order.payment.method,
         status: order.payment.status,

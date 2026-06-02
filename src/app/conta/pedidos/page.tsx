@@ -26,10 +26,10 @@ interface Order {
   subtotal: number;
   createdAt: string;
   items: OrderItem[];
-  shipping: {
+  shipping?: {
     method: string;
     price: number;
-  };
+  } | null;
   payment: {
     method: string;
     status: string;
@@ -201,7 +201,9 @@ export default function PedidosPage() {
                 {/* Footer */}
                 <div className='flex flex-wrap items-center justify-between gap-2 border-t border-gold-500/5 px-5 py-3'>
                   <div className='flex items-center gap-4 text-xs text-txt-muted'>
-                    <span>{order.shipping.method}</span>
+                    <span>
+                      {order.shipping ? order.shipping.method : 'Digital'}
+                    </span>
                     <span>
                       {PAYMENT_LABELS[order.payment.method] ||
                         order.payment.method}
