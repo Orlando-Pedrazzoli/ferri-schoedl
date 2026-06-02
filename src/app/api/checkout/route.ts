@@ -65,14 +65,8 @@ export async function POST(request: NextRequest) {
         { status: 404 },
       );
     }
-    if (!customer.emailVerified) {
-      return NextResponse.json(
-        {
-          error: 'Email não verificado. Verifique seu email antes de comprar.',
-        },
-        { status: 403 },
-      );
-    }
+
+    // Verificação de email desativada — compra liberada sem confirmação.
 
     const hasPhysical = body.items.some(i => i.format === 'physical');
 
@@ -209,10 +203,6 @@ export async function POST(request: NextRequest) {
       0,
     );
 
-    // Frete: somente quando há item físico
-    let shipping: IOrderItem extends never
-      ? never
-      : undefined | NonNullable<unknown>;
     // Frete: somente quando há item físico
     let shippingPrice = 0;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import dbConnect from '@/lib/mongodb';
 import Course from '@/models/Course';
+import CursoBuyButton from '@/components/cursos/CursoBuyButton';
 import { Reveal, RevealStagger, RevealItem } from '@/components/Reveal';
 import {
   ArrowLeft,
@@ -279,7 +280,7 @@ export default async function CursoSlugPage({ params }: PageProps) {
                 <div className='sticky top-28 space-y-6'>
                   <div className='border border-gold-500/10 bg-navy-900/40 p-6'>
                     <div className='mb-5'>
-                      {course.originalPrice &&
+                      {typeof course.originalPrice === 'number' &&
                         course.originalPrice > 0 &&
                         course.originalPrice > course.price && (
                           <p className='text-sm text-txt-muted line-through'>
@@ -317,18 +318,17 @@ export default async function CursoSlugPage({ params }: PageProps) {
                       </div>
                     </div>
 
+                    <CursoBuyButton slug={slug} price={course.price} />
+
                     <a
+                      href={whatsappLink}
                       target='_blank'
                       rel='noopener noreferrer'
-                      className='flex w-full items-center justify-center gap-2 bg-gold-500 px-6 py-3 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400'
+                      className='mt-3 flex items-center justify-center gap-2 text-xs text-txt-muted transition-colors hover:text-gold-500'
                     >
                       <MessageCircle size={14} />
-                      Inscrever-se
+                      Tirar dúvidas no WhatsApp
                     </a>
-
-                    <p className='mt-3 text-center text-xs text-txt-muted'>
-                      Inscrição via WhatsApp
-                    </p>
                   </div>
 
                   <div className='border border-gold-500/8 bg-navy-800/20 p-5'>
