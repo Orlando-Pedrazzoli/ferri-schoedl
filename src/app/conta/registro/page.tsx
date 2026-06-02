@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 /* ─── CPF Mask: 123.456.789-00 ─── */
@@ -127,10 +128,20 @@ export default function RegistroPage() {
         return;
       }
 
-      // Sucesso — redirecionar para página de verificação
-      router.push(
-        `/conta/verificar-email?email=${encodeURIComponent(form.email)}`,
-      );
+      // Sucesso — login automático e ir direto para a conta (sem verificação de email)
+      const signInResult = await signIn('credentials', {
+        email: form.email.trim().toLowerCase(),
+        password: form.password,
+        redirect: false,
+      });
+
+      if (signInResult?.ok) {
+        router.push('/conta');
+        router.refresh();
+      } else {
+        // Se por algum motivo o auto-login falhar, manda pro login normal
+        router.push('/conta/login');
+      }
     } catch {
       setGlobalError(
         'Erro de conexão. Verifique sua internet e tente novamente.',
