@@ -15,6 +15,9 @@ function getResend(): Resend {
 const FROM_EMAIL = 'Ferri Schoedl Advocacia <noreply@send.ferrischoedl.adv.br>';
 const SITE_URL = process.env.NEXTAUTH_URL || 'https://ferrischoedl.adv.br';
 
+// Quando true, nenhum email é enviado (todas as funções viram no-op de sucesso).
+const EMAILS_DISABLED = process.env.EMAILS_DISABLED === 'true';
+
 /**
  * Envia email de verificação de conta (registo)
  */
@@ -23,6 +26,11 @@ export async function sendVerificationEmail(
   name: string,
   token: string,
 ): Promise<{ success: boolean; error?: string }> {
+  if (EMAILS_DISABLED) {
+    console.log('[Resend] Emails desativados — verificação ignorada.');
+    return { success: true };
+  }
+
   try {
     const verificationUrl = `${SITE_URL}/api/auth/verify-email?token=${token}`;
 
@@ -90,6 +98,11 @@ export async function sendOTP(
   name: string,
   code: string,
 ): Promise<{ success: boolean; error?: string }> {
+  if (EMAILS_DISABLED) {
+    console.log('[Resend] Emails desativados — OTP ignorado.');
+    return { success: true };
+  }
+
   try {
     const { error } = await getResend().emails.send({
       from: FROM_EMAIL,
@@ -148,6 +161,11 @@ export async function sendOrderConfirmation(
   items: Array<{ title: string; quantity: number; price: number }>,
   total: number,
 ): Promise<{ success: boolean; error?: string }> {
+  if (EMAILS_DISABLED) {
+    console.log('[Resend] Emails desativados — confirmação ignorada.');
+    return { success: true };
+  }
+
   try {
     const itemsHtml = items
       .map(
@@ -235,6 +253,11 @@ export async function sendOrderStatusUpdate(
   status: string,
   trackingCode?: string,
 ): Promise<{ success: boolean; error?: string }> {
+  if (EMAILS_DISABLED) {
+    console.log('[Resend] Emails desativados — status update ignorado.');
+    return { success: true };
+  }
+
   const statusMessages: Record<string, string> = {
     preparando: 'Seu pedido está sendo preparado para envio.',
     enviado: `Seu pedido foi enviado!${trackingCode ? ` Código de rastreio: <strong>${trackingCode}</strong>` : ''}`,

@@ -95,8 +95,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // --- Conta liberada (COMP_EMAILS): entra já verificada, sem email ---
+    // --- Conta liberada (COMP_EMAILS) ou emails desligados: entra já verificada ---
     const compAccount = isCompEmail(email);
+    const emailsDisabled = process.env.EMAILS_DISABLED === 'true';
+    const autoVerify = compAccount || emailsDisabled;
 
     // --- Gerar token de verificação ---
     const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -109,15 +111,15 @@ export async function POST(request: NextRequest) {
       password,
       cpf: sanitizedCPF,
       phone: phone.replace(/\D/g, ''),
-      emailVerified: compAccount,
+      emailVerified: autoVerify,
       emailVerificationToken: verificationToken,
       emailVerificationExpires: verificationExpires,
       hasPassword: true,
     });
 
-    // --- Enviar email de verificação (exceto contas liberadas) ---
+    // --- Enviar email de verificação (só se não for auto-verificado) ---
     let emailResult: { success: boolean; error?: string } = { success: true };
-    if (!compAccount) {
+    if (!autoVerify) {
       emailResult = await sendVerificationEmail(
         customer.email,
         customer.name,
@@ -127,11 +129,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        message: compAccount
+        message: autoVerify
           ? 'Conta criada e já verificada. Você já pode entrar.'
           : 'Registo realizado com sucesso. Verifique seu email para activar a conta.',
         email: customer.email,
-        emailVerified: compAccount,
+        emailVerified: autoVerify,
         emailSent: emailResult.success,
         emailError: emailResult.error || null,
       },
