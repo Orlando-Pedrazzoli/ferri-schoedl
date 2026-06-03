@@ -40,6 +40,11 @@ function toCents(value: number): number {
   return Math.round(value * 100);
 }
 
+// Só manda imagem ao Stripe se for URL https absoluta (senão = "Not a valid URL")
+function safeImages(url?: string | null): { images?: string[] } {
+  return url && /^https:\/\//i.test(url) ? { images: [url] } : {};
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -118,7 +123,7 @@ export async function POST(request: NextRequest) {
             unit_amount: toCents(course.price),
             product_data: {
               name: `${course.title} (Curso online)`,
-              ...(course.image ? { images: [course.image] } : {}),
+              ...safeImages(course.image),
             },
           },
         });
@@ -162,7 +167,7 @@ export async function POST(request: NextRequest) {
               unit_amount: toCents(book.price),
               product_data: {
                 name: book.title,
-                ...(book.image ? { images: [book.image] } : {}),
+                ...safeImages(book.image),
               },
             },
           });
@@ -190,7 +195,7 @@ export async function POST(request: NextRequest) {
               unit_amount: toCents(book.price),
               product_data: {
                 name: `${book.title} (eBook)`,
-                ...(book.image ? { images: [book.image] } : {}),
+                ...safeImages(book.image),
               },
             },
           });
@@ -308,8 +313,10 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('[Checkout] Erro:', error);
-    const message =
-      error instanceof Error ? error.message : 'Erro interno do servidor.';
+    const e = error as { message?: string; param?: string };
+    const message = e?.message
+      ? `${e.message}${e.param ? ` — campo: ${e.param}` : ''}`
+      : 'Erro interno do servidor.';
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
