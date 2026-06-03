@@ -160,7 +160,7 @@ export default async function CursoSlugPage({ params }: PageProps) {
 
               {course.image && (
                 <Reveal className='mb-8'>
-                  <div className='relative aspect-video w-full overflow-hidden border border-gold-500/10'>
+                  <div className='relative aspect-[2600/1945] w-full overflow-hidden border border-gold-500/10'>
                     <Image
                       src={course.image}
                       alt={course.title}

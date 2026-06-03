@@ -100,7 +100,7 @@ export function CursosContent({ dbCourses, stats }: CursosContentProps) {
                 className='group flex h-full flex-col border border-gold-500/8 bg-navy-800/20 transition-all duration-300 hover:border-gold-500/20'
               >
                 {curso.image && (
-                  <div className='relative h-44 overflow-hidden bg-navy-800/40'>
+                  <div className='relative aspect-[2600/1945] w-full overflow-hidden bg-navy-800/40'>
                     <Image
                       src={curso.image}
                       alt={curso.title}
@@ -137,7 +137,8 @@ export function CursosContent({ dbCourses, stats }: CursosContentProps) {
 
                   <div className='mt-4 flex items-end justify-between border-t border-gold-500/8 pt-4'>
                     <div>
-                      {curso.originalPrice &&
+                      {typeof curso.originalPrice === 'number' &&
+                        curso.originalPrice > 0 &&
                         curso.originalPrice > curso.price && (
                           <p className='text-[13px] text-txt-muted line-through'>
                             R${' '}
