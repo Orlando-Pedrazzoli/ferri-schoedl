@@ -15,6 +15,14 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // De onde a pessoa veio (ex.: comprar um curso). Aceita callbackUrl ou redirect.
+  const callbackUrl =
+    searchParams.get('callbackUrl') || searchParams.get('redirect') || '';
+
+  const registroHref = callbackUrl
+    ? `/conta/registro?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : '/conta/registro';
+
   useEffect(() => {
     const urlError = searchParams.get('error');
     const urlMessage = searchParams.get('message');
@@ -51,10 +59,10 @@ export default function LoginForm() {
         return;
       }
 
-      const redirect = searchParams.get('redirect');
       router.refresh();
       setTimeout(() => {
-        router.push(redirect || '/conta');
+        // Retoma de onde veio (ex.: comprar curso) ou vai para a conta
+        router.push(callbackUrl || '/conta');
       }, 500);
     } catch {
       setError('Erro de conexão. Tente novamente.');
@@ -154,7 +162,7 @@ export default function LoginForm() {
         <p className='mt-8 text-center text-sm text-txt-muted'>
           Não tem uma conta?{' '}
           <Link
-            href='/conta/registro'
+            href={registroHref}
             className='text-gold-500 transition-colors hover:text-gold-400'
           >
             Criar conta

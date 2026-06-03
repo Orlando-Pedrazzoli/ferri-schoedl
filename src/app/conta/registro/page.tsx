@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
@@ -40,6 +40,17 @@ export default function RegistroPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [callbackUrl, setCallbackUrl] = useState('');
+
+  // Lê o callbackUrl (de onde a pessoa veio, ex.: comprar um curso)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setCallbackUrl(params.get('callbackUrl') || '');
+  }, []);
+
+  const loginHref = callbackUrl
+    ? `/conta/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : '/conta/login';
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -128,7 +139,7 @@ export default function RegistroPage() {
         return;
       }
 
-      // Sucesso — login automático e ir direto para a conta (sem verificação de email)
+      // Sucesso — login automático (sem verificação de email)
       const signInResult = await signIn('credentials', {
         email: form.email.trim().toLowerCase(),
         password: form.password,
@@ -136,11 +147,12 @@ export default function RegistroPage() {
       });
 
       if (signInResult?.ok) {
-        router.push('/conta');
+        // Retoma de onde veio (ex.: comprar curso) ou vai para a conta
+        router.push(callbackUrl || '/conta');
         router.refresh();
       } else {
-        // Se por algum motivo o auto-login falhar, manda pro login normal
-        router.push('/conta/login');
+        // Se o auto-login falhar, manda pro login mantendo o callback
+        router.push(loginHref);
       }
     } catch {
       setGlobalError(
@@ -381,7 +393,7 @@ export default function RegistroPage() {
         <p className='mt-8 text-center text-sm text-txt-muted'>
           Já tem uma conta?{' '}
           <Link
-            href='/conta/login'
+            href={loginHref}
             className='text-gold-500 transition-colors hover:text-gold-400'
           >
             Entrar

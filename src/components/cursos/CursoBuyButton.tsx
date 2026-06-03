@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { CreditCard, Loader2 } from 'lucide-react';
 
@@ -14,7 +14,7 @@ export default function CursoBuyButton({ slug, price }: CursoBuyButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleBuy() {
+  const handleBuy = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -27,11 +27,10 @@ export default function CursoBuyButton({ slug, price }: CursoBuyButtonProps) {
         }),
       });
 
-      // Não logado → manda pro login e volta pra cá depois
+      // Não logado → vai pro login e volta já sinalizando "retomar compra"
       if (res.status === 401) {
-        router.push(
-          `/conta/login?callbackUrl=${encodeURIComponent(`/cursos/${slug}`)}`,
-        );
+        const callback = encodeURIComponent(`/cursos/${slug}?comprar=1`);
+        router.push(`/conta/login?callbackUrl=${callback}`);
         return;
       }
 
@@ -43,13 +42,21 @@ export default function CursoBuyButton({ slug, price }: CursoBuyButtonProps) {
         return;
       }
 
-      // Redireciona para o checkout do Stripe
       window.location.href = data.url;
     } catch {
       setError('Erro de conexão. Tente novamente.');
       setLoading(false);
     }
-  }
+  }, [router, slug]);
+
+  // Após login/cadastro, volta com ?comprar=1 e a compra é retomada automaticamente
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('comprar') === '1') {
+      handleBuy();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>
@@ -67,7 +74,7 @@ export default function CursoBuyButton({ slug, price }: CursoBuyButtonProps) {
         ) : (
           <>
             <CreditCard size={14} />
-            Comprar curso — R$ {price.toFixed(2)}
+            Comprar curso — R$ {price.toFixed(2).replace('.', ',')}
           </>
         )}
       </button>

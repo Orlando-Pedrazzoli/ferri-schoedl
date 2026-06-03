@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, X, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-type GateMode = 'email' | 'login' | 'otp';
+type GateMode = 'email' | 'login' | 'register';
 
 interface Props {
   open: boolean;
@@ -30,11 +30,9 @@ export function CheckoutLoginGate({
   const [mode, setMode] = useState<GateMode>('email');
   const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState('');
-  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isNewAccount, setIsNewAccount] = useState(false);
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -42,13 +40,14 @@ export function CheckoutLoginGate({
       setMode('email');
       setError('');
       setPassword('');
-      setOtpDigits(['', '', '', '', '', '']);
+      setConfirmPassword('');
     }
   }, [open, prefilledEmail]);
 
+  // Passo 1: descobrir se o email já tem conta com senha
   const handleEmailSubmit = async () => {
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
-      setError('Digite um email valido.');
+      setError('Digite um email válido.');
       return;
     }
     setLoading(true);
@@ -65,22 +64,20 @@ export function CheckoutLoginGate({
         setLoading(false);
         return;
       }
+      // Conta existente com senha → login; senão → criar conta com senha
       if (data.mode === 'login') {
         setMode('login');
-        setIsNewAccount(false);
       } else {
-        setMode('otp');
-        setIsNewAccount(!data.emailExists);
-        toast.success('Codigo enviado para o seu email.');
-        setTimeout(() => otpRefs.current[0]?.focus(), 200);
+        setMode('register');
       }
     } catch {
-      setError('Erro de conexao. Tente novamente.');
+      setError('Erro de conexão. Tente novamente.');
     } finally {
       setLoading(false);
     }
   };
 
+  // Login de conta existente
   const handlePasswordSubmit = async () => {
     if (!password) {
       setError('Digite sua senha.');
@@ -111,103 +108,64 @@ export function CheckoutLoginGate({
     }
   };
 
-  const handleOtpChange = (index: number, value: string) => {
-    const digit = value.replace(/\D/g, '').slice(0, 1);
-    const newDigits = [...otpDigits];
-    newDigits[index] = digit;
-    setOtpDigits(newDigits);
-    if (digit && index < 5) {
-      otpRefs.current[index + 1]?.focus();
+  // Criar conta com senha (sem código por email)
+  const handleRegisterSubmit = async () => {
+    if (!password || password.length < 8) {
+      setError('A senha deve ter pelo menos 8 caracteres.');
+      return;
     }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData
-      .getData('text')
-      .replace(/\D/g, '')
-      .slice(0, 6);
-    if (pasted.length === 6) {
-      setOtpDigits(pasted.split(''));
-      otpRefs.current[5]?.focus();
-    }
-  };
-
-  const handleOtpSubmit = async () => {
-    const code = otpDigits.join('');
-    if (code.length !== 6) {
-      setError('Digite os 6 digitos do codigo.');
+    if (password !== confirmPassword) {
+      setError('As senhas não coincidem.');
       return;
     }
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/auth/checkout-otp/verify', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          code,
           name: prefilledName,
+          email,
+          password,
           cpf: prefilledCpf,
           phone: prefilledPhone,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || 'Codigo invalido.');
+        // Email já cadastrado → manda pro login
+        if (data.errors?.email) {
+          setError(data.errors.email);
+          setMode('login');
+          setLoading(false);
+          return;
+        }
+        const firstErr = data.errors && Object.values(data.errors)[0];
+        setError(
+          (firstErr as string) ||
+            data.error ||
+            'Erro ao criar conta. Verifique seus dados.',
+        );
         setLoading(false);
         return;
       }
-      const signInResult = await signIn('otp-login', {
+      // Conta criada (já verificada) → autentica e segue para o pagamento
+      const signInResult = await signIn('credentials', {
         email,
-        customerId: data.customerId,
-        otpSignature: data.otpSignature,
+        password,
         redirect: false,
       });
       if (signInResult?.error) {
-        setError('Erro ao autenticar. Tente novamente.');
+        setError('Conta criada, mas falha ao entrar. Tente fazer login.');
+        setMode('login');
         setLoading(false);
         return;
       }
-      toast.success(
-        data.action === 'created'
-          ? 'Conta criada e verificada!'
-          : 'Email verificado!',
-      );
+      toast.success('Conta criada!');
       onAuthenticated();
     } catch {
-      setError('Erro de conexao. Tente novamente.');
-      setLoading(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch('/api/auth/checkout-otp/request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name: prefilledName }),
-      });
-      if (res.ok) {
-        toast.success('Novo codigo enviado.');
-        setOtpDigits(['', '', '', '', '', '']);
-        otpRefs.current[0]?.focus();
-      } else {
-        const data = await res.json();
-        setError(data.error || 'Erro ao reenviar.');
-      }
-    } catch {
-      setError('Erro de conexao.');
-    } finally {
+      setError('Erro de conexão. Tente novamente.');
       setLoading(false);
     }
   };
@@ -215,7 +173,7 @@ export function CheckoutLoginGate({
   const handleMainButton = () => {
     if (mode === 'email') handleEmailSubmit();
     else if (mode === 'login') handlePasswordSubmit();
-    else handleOtpSubmit();
+    else handleRegisterSubmit();
   };
 
   const mainButtonLabel =
@@ -223,14 +181,14 @@ export function CheckoutLoginGate({
       ? 'Continuar'
       : mode === 'login'
         ? 'Entrar'
-        : 'Confirmar codigo';
+        : 'Criar conta e continuar';
 
   const headerTitle =
     mode === 'email'
       ? 'Confirme seu email'
       : mode === 'login'
         ? 'Entrar na sua conta'
-        : 'Verificar codigo';
+        : 'Criar sua conta';
 
   return (
     <AnimatePresence>
@@ -286,41 +244,39 @@ export function CheckoutLoginGate({
               {mode === 'email' ? (
                 <div>
                   <p className='mb-5 text-sm text-txt-muted'>
-                    Use seu email para finalizar a compra. Se ja tem conta, faz
-                    login; se nao, enviamos um codigo de verificacao.
+                    Use seu email para finalizar a compra. Se já tem conta, você
+                    faz login; se não, criamos sua conta na hora.
                   </p>
-                  <div className='space-y-4'>
-                    <div>
-                      <label className='mb-1 block text-xs text-txt-muted'>
-                        Email
-                      </label>
-                      <div className='relative'>
-                        <Mail
-                          size={14}
-                          className='absolute left-3 top-1/2 -translate-y-1/2 text-txt-muted'
-                        />
-                        <input
-                          type='email'
-                          value={email}
-                          onChange={e => setEmail(e.target.value)}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') handleEmailSubmit();
-                          }}
-                          placeholder='seu@email.com'
-                          autoFocus
-                          className='w-full border border-gold-500/12 bg-navy-800/30 py-2.5 pl-9 pr-3 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
-                        />
-                      </div>
+                  <div>
+                    <label className='mb-1 block text-xs text-txt-muted'>
+                      Email
+                    </label>
+                    <div className='relative'>
+                      <Mail
+                        size={14}
+                        className='absolute left-3 top-1/2 -translate-y-1/2 text-txt-muted'
+                      />
+                      <input
+                        type='email'
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') handleEmailSubmit();
+                        }}
+                        placeholder='seu@email.com'
+                        autoFocus
+                        className='w-full border border-gold-500/12 bg-navy-800/30 py-2.5 pl-9 pr-3 text-sm text-cream-100 outline-none placeholder:text-txt-muted/40 focus:border-gold-500/30'
+                      />
                     </div>
                   </div>
                 </div>
               ) : null}
 
-              {/* Step login password */}
+              {/* Step login */}
               {mode === 'login' ? (
                 <div>
                   <p className='mb-5 text-sm text-txt-muted'>
-                    Ja existe uma conta com <strong>{email}</strong>. Digite sua
+                    Já existe uma conta com <strong>{email}</strong>. Digite sua
                     senha para continuar.
                   </p>
                   <div className='space-y-4'>
@@ -345,57 +301,56 @@ export function CheckoutLoginGate({
                         />
                       </div>
                     </div>
-                    <p className='text-xs text-txt-muted'>
-                      Esqueceu a senha?{' '}
-                      <a
-                        href='/conta/login'
-                        className='text-gold-500 hover:text-gold-400'
-                      >
-                        Recuperar
-                      </a>
-                    </p>
                   </div>
                 </div>
               ) : null}
 
-              {/* Step OTP */}
-              {mode === 'otp' ? (
+              {/* Step register */}
+              {mode === 'register' ? (
                 <div>
                   <p className='mb-5 text-sm text-txt-muted'>
-                    Enviamos um codigo de 6 digitos para{' '}
-                    <strong>{email}</strong>.{' '}
-                    {isNewAccount
-                      ? 'Ao confirmar, sua conta sera criada automaticamente.'
-                      : 'Digite o codigo para continuar.'}
+                    Vamos criar sua conta com <strong>{email}</strong>. Defina
+                    uma senha para finalizar a compra.
                   </p>
                   <div className='space-y-4'>
-                    <div
-                      className='flex justify-center gap-2'
-                      onPaste={handleOtpPaste}
-                    >
-                      {otpDigits.map((d, i) => (
-                        <input
-                          key={i}
-                          ref={el => {
-                            otpRefs.current[i] = el;
-                          }}
-                          type='text'
-                          inputMode='numeric'
-                          maxLength={1}
-                          value={d}
-                          onChange={e => handleOtpChange(i, e.target.value)}
-                          onKeyDown={e => handleOtpKeyDown(i, e)}
-                          className='h-12 w-10 border border-gold-500/20 bg-navy-800/30 text-center text-lg text-cream-100 outline-none focus:border-gold-500/50 sm:h-14 sm:w-12 sm:text-xl'
+                    <div>
+                      <label className='mb-1 block text-xs text-txt-muted'>
+                        Senha (mín. 8 caracteres)
+                      </label>
+                      <div className='relative'>
+                        <Lock
+                          size={14}
+                          className='absolute left-3 top-1/2 -translate-y-1/2 text-txt-muted'
                         />
-                      ))}
+                        <input
+                          type='password'
+                          value={password}
+                          onChange={e => setPassword(e.target.value)}
+                          autoFocus
+                          className='w-full border border-gold-500/12 bg-navy-800/30 py-2.5 pl-9 pr-3 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        />
+                      </div>
                     </div>
-                    <button
-                      onClick={handleResendOtp}
-                      disabled={loading}
-                      className='w-full text-center text-xs text-gold-500 hover:text-gold-400 disabled:opacity-50'
-                    >
-                      Reenviar codigo
-                    </button>
+                    <div>
+                      <label className='mb-1 block text-xs text-txt-muted'>
+                        Confirmar senha
+                      </label>
+                      <div className='relative'>
+                        <Lock
+                          size={14}
+                          className='absolute left-3 top-1/2 -translate-y-1/2 text-txt-muted'
+                        />
+                        <input
+                          type='password'
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') handleRegisterSubmit();
+                          }}
+                          className='w-full border border-gold-500/12 bg-navy-800/30 py-2.5 pl-9 pr-3 text-sm text-cream-100 outline-none focus:border-gold-500/30'
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : null}
@@ -425,7 +380,7 @@ export function CheckoutLoginGate({
               </button>
 
               <p className='mt-4 text-center text-[11px] text-txt-muted'>
-                Ao continuar, voce concorda com os{' '}
+                Ao continuar, você concorda com os{' '}
                 <a
                   href='/termos-de-uso'
                   className='text-gold-600 hover:text-gold-500'
@@ -437,7 +392,7 @@ export function CheckoutLoginGate({
                   href='/politica-de-privacidade'
                   className='text-gold-600 hover:text-gold-500'
                 >
-                  Politica de Privacidade
+                  Política de Privacidade
                 </a>
                 .
               </p>
