@@ -22,10 +22,9 @@ interface OrderSummary {
   itemCount: number;
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { label: string; color: string; icon: typeof Check }
-> = {
+type StatusInfo = { label: string; color: string; icon: typeof Check };
+
+const STATUS_CONFIG: Record<string, StatusInfo> = {
   pendente: { label: 'Pendente', color: 'text-yellow-400', icon: Clock },
   pago: { label: 'Pago', color: 'text-green-400', icon: Check },
   preparando: { label: 'Preparando', color: 'text-blue-400', icon: Package },
@@ -39,9 +38,10 @@ export default function ContaDashboard() {
   const { data: session } = useSession();
   const [orders, setOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [courseCount, setCourseCount] = useState<number | null>(null);
 
   useEffect(() => {
-    async function fetchOrders() {
+    async function fetchData() {
       try {
         const res = await fetch('/api/conta/pedidos');
         if (res.ok) {
@@ -53,8 +53,18 @@ export default function ContaDashboard() {
       } finally {
         setLoading(false);
       }
+
+      try {
+        const resC = await fetch('/api/conta/cursos');
+        if (resC.ok) {
+          const dataC = await resC.json();
+          setCourseCount(typeof dataC.count === 'number' ? dataC.count : 0);
+        }
+      } catch {
+        // Silencioso
+      }
     }
-    fetchOrders();
+    fetchData();
   }, []);
 
   const customerName = session?.user?.name || 'Cliente';
@@ -97,7 +107,13 @@ export default function ContaDashboard() {
           </div>
           <div>
             <p className='text-sm font-medium text-cream-100'>Meus Cursos</p>
-            <p className='text-xs text-txt-muted'>Em breve</p>
+            <p className='text-xs text-txt-muted'>
+              {courseCount === null
+                ? 'Carregando...'
+                : courseCount === 0
+                  ? 'Nenhum curso'
+                  : `${courseCount} ${courseCount === 1 ? 'curso' : 'cursos'}`}
+            </p>
           </div>
         </Link>
 

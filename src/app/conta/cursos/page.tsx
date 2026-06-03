@@ -4,64 +4,70 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
-import Book from '@/models/Book';
+import Course from '@/models/Course';
 import { isCompEmail } from '@/lib/access';
-import { BookOpen, Download } from 'lucide-react';
+import { GraduationCap, PlayCircle, Clock } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-interface BookLite {
+interface CourseLite {
   _id: unknown;
   slug: string;
   title: string;
   image?: string;
+  category?: string;
+  duration?: string;
+  modules?: unknown[];
 }
 
 interface OrderLite {
-  items: Array<{ type?: string; bookId?: unknown }>;
+  items: Array<{ type?: string; courseId?: unknown }>;
 }
 
-export default async function EbooksClientePage() {
+export default async function CursosClientePage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id || session.user.role !== 'customer') {
-    redirect('/conta/login?callbackUrl=/conta/ebooks');
+    redirect('/conta/login?callbackUrl=/conta/cursos');
   }
 
   await dbConnect();
   const comp = isCompEmail(session.user.email);
 
-  let books: BookLite[] = [];
+  let courses: CourseLite[] = [];
 
   if (comp) {
-    books = await Book.find({ isActive: true, hasEbook: true })
-      .select('slug title image')
+    // Conta liberada: vê todos os cursos ativos/publicados
+    courses = await Course.find({ isActive: true, status: 'publicado' })
+      .select('slug title image category duration modules')
       .sort({ order: 1 })
-      .lean<BookLite[]>();
+      .lean<CourseLite[]>();
   } else {
+    // Cliente normal: apenas cursos de pedidos pagos
     const orders = await Order.find({
       customerId: session.user.id,
       'payment.status': 'paid',
-      'items.type': 'ebook',
+      'items.type': 'course',
     })
       .select('items')
       .lean<OrderLite[]>();
 
-    const bookIds = new Set<string>();
+    const courseIds = new Set<string>();
     for (const o of orders) {
       for (const it of o.items || []) {
-        if (it.type === 'ebook' && it.bookId) {
-          bookIds.add(String(it.bookId));
+        if (it.type === 'course' && it.courseId) {
+          courseIds.add(String(it.courseId));
         }
       }
     }
 
-    if (bookIds.size > 0) {
-      books = await Book.find({
-        _id: { $in: Array.from(bookIds) },
-        hasEbook: true,
+    if (courseIds.size > 0) {
+      courses = await Course.find({
+        _id: { $in: Array.from(courseIds) },
+        isActive: true,
+        status: 'publicado',
       })
-        .select('slug title image')
-        .lean<BookLite[]>();
+        .select('slug title image category duration modules')
+        .lean<CourseLite[]>();
     }
   }
 
@@ -69,62 +75,99 @@ export default async function EbooksClientePage() {
     <div className='space-y-6'>
       <div>
         <h1 className='font-[family-name:var(--font-cormorant)] text-2xl text-cream-100'>
-          Meus eBooks
+          Meus Cursos
         </h1>
         <p className='mt-1 text-sm text-txt-muted'>
-          Faça o download dos eBooks que você adquiriu.
+          Assista aos cursos que você adquiriu.
         </p>
       </div>
 
-      {books.length === 0 ? (
+      {courses.length === 0 ? (
         <div className='border border-gold-500/10 bg-navy-900/30 py-16 text-center'>
-          <BookOpen
+          <GraduationCap
             size={40}
             strokeWidth={1}
             className='mx-auto text-gold-600/30'
           />
           <h3 className='mt-4 font-[family-name:var(--font-cormorant)] text-xl text-cream-100'>
-            Nenhum eBook ainda
+            Nenhum curso ainda
           </h3>
           <p className='mt-2 text-sm text-txt-muted'>
-            Quando comprar um eBook, ele aparecerá aqui para download.
+            Quando adquirir um curso, ele aparecerá aqui para assistir.
           </p>
           <Link
-            href='/livros'
+            href='/cursos'
             className='mt-6 inline-flex items-center gap-2 border border-gold-500/30 px-6 py-2.5 text-xs font-medium uppercase tracking-[2px] text-gold-500 transition-colors hover:bg-gold-500/5'
           >
-            <BookOpen size={14} />
-            Ver livros
+            <GraduationCap size={14} />
+            Ver cursos
           </Link>
         </div>
       ) : (
-        <div className='space-y-3'>
-          {books.map(b => (
-            <div
-              key={b.slug}
-              className='flex items-center justify-between gap-4 border border-gold-500/10 bg-navy-900/30 p-4'
+        <div className='grid gap-4 sm:grid-cols-2'>
+          {courses.map(c => (
+            <Link
+              key={c.slug}
+              href={`/conta/cursos/${c.slug}`}
+              className='group flex flex-col overflow-hidden border border-gold-500/10 bg-navy-900/30 transition-colors hover:border-gold-500/30'
             >
-              <div className='flex min-w-0 items-center gap-3'>
-                {b.image ? (
-                  <div className='h-16 w-12 shrink-0 overflow-hidden bg-navy-950'>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={b.image}
-                      alt={b.title}
-                      className='h-full w-full object-cover'
+              <div className='relative aspect-video w-full overflow-hidden bg-navy-950'>
+                {c.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={c.image}
+                    alt={c.title}
+                    className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-105'
+                  />
+                ) : (
+                  <div className='flex h-full w-full items-center justify-center'>
+                    <GraduationCap
+                      size={40}
+                      strokeWidth={1}
+                      className='text-gold-600/30'
                     />
                   </div>
-                ) : null}
-                <p className='truncate text-sm text-cream-100'>{b.title}</p>
+                )}
+                <div className='absolute inset-0 flex items-center justify-center bg-navy-950/40 opacity-0 transition-opacity group-hover:opacity-100'>
+                  <PlayCircle
+                    size={48}
+                    strokeWidth={1}
+                    className='text-cream-100'
+                  />
+                </div>
               </div>
-              <a
-                href={`/api/conta/ebooks/${String(b._id)}/download`}
-                className='inline-flex shrink-0 items-center gap-2 bg-gold-500 px-4 py-2 text-xs font-medium uppercase tracking-[1.5px] text-navy-950 transition-colors hover:bg-gold-400'
-              >
-                <Download size={14} />
-                Baixar
-              </a>
-            </div>
+
+              <div className='flex flex-1 flex-col p-4'>
+                {c.category && (
+                  <p className='mb-1 text-[11px] uppercase tracking-[2px] text-gold-500'>
+                    {c.category}
+                  </p>
+                )}
+                <h3 className='font-[family-name:var(--font-cormorant)] text-lg leading-tight text-cream-100'>
+                  {c.title}
+                </h3>
+
+                <div className='mt-3 flex items-center gap-4 text-xs text-txt-muted'>
+                  {c.duration && (
+                    <span className='inline-flex items-center gap-1.5'>
+                      <Clock size={12} className='text-gold-600' />
+                      {c.duration}
+                    </span>
+                  )}
+                  {c.modules && c.modules.length > 0 && (
+                    <span>
+                      {c.modules.length} módulo
+                      {c.modules.length !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                </div>
+
+                <span className='mt-4 inline-flex items-center justify-center gap-2 bg-gold-500 px-4 py-2 text-xs font-medium uppercase tracking-[1.5px] text-navy-950 transition-colors group-hover:bg-gold-400'>
+                  <PlayCircle size={14} />
+                  Assistir
+                </span>
+              </div>
+            </Link>
           ))}
         </div>
       )}

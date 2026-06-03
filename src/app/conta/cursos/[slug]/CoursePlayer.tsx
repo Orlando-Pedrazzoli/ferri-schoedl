@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, PlayCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, PlayCircle, CheckCircle2, Play } from 'lucide-react';
 
 interface Lesson {
   title: string;
@@ -24,6 +24,12 @@ interface Props {
 export function CoursePlayer({ title, subtitle, modules }: Props) {
   const flat = modules.flatMap(m => m.lessons);
   const [current, setCurrent] = useState<Lesson | null>(flat[0] || null);
+  const [playing, setPlaying] = useState(false);
+
+  function selectLesson(lesson: Lesson) {
+    setCurrent(lesson);
+    setPlaying(false); // volta para a capa ao trocar de aula
+  }
 
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28'>
@@ -51,15 +57,46 @@ export function CoursePlayer({ title, subtitle, modules }: Props) {
           <div className='lg:col-span-2'>
             {current ? (
               <>
-                <div className='aspect-video w-full overflow-hidden border border-gold-500/10 bg-black'>
-                  <iframe
-                    key={current.videoId}
-                    src={`https://www.youtube.com/embed/${current.videoId}?rel=0&modestbranding=1`}
-                    title={current.title}
-                    allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
-                    allowFullScreen
-                    className='h-full w-full'
-                  />
+                <div className='relative aspect-video w-full overflow-hidden border border-gold-500/10 bg-black'>
+                  {playing ? (
+                    <iframe
+                      key={current.videoId}
+                      src={`https://www.youtube.com/embed/${current.videoId}?autoplay=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1`}
+                      title={current.title}
+                      allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                      allowFullScreen
+                      className='h-full w-full'
+                    />
+                  ) : (
+                    <button
+                      type='button'
+                      onClick={() => setPlaying(true)}
+                      className='group relative block h-full w-full'
+                      aria-label={`Reproduzir: ${current.title}`}
+                    >
+                      {/* Capa: frame do vídeo (sem logo do YouTube) */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`https://img.youtube.com/vi/${current.videoId}/maxresdefault.jpg`}
+                        alt={current.title}
+                        className='h-full w-full object-cover'
+                        onError={e => {
+                          (e.currentTarget as HTMLImageElement).src =
+                            `https://img.youtube.com/vi/${current.videoId}/hqdefault.jpg`;
+                        }}
+                      />
+                      {/* Overlay + botão de play próprio */}
+                      <span className='absolute inset-0 flex items-center justify-center bg-navy-950/30 transition-colors duration-300 group-hover:bg-navy-950/10'>
+                        <span className='flex h-16 w-16 items-center justify-center rounded-full bg-gold-500/90 text-navy-950 shadow-lg transition-transform duration-300 group-hover:scale-110'>
+                          <Play
+                            size={26}
+                            className='ml-1'
+                            fill='currentColor'
+                          />
+                        </span>
+                      </span>
+                    </button>
+                  )}
                 </div>
                 <h2 className='mt-4 text-lg text-cream-100'>{current.title}</h2>
                 {current.duration ? (
@@ -93,7 +130,7 @@ export function CoursePlayer({ title, subtitle, modules }: Props) {
                         return (
                           <button
                             key={li}
-                            onClick={() => setCurrent(lesson)}
+                            onClick={() => selectLesson(lesson)}
                             className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
                               active
                                 ? 'bg-gold-500/10 text-cream-100'
