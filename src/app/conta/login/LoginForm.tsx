@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -56,17 +55,17 @@ export default function LoginForm() {
 
       if (result?.error) {
         setError(result.error);
+        setLoading(false);
         return;
       }
 
-      router.refresh();
-      setTimeout(() => {
-        // Retoma de onde veio (ex.: comprar curso) ou vai para a conta
-        router.push(callbackUrl || '/conta');
-      }, 500);
+      // Sucesso: navegação de documento COMPLETA (não router.push).
+      // Isto força o cookie de sessão recém-criado a ser lido de uma só vez
+      // pelo SessionProvider (navbar/useSession), pelos Server Components e
+      // pelo middleware na rota de destino. Resolve o "precisa de refresh".
+      window.location.href = callbackUrl || '/conta';
     } catch {
       setError('Erro de conexão. Tente novamente.');
-    } finally {
       setLoading(false);
     }
   }
