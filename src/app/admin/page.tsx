@@ -8,6 +8,7 @@ import {
   Newspaper,
   FileText,
   Database,
+  ShoppingBag,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -16,6 +17,14 @@ interface DashboardStats {
   courses: number;
   articles: number;
   content: number;
+  orders: number;
+  pendingOrders: number;
+}
+
+interface CardColor {
+  bg: string;
+  text: string;
+  icon: string;
 }
 
 export default function AdminDashboardPage() {
@@ -24,6 +33,8 @@ export default function AdminDashboardPage() {
     courses: 0,
     articles: 0,
     content: 0,
+    orders: 0,
+    pendingOrders: 0,
   });
   const [loading, setLoading] = useState(true);
   const [seedLoading, setSeedLoading] = useState(false);
@@ -35,27 +46,32 @@ export default function AdminDashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const [booksRes, coursesRes, articlesRes, contentRes] = await Promise.all(
-        [
+      const [booksRes, coursesRes, articlesRes, contentRes, ordersRes] =
+        await Promise.all([
           fetch('/api/admin/books'),
           fetch('/api/admin/courses'),
           fetch('/api/admin/articles'),
           fetch('/api/admin/content'),
-        ],
-      );
+          fetch('/api/admin/orders'),
+        ]);
 
-      const [books, courses, articles, content] = await Promise.all([
+      const [books, courses, articles, content, orders] = await Promise.all([
         booksRes.json(),
         coursesRes.json(),
         articlesRes.json(),
         contentRes.json(),
+        ordersRes.json(),
       ]);
+
+      const ordersList: Array<{ status: string }> = orders.data || [];
 
       setStats({
         books: books.data?.length || 0,
         courses: courses.data?.length || 0,
         articles: articles.data?.length || 0,
         content: content.data?.length || 0,
+        orders: ordersList.length,
+        pendingOrders: ordersList.filter(o => o.status === 'pendente').length,
       });
     } catch (err) {
       console.error('Error fetching stats:', err);
@@ -94,8 +110,20 @@ export default function AdminDashboardPage() {
 
   const cards = [
     {
+      label: 'Pedidos',
+      count: stats.orders,
+      sub:
+        stats.pendingOrders > 0
+          ? `${stats.pendingOrders} pendente${stats.pendingOrders > 1 ? 's' : ''}`
+          : undefined,
+      icon: ShoppingBag,
+      href: '/admin/pedidos',
+      color: 'rose',
+    },
+    {
       label: 'Livros',
       count: stats.books,
+      sub: undefined,
       icon: BookOpen,
       href: '/admin/livros',
       color: 'amber',
@@ -103,6 +131,7 @@ export default function AdminDashboardPage() {
     {
       label: 'Cursos',
       count: stats.courses,
+      sub: undefined,
       icon: GraduationCap,
       href: '/admin/cursos',
       color: 'blue',
@@ -110,6 +139,7 @@ export default function AdminDashboardPage() {
     {
       label: 'Publicações',
       count: stats.articles,
+      sub: undefined,
       icon: Newspaper,
       href: '/admin/publicacoes',
       color: 'green',
@@ -117,16 +147,14 @@ export default function AdminDashboardPage() {
     {
       label: 'Conteúdos',
       count: stats.content,
+      sub: undefined,
       icon: FileText,
       href: '/admin/conteudo',
       color: 'purple',
     },
   ];
 
-  const colorClasses: Record<
-    string,
-    { bg: string; text: string; icon: string }
-  > = {
+  const colorClasses: Record<string, CardColor> = {
     amber: {
       bg: 'bg-amber-500/10',
       text: 'text-amber-400',
@@ -147,6 +175,11 @@ export default function AdminDashboardPage() {
       text: 'text-purple-400',
       icon: 'text-purple-500',
     },
+    rose: {
+      bg: 'bg-rose-500/10',
+      text: 'text-rose-400',
+      icon: 'text-rose-500',
+    },
   };
 
   return (
@@ -157,7 +190,7 @@ export default function AdminDashboardPage() {
       />
 
       <div className='flex-1 overflow-auto p-6'>
-        <div className='mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+        <div className='mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5'>
           {cards.map(card => {
             const Icon = card.icon;
             const colors = colorClasses[card.color];
@@ -179,6 +212,11 @@ export default function AdminDashboardPage() {
                   {loading ? '...' : card.count}
                 </p>
                 <p className='mt-1 text-sm text-txt-muted'>{card.label}</p>
+                {card.sub ? (
+                  <p className='mt-0.5 text-[11px] text-yellow-400'>
+                    {card.sub}
+                  </p>
+                ) : null}
               </Link>
             );
           })}

@@ -1,10 +1,18 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
+export interface ICourseMaterialDoc {
+  title: string;
+  fileId: string; // public_id do Cloudinary (raw/authenticated)
+  fileName: string;
+  size: number;
+}
+
 export interface ICourseLessonDoc {
   title: string;
   videoId: string; // ID do vídeo no YouTube (não listado)
   duration: string;
   isPreview: boolean; // se true, pode ser assistida sem comprar (amostra)
+  materials: ICourseMaterialDoc[];
 }
 
 export interface ICourseModuleDoc {
@@ -37,12 +45,22 @@ export interface ICourseDocument extends Document {
   updatedAt: Date;
 }
 
+// IMPORTANTE: mantém o _id (default do Mongoose) de propósito,
+// para permitir o download protegido por materialId.
+const CourseMaterialSchema = new Schema<ICourseMaterialDoc>({
+  title: { type: String, trim: true, default: '' },
+  fileId: { type: String, trim: true, default: '' },
+  fileName: { type: String, trim: true, default: '' },
+  size: { type: Number, default: 0 },
+});
+
 const CourseLessonSchema = new Schema<ICourseLessonDoc>(
   {
     title: { type: String, required: true, trim: true },
     videoId: { type: String, trim: true, default: '' },
     duration: { type: String, trim: true, default: '' },
     isPreview: { type: Boolean, default: false },
+    materials: { type: [CourseMaterialSchema], default: [] },
   },
   { _id: false },
 );

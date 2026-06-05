@@ -2,12 +2,27 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, PlayCircle, CheckCircle2, Play } from 'lucide-react';
+import {
+  ArrowLeft,
+  PlayCircle,
+  CheckCircle2,
+  Play,
+  FileText,
+  Download,
+} from 'lucide-react';
+
+interface Material {
+  title: string;
+  fileName: string;
+  size: number;
+  href: string;
+}
 
 interface Lesson {
   title: string;
   duration: string;
   videoId: string;
+  materials?: Material[];
 }
 
 interface Module {
@@ -19,6 +34,12 @@ interface Props {
   title: string;
   subtitle?: string;
   modules: Module[];
+}
+
+function formatBytes(bytes: number): string {
+  if (!bytes) return '';
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 export function CoursePlayer({ title, subtitle, modules }: Props) {
@@ -102,6 +123,44 @@ export function CoursePlayer({ title, subtitle, modules }: Props) {
                 {current.duration ? (
                   <p className='text-xs text-txt-muted'>{current.duration}</p>
                 ) : null}
+
+                {/* Material de apoio — PDFs da aula atual (abaixo do vídeo) */}
+                {current.materials && current.materials.length > 0 ? (
+                  <div className='mt-6 border border-gold-500/10 bg-navy-900/30 p-4'>
+                    <h3 className='mb-3 flex items-center gap-2 text-xs uppercase tracking-[2px] text-gold-500'>
+                      <FileText size={14} />
+                      Material de apoio
+                    </h3>
+                    <div className='space-y-2'>
+                      {current.materials.map((mat, xi) => (
+                        <a
+                          key={xi}
+                          href={mat.href}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='group flex items-center gap-3 border border-gold-500/10 bg-navy-950/40 px-4 py-3 transition-colors hover:border-gold-500/30 hover:bg-navy-800/40'
+                        >
+                          <FileText
+                            size={20}
+                            className='shrink-0 text-gold-500'
+                          />
+                          <div className='min-w-0 flex-1'>
+                            <p className='truncate text-sm text-cream-100'>
+                              {mat.title}
+                            </p>
+                            <p className='text-[11px] text-txt-muted'>
+                              PDF{mat.size ? ` · ${formatBytes(mat.size)}` : ''}
+                            </p>
+                          </div>
+                          <span className='flex shrink-0 items-center gap-1.5 text-[11px] uppercase tracking-[1px] text-txt-muted transition-colors group-hover:text-gold-500'>
+                            <Download size={15} />
+                            Baixar
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </>
             ) : (
               <p className='text-sm text-txt-muted'>
@@ -127,6 +186,8 @@ export function CoursePlayer({ title, subtitle, modules }: Props) {
                     <div className='space-y-1'>
                       {mod.lessons.map((lesson, li) => {
                         const active = current?.videoId === lesson.videoId;
+                        const hasMaterials =
+                          lesson.materials && lesson.materials.length > 0;
                         return (
                           <button
                             key={li}
@@ -146,6 +207,13 @@ export function CoursePlayer({ title, subtitle, modules }: Props) {
                               <PlayCircle size={16} className='shrink-0' />
                             )}
                             <span className='flex-1'>{lesson.title}</span>
+                            {hasMaterials ? (
+                              <FileText
+                                size={13}
+                                className='shrink-0 text-gold-500/70'
+                                aria-label='Tem material de apoio'
+                              />
+                            ) : null}
                             {lesson.duration ? (
                               <span className='shrink-0 text-[11px] text-txt-muted'>
                                 {lesson.duration}

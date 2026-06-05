@@ -11,6 +11,7 @@ import {
   Settings,
   LogOut,
   Newspaper,
+  ShoppingBag,
   ChevronLeft,
   ChevronRight,
   UserCog,
@@ -20,6 +21,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/pedidos', label: 'Pedidos', icon: ShoppingBag },
   { href: '/admin/livros', label: 'Livros', icon: BookOpen },
   { href: '/admin/cursos', label: 'Cursos', icon: GraduationCap },
   { href: '/admin/publicacoes', label: 'Publicações', icon: Newspaper },

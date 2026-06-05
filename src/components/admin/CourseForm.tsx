@@ -3,14 +3,24 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ImageUpload } from '@/components/admin/ImageUpload';
+import { EbookUpload } from '@/components/admin/EbookUpload';
 import { Save, ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+
+export interface CourseMaterial {
+  _id?: string;
+  title: string;
+  fileId: string;
+  fileName: string;
+  size: number;
+}
 
 export interface CourseLesson {
   title: string;
   videoId: string;
   duration: string;
   isPreview: boolean;
+  materials: CourseMaterial[];
 }
 
 export interface CourseModule {
@@ -59,6 +69,14 @@ const emptyLesson: CourseLesson = {
   videoId: '',
   duration: '',
   isPreview: false,
+  materials: [],
+};
+
+const emptyMaterial: CourseMaterial = {
+  title: '',
+  fileId: '',
+  fileName: '',
+  size: 0,
 };
 
 const defaultCourse: CourseData = {
@@ -105,12 +123,25 @@ function normalizeCourse(data?: CourseInput): CourseData {
       duration: m.duration || '',
       lessons: (m.lessons || []).map(l =>
         typeof l === 'string'
-          ? { title: l, videoId: '', duration: '', isPreview: false }
+          ? {
+              title: l,
+              videoId: '',
+              duration: '',
+              isPreview: false,
+              materials: [],
+            }
           : {
               title: l.title || '',
               videoId: l.videoId || '',
               duration: l.duration || '',
               isPreview: !!l.isPreview,
+              materials: (l.materials || []).map(mat => ({
+                _id: mat._id,
+                title: mat.title || '',
+                fileId: mat.fileId || '',
+                fileName: mat.fileName || '',
+                size: mat.size || 0,
+              })),
             },
       ),
     })),
@@ -155,7 +186,7 @@ export function CourseForm({
         {
           title: '',
           description: '',
-          lessons: [{ ...emptyLesson }],
+          lessons: [{ ...emptyLesson, materials: [] }],
           duration: '',
         },
       ],
@@ -197,7 +228,10 @@ export function CourseForm({
       const modules = [...prev.modules];
       modules[modIndex] = {
         ...modules[modIndex],
-        lessons: [...modules[modIndex].lessons, { ...emptyLesson }],
+        lessons: [
+          ...modules[modIndex].lessons,
+          { ...emptyLesson, materials: [] },
+        ],
       };
       return { ...prev, modules };
     });
@@ -210,6 +244,78 @@ export function CourseForm({
         ...modules[modIndex],
         lessons: modules[modIndex].lessons.filter((_, i) => i !== lessonIndex),
       };
+      return { ...prev, modules };
+    });
+  };
+
+  // --- Materiais (PDFs) por AULA ---
+  const addMaterial = (modIndex: number, lessonIndex: number) => {
+    setForm(prev => {
+      const modules = [...prev.modules];
+      const lessons = [...modules[modIndex].lessons];
+      lessons[lessonIndex] = {
+        ...lessons[lessonIndex],
+        materials: [...lessons[lessonIndex].materials, { ...emptyMaterial }],
+      };
+      modules[modIndex] = { ...modules[modIndex], lessons };
+      return { ...prev, modules };
+    });
+  };
+
+  const updateMaterialTitle = (
+    modIndex: number,
+    lessonIndex: number,
+    matIndex: number,
+    value: string,
+  ) => {
+    setForm(prev => {
+      const modules = [...prev.modules];
+      const lessons = [...modules[modIndex].lessons];
+      const materials = [...lessons[lessonIndex].materials];
+      materials[matIndex] = { ...materials[matIndex], title: value };
+      lessons[lessonIndex] = { ...lessons[lessonIndex], materials };
+      modules[modIndex] = { ...modules[modIndex], lessons };
+      return { ...prev, modules };
+    });
+  };
+
+  const updateMaterialFile = (
+    modIndex: number,
+    lessonIndex: number,
+    matIndex: number,
+    val: { fileId: string; fileName: string; size: number },
+  ) => {
+    setForm(prev => {
+      const modules = [...prev.modules];
+      const lessons = [...modules[modIndex].lessons];
+      const materials = [...lessons[lessonIndex].materials];
+      materials[matIndex] = {
+        ...materials[matIndex],
+        fileId: val.fileId,
+        fileName: val.fileName,
+        size: val.size,
+      };
+      lessons[lessonIndex] = { ...lessons[lessonIndex], materials };
+      modules[modIndex] = { ...modules[modIndex], lessons };
+      return { ...prev, modules };
+    });
+  };
+
+  const removeMaterial = (
+    modIndex: number,
+    lessonIndex: number,
+    matIndex: number,
+  ) => {
+    setForm(prev => {
+      const modules = [...prev.modules];
+      const lessons = [...modules[modIndex].lessons];
+      lessons[lessonIndex] = {
+        ...lessons[lessonIndex],
+        materials: lessons[lessonIndex].materials.filter(
+          (_, i) => i !== matIndex,
+        ),
+      };
+      modules[modIndex] = { ...modules[modIndex], lessons };
       return { ...prev, modules };
     });
   };
@@ -524,6 +630,74 @@ export function CourseForm({
                           Amostra grátis (pode assistir sem comprar)
                         </span>
                       </label>
+
+                      {/* Material de apoio (PDF) da aula */}
+                      <div className='border-t border-gold-500/10 pt-2'>
+                        <span className='mb-2 block text-[11px] uppercase tracking-[1px] text-txt-muted'>
+                          Material de apoio (PDF)
+                        </span>
+                        {lesson.materials.map((mat, matIndex) => (
+                          <div
+                            key={matIndex}
+                            className='mb-3 rounded-lg border border-gold-500/10 p-3 space-y-2'
+                          >
+                            <div className='flex items-center justify-between'>
+                              <span className='text-[11px] text-txt-muted'>
+                                PDF {matIndex + 1}
+                              </span>
+                              <button
+                                type='button'
+                                onClick={() =>
+                                  removeMaterial(
+                                    modIndex,
+                                    lessonIndex,
+                                    matIndex,
+                                  )
+                                }
+                                className='p-1 text-txt-muted hover:text-red-400 transition-colors'
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+
+                            <input
+                              type='text'
+                              value={mat.title}
+                              onChange={e =>
+                                updateMaterialTitle(
+                                  modIndex,
+                                  lessonIndex,
+                                  matIndex,
+                                  e.target.value,
+                                )
+                              }
+                              placeholder='Nome do material (ex: Apostila — Parte 1)'
+                              className={inputClass}
+                            />
+
+                            <EbookUpload
+                              fileId={mat.fileId}
+                              fileName={mat.fileName}
+                              size={mat.size}
+                              onChange={val =>
+                                updateMaterialFile(
+                                  modIndex,
+                                  lessonIndex,
+                                  matIndex,
+                                  val,
+                                )
+                              }
+                            />
+                          </div>
+                        ))}
+                        <button
+                          type='button'
+                          onClick={() => addMaterial(modIndex, lessonIndex)}
+                          className='text-xs text-gold-500 hover:text-gold-400'
+                        >
+                          + Adicionar PDF
+                        </button>
+                      </div>
                     </div>
                   ))}
                   <button

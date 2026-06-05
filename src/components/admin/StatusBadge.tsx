@@ -13,6 +13,18 @@ const variantMap: Record<string, string> = {
   editora: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   true: 'bg-green-500/10 text-green-400 border-green-500/20',
   false: 'bg-red-500/10 text-red-400 border-red-500/20',
+  // --- Status de pedido ---
+  pendente: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  pago: 'bg-green-500/10 text-green-400 border-green-500/20',
+  preparando: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  enviado: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  entregue: 'bg-green-500/10 text-green-400 border-green-500/20',
+  cancelado: 'bg-red-500/10 text-red-400 border-red-500/20',
+  falhou: 'bg-red-500/10 text-red-400 border-red-500/20',
+  estornado: 'bg-red-500/10 text-red-400 border-red-500/20',
+  // --- Status de pagamento (inglês, por segurança) ---
+  paid: 'bg-green-500/10 text-green-400 border-green-500/20',
+  pending: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
 };
 
 const colorMap: Record<string, string> = {
@@ -27,7 +39,6 @@ export function StatusBadge({ status, variant }: StatusBadgeProps) {
   const classes =
     (variant ? colorMap[variant] : variantMap[status.toLowerCase()]) ||
     colorMap.default;
-
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${classes}`}

@@ -55,11 +55,20 @@ export interface IArticle {
 }
 
 // --- Courses ---
+export interface ICourseMaterial {
+  _id?: string;
+  title: string;
+  fileId: string;
+  fileName: string;
+  size: number;
+}
+
 export interface ICourseLesson {
   title: string;
   videoId: string; // ID do vídeo no YouTube (não listado)
   duration: string;
   isPreview: boolean;
+  materials: ICourseMaterial[];
 }
 
 export interface ICourseModule {

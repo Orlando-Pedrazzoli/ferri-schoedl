@@ -15,6 +15,10 @@ function getResend(): Resend {
 const FROM_EMAIL = 'Ferri Schoedl Advocacia <noreply@send.ferrischoedl.adv.br>';
 const SITE_URL = process.env.NEXTAUTH_URL || 'https://ferrischoedl.adv.br';
 
+// E-mail que recebe o aviso de novo pedido (admin).
+const ADMIN_NOTIFY_EMAIL =
+  process.env.ADMIN_NOTIFY_EMAIL || 'thales@ferrischoedl.adv.br';
+
 // Quando true, nenhum email é enviado (todas as funções viram no-op de sucesso).
 const EMAILS_DISABLED = process.env.EMAILS_DISABLED === 'true';
 
@@ -152,7 +156,7 @@ export async function sendOTP(
 }
 
 /**
- * Envia confirmação de pedido (pagamento aprovado)
+ * Envia confirmação de pedido (pagamento aprovado) — para o CLIENTE
  */
 export async function sendOrderConfirmation(
   to: string,
@@ -244,7 +248,123 @@ export async function sendOrderConfirmation(
 }
 
 /**
- * Envia notificação de actualização de status do pedido
+ * Notifica o ADMIN (Thales) de um novo pedido pago.
+ */
+export async function sendNewOrderNotification(
+  orderCode: string,
+  customer: { name: string; email: string; phone?: string },
+  items: Array<{
+    title: string;
+    quantity: number;
+    price: number;
+    type?: string;
+  }>,
+  total: number,
+  hasShipping: boolean,
+): Promise<{ success: boolean; error?: string }> {
+  if (EMAILS_DISABLED) {
+    console.log('[Resend] Emails desativados — notificação de admin ignorada.');
+    return { success: true };
+  }
+
+  const tipoLabel = (type?: string): string => {
+    if (type === 'ebook') return 'eBook';
+    if (type === 'course') return 'Curso online';
+    return 'Livro físico';
+  };
+
+  try {
+    const itemsHtml = items
+      .map(
+        item => `
+        <tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+            ${item.title}
+            <span style="color: #9ca3af; font-size: 12px;"> (${tipoLabel(item.type)})</span>
+          </td>
+          <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
+          <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">R$ ${(item.price * item.quantity).toFixed(2)}</td>
+        </tr>
+      `,
+      )
+      .join('');
+
+    const entregaHtml = hasShipping
+      ? `<p style="font-size: 14px; line-height: 1.6; color: #b45309;"><strong>Atenção:</strong> este pedido contém item físico e requer envio.</p>`
+      : `<p style="font-size: 14px; line-height: 1.6; color: #6b7280;">Pedido apenas com itens digitais (sem envio).</p>`;
+
+    const { error } = await getResend().emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_NOTIFY_EMAIL,
+      subject: `Novo pedido ${orderCode} — R$ ${total.toFixed(2)}`,
+      html: `
+        <div style="font-family: Georgia, 'Times New Roman', serif; max-width: 600px; margin: 0 auto; padding: 40px 20px; background-color: #fdfbf7; color: #0a1628;">
+          <div style="text-align: center; margin-bottom: 32px;">
+            <h1 style="font-size: 24px; font-weight: 700; color: #0a1628; margin: 0;">Ferri Schoedl Advocacia</h1>
+            <p style="font-size: 13px; color: #9ca3af; margin: 4px 0 0;">Notificação interna — novo pedido</p>
+          </div>
+
+          <p style="font-size: 16px; line-height: 1.6;">
+            Um novo pedido <strong>${orderCode}</strong> foi pago e confirmado.
+          </p>
+
+          <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 20px 0;">
+            <p style="margin: 0 0 4px; font-size: 14px;"><strong>Cliente:</strong> ${customer.name}</p>
+            <p style="margin: 0 0 4px; font-size: 14px;"><strong>Email:</strong> ${customer.email}</p>
+            ${customer.phone ? `<p style="margin: 0; font-size: 14px;"><strong>Telefone:</strong> ${customer.phone}</p>` : ''}
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 14px;">
+            <thead>
+              <tr style="border-bottom: 2px solid #0a1628;">
+                <th style="padding: 8px 0; text-align: left;">Item</th>
+                <th style="padding: 8px 0; text-align: center;">Qtd</th>
+                <th style="padding: 8px 0; text-align: right;">Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="2" style="padding: 12px 0; font-weight: 700; font-size: 16px;">Total</td>
+                <td style="padding: 12px 0; text-align: right; font-weight: 700; font-size: 16px;">R$ ${total.toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          ${entregaHtml}
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${SITE_URL}/pedido/${orderCode}" 
+               style="display: inline-block; background-color: #b8860b; color: #ffffff; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600;">
+              Ver detalhes do pedido
+            </a>
+          </div>
+
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0;" />
+
+          <p style="font-size: 12px; color: #9ca3af; text-align: center;">
+            Ferri Schoedl Advocacia — Notificação automática
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('[Resend] Erro ao notificar admin:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  } catch (err) {
+    console.error('[Resend] Erro inesperado:', err);
+    return { success: false, error: 'Erro ao enviar email' };
+  }
+}
+
+/**
+ * Envia notificação de actualização de status do pedido — para o CLIENTE
  */
 export async function sendOrderStatusUpdate(
   to: string,

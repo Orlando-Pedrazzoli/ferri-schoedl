@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
@@ -9,6 +9,7 @@ import {
   CreditCard,
   Truck,
   Check,
+  CheckCircle2,
   Clock,
   X,
   AlertCircle,
@@ -63,6 +64,8 @@ interface Props {
   setupToken?: string;
 }
 
+const REDIRECT_SECONDS = 8;
+
 function formatCurrency(value: number): string {
   return value.toFixed(2).replace('.', ',');
 }
@@ -106,6 +109,23 @@ export function OrderStatusClient({
   const statusInfo = STATUS_MAP[order.status] || STATUS_MAP.pendente;
   const StatusIcon = statusInfo.icon;
   const hasShipping = !!order.shipping;
+  const isPaid = order.status === 'pago';
+
+  // Redirecionamento automático para a área do cliente (só quando pago e
+  // sem o banner de criação de senha aberto).
+  const [autoRedirect, setAutoRedirect] = useState(true);
+  const [seconds, setSeconds] = useState(REDIRECT_SECONDS);
+  const countdownActive = isPaid && !bannerVisible && autoRedirect;
+
+  useEffect(() => {
+    if (!countdownActive) return;
+    if (seconds <= 0) {
+      router.push('/conta');
+      return;
+    }
+    const t = setTimeout(() => setSeconds(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdownActive, seconds, router]);
 
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28'>
@@ -120,6 +140,52 @@ export function OrderStatusClient({
               router.push('/conta/pedidos');
             }}
           />
+        ) : null}
+
+        {/* Agradecimento + redirect (pedido pago) */}
+        {isPaid ? (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className='mb-8 border border-green-500/30 bg-green-500/5 p-6 text-center'
+          >
+            <div className='mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-500/15'>
+              <CheckCircle2 size={30} className='text-green-400' />
+            </div>
+            <h2 className='font-[family-name:var(--font-cormorant)] text-2xl text-cream-100'>
+              Compra aprovada!
+            </h2>
+            <p className='mx-auto mt-2 max-w-md text-sm text-txt-muted'>
+              Obrigado pela sua compra. O seu acesso já está liberado na sua
+              área de cliente.
+            </p>
+
+            {countdownActive ? (
+              <p className='mt-3 text-xs text-txt-muted'>
+                Redirecionando para a sua área em{' '}
+                <span className='text-gold-500'>{seconds}s</span>…
+              </p>
+            ) : null}
+
+            <div className='mt-5 flex flex-wrap items-center justify-center gap-3'>
+              <button
+                type='button'
+                onClick={() => router.push('/conta')}
+                className='bg-gold-500 px-5 py-2.5 text-sm font-medium text-navy-950 transition-colors hover:bg-gold-400'
+              >
+                Ir para a minha área agora
+              </button>
+              {countdownActive ? (
+                <button
+                  type='button'
+                  onClick={() => setAutoRedirect(false)}
+                  className='border border-gold-500/20 px-5 py-2.5 text-sm text-cream-200 transition-colors hover:border-gold-500/40 hover:text-cream-100'
+                >
+                  Continuar nesta página
+                </button>
+              ) : null}
+            </div>
+          </motion.div>
         ) : null}
 
         <motion.div

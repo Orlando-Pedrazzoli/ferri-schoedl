@@ -29,7 +29,6 @@ export default async function AssistirCursoPage({ params }: Props) {
   }
 
   await dbConnect();
-
   const course = await Course.findOne({ slug }).lean<{
     _id: unknown;
     title: string;
@@ -41,6 +40,13 @@ export default async function AssistirCursoPage({ params }: Props) {
         duration: string;
         videoId: string;
         isPreview?: boolean;
+        materials?: Array<{
+          _id: unknown;
+          title: string;
+          fileName: string;
+          fileId: string;
+          size: number;
+        }>;
       }>;
     }>;
   } | null>();
@@ -54,7 +60,6 @@ export default async function AssistirCursoPage({ params }: Props) {
     customerId: session.user.id,
     courseId: String(course._id),
   });
-
   if (!allowed) {
     // Ainda não comprou — manda para a página de venda
     redirect(`/cursos/${slug}`);
@@ -68,6 +73,14 @@ export default async function AssistirCursoPage({ params }: Props) {
         title: l.title || '',
         duration: l.duration || '',
         videoId: l.videoId,
+        materials: (l.materials || [])
+          .filter(mat => mat.fileId)
+          .map(mat => ({
+            title: mat.title || mat.fileName || 'Material em PDF',
+            fileName: mat.fileName || '',
+            size: mat.size || 0,
+            href: `/api/conta/cursos/${slug}/materiais/${String(mat._id)}/download`,
+          })),
       })),
   }));
 

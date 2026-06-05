@@ -5,7 +5,7 @@ import { stripe } from '@/lib/stripe';
 import dbConnect from '@/lib/mongodb';
 import Order from '@/models/Order';
 import Customer from '@/models/Customer';
-import { sendOrderConfirmation } from '@/lib/resend';
+import { sendOrderConfirmation, sendNewOrderNotification } from '@/lib/resend';
 
 export const runtime = 'nodejs';
 
@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
 
   try {
     await dbConnect();
-
     switch (event.type) {
       case 'checkout.session.completed':
       case 'checkout.session.async_payment_succeeded': {
@@ -105,13 +104,36 @@ async function markPaid(s: Stripe.Checkout.Session) {
     price: i.price,
   }));
 
+  // 1) Confirmação para o cliente
   await sendOrderConfirmation(
     order.customerEmail,
     order.customerName,
     order.orderCode,
     emailItems,
     order.total,
-  ).catch(err => console.error('[Webhook Stripe] Erro ao enviar email:', err));
+  ).catch(err =>
+    console.error('[Webhook Stripe] Erro ao enviar email ao cliente:', err),
+  );
+
+  // 2) Notificação para o admin (Thales)
+  await sendNewOrderNotification(
+    order.orderCode,
+    {
+      name: order.customerName,
+      email: order.customerEmail,
+      phone: order.customerPhone,
+    },
+    order.items.map(i => ({
+      title: i.title,
+      quantity: i.quantity,
+      price: i.price,
+      type: i.type,
+    })),
+    order.total,
+    !!order.shipping,
+  ).catch(err =>
+    console.error('[Webhook Stripe] Erro ao notificar admin:', err),
+  );
 
   console.log(`[Webhook Stripe] Pedido ${order.orderCode} marcado como pago.`);
 }
