@@ -247,6 +247,7 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                   </button>
                 ) : livro.inStock && editoraLink ? (
                   <a
+                    href={editoraLink}
                     target='_blank'
                     rel='noopener noreferrer'
                     className='inline-flex items-center gap-3 bg-gold-500 px-8 py-3.5 text-[13px] font-medium uppercase tracking-[2px] text-navy-950 transition-colors hover:bg-gold-400 sm:px-10 sm:py-4'
