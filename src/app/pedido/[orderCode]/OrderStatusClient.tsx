@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   Package,
@@ -103,7 +102,6 @@ export function OrderStatusClient({
   showPasswordSetup,
   setupToken,
 }: Props) {
-  const router = useRouter();
   const [bannerVisible, setBannerVisible] = useState(showPasswordSetup);
 
   const statusInfo = STATUS_MAP[order.status] || STATUS_MAP.pendente;
@@ -113,6 +111,12 @@ export function OrderStatusClient({
 
   // Redirecionamento automático para a área do cliente (só quando pago e
   // sem o banner de criação de senha aberto).
+  // IMPORTANTE: usamos window.location.href (navegação completa) em vez de
+  // router.push para rotas protegidas pelo middleware. A navegação soft do
+  // router corre em paralelo com a checagem de sessão no middleware e, ao
+  // voltar do Stripe, por vezes o token ainda não é reconhecido → bounce
+  // para /conta/login. A navegação completa faz um pedido normal com o
+  // cookie e o middleware lê a sessão corretamente.
   const [autoRedirect, setAutoRedirect] = useState(true);
   const [seconds, setSeconds] = useState(REDIRECT_SECONDS);
   const countdownActive = isPaid && !bannerVisible && autoRedirect;
@@ -120,12 +124,12 @@ export function OrderStatusClient({
   useEffect(() => {
     if (!countdownActive) return;
     if (seconds <= 0) {
-      router.push('/conta');
+      window.location.href = '/conta';
       return;
     }
     const t = setTimeout(() => setSeconds(s => s - 1), 1000);
     return () => clearTimeout(t);
-  }, [countdownActive, seconds, router]);
+  }, [countdownActive, seconds]);
 
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28'>
@@ -137,7 +141,7 @@ export function OrderStatusClient({
             onDismiss={() => setBannerVisible(false)}
             onSuccess={() => {
               setBannerVisible(false);
-              router.push('/conta/pedidos');
+              window.location.href = '/conta/pedidos';
             }}
           />
         ) : null}
@@ -170,7 +174,9 @@ export function OrderStatusClient({
             <div className='mt-5 flex flex-wrap items-center justify-center gap-3'>
               <button
                 type='button'
-                onClick={() => router.push('/conta')}
+                onClick={() => {
+                  window.location.href = '/conta';
+                }}
                 className='bg-gold-500 px-5 py-2.5 text-sm font-medium text-navy-950 transition-colors hover:bg-gold-400'
               >
                 Ir para a minha área agora

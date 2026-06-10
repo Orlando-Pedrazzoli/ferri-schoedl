@@ -66,7 +66,14 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Credenciais inválidas');
         }
 
-        // Verificação de email desativada — login liberado sem confirmação.
+        // Bloquear o login enquanto o email não estiver verificado.
+        // Assim, quem digitou um email errado no registo percebe que não
+        // recebeu a verificação e pode corrigir o endereço.
+        if (!customer.emailVerified) {
+          throw new Error(
+            'Confirme seu email antes de entrar. Enviámos um link de verificação para o endereço registado — verifique a caixa de entrada e o spam. Se não recebeu, o email pode estar incorreto.',
+          );
+        }
 
         return {
           id: customer._id.toString(),
@@ -79,7 +86,9 @@ export const authOptions: NextAuthOptions = {
       },
     }),
 
-    // Provider separado para login via OTP após verificação de código no checkout
+    // Provider separado para login via OTP após verificação de código no checkout.
+    // Aqui não checamos emailVerified: receber e digitar o código OTP já prova
+    // a posse do email, logo a verificação está implícita.
     CredentialsProvider({
       id: 'otp-login',
       name: 'OTP Login',
@@ -115,7 +124,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Assinatura inválida');
         }
 
-        // Verificação de email desativada — login liberado sem confirmação.
+        // Verificação por OTP já confirma a posse do email — login liberado.
 
         return {
           id: customer._id.toString(),
