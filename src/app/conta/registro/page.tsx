@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, MailCheck } from 'lucide-react';
 
 /* ─── CPF Mask: 123.456.789-00 ─── */
 function maskCPF(value: string): string {
@@ -41,6 +41,10 @@ export default function RegistroPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [callbackUrl, setCallbackUrl] = useState('');
+
+  // Ecrã de confirmação após criar conta que precisa de verificação.
+  const [success, setSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
   // Lê o callbackUrl (de onde a pessoa veio, ex.: comprar um curso)
   useEffect(() => {
@@ -115,12 +119,14 @@ export default function RegistroPage() {
     setLoading(true);
 
     try {
+      const email = form.email.trim().toLowerCase();
+
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: form.name.trim(),
-          email: form.email.trim().toLowerCase(),
+          email,
           password: form.password,
           cpf: form.cpf,
           phone: form.phone,
@@ -139,21 +145,30 @@ export default function RegistroPage() {
         return;
       }
 
-      // Sucesso — login automático (sem verificação de email)
-      const signInResult = await signIn('credentials', {
-        email: form.email.trim().toLowerCase(),
-        password: form.password,
-        redirect: false,
-      });
+      // Conta criada.
+      // Caso a conta já nasça verificada (ex.: conta liberada / comp), pode
+      // logar automaticamente. Caso contrário, NÃO fazemos auto-login —
+      // ele falharia, porque a verificação de email está ativa — e mostramos
+      // o ecrã de confirmação com o email digitado.
+      if (data.emailVerified) {
+        const signInResult = await signIn('credentials', {
+          email,
+          password: form.password,
+          redirect: false,
+        });
 
-      if (signInResult?.ok) {
-        // Retoma de onde veio (ex.: comprar curso) ou vai para a conta
-        router.push(callbackUrl || '/conta');
-        router.refresh();
-      } else {
-        // Se o auto-login falhar, manda pro login mantendo o callback
-        router.push(loginHref);
+        if (signInResult?.ok) {
+          router.push(callbackUrl || '/conta');
+          router.refresh();
+        } else {
+          router.push(loginHref);
+        }
+        return;
       }
+
+      // Precisa de verificar o email → ecrã de confirmação.
+      setRegisteredEmail(email);
+      setSuccess(true);
     } catch {
       setGlobalError(
         'Erro de conexão. Verifique sua internet e tente novamente.',
@@ -163,8 +178,49 @@ export default function RegistroPage() {
     }
   }
 
+  // ─── Ecrã de confirmação (conta criada, falta verificar email) ───
+  if (success) {
+    return (
+      <div className='min-h-screen bg-navy-950 pb-16 pt-28'>
+        <div className='mx-auto max-w-md px-6 text-center'>
+          <div className='mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-gold-500/15'>
+            <MailCheck size={28} className='text-gold-500' />
+          </div>
+
+          <h1 className='font-[family-name:var(--font-cormorant)] text-3xl tracking-wide text-cream-100'>
+            Conta criada!
+          </h1>
+
+          <p className='mt-3 text-sm text-txt-muted'>
+            Enviámos um link de verificação para:
+          </p>
+          <p className='mt-1 break-all text-base font-medium text-gold-500'>
+            {registeredEmail}
+          </p>
+
+          <p className='mt-4 text-sm leading-relaxed text-txt-muted'>
+            Verifique a sua caixa de entrada (e a pasta de spam) e clique no
+            link para activar a conta.
+          </p>
+          <p className='mt-3 text-sm leading-relaxed text-txt-muted'>
+            <strong className='text-cream-100'>Não recebeu?</strong> Confirme se
+            o email acima está correto. Se estiver errado, registe-se de novo
+            com o endereço certo.
+          </p>
+
+          <Link
+            href={loginHref}
+            className='mt-7 inline-block border border-gold-500 bg-gold-500 px-6 py-3 text-xs font-medium uppercase tracking-[2px] text-navy-950 transition-all duration-300 hover:bg-gold-500/90'
+          >
+            Ir para o login
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className='min-h-screen bg-navy-950 pt-28 pb-16'>
+    <div className='min-h-screen bg-navy-950 pb-16 pt-28'>
       <div className='mx-auto max-w-md px-6'>
         {/* Header */}
         <div className='mb-10 text-center'>
