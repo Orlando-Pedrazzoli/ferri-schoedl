@@ -1,7 +1,8 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
 // --- Tipos ---
-export type PaymentMethod = 'card' | 'credit_card' | 'boleto' | 'pix';
+// Stripe-only, pagamento com cartão de crédito.
+export type PaymentMethod = 'card';
 
 export type OrderStatus =
   | 'pendente'
@@ -60,16 +61,6 @@ export interface IOrderPayment {
   cardBrand?: string;
   cardLastDigits?: string;
   paidAt?: Date;
-  // Legado (Pagar.me) — mantidos por compatibilidade com pedidos antigos
-  pagarmeOrderId?: string;
-  pagarmeChargeId?: string;
-  installments?: number;
-  boletoUrl?: string;
-  boletoBarcode?: string;
-  boletoDueDate?: Date;
-  pixQrCode?: string;
-  pixQrCodeUrl?: string;
-  pixExpiresAt?: Date;
 }
 
 export interface IOrderDocument extends Document {
@@ -135,7 +126,7 @@ const OrderShippingSchema = new Schema<IOrderShipping>(
 
 const OrderPaymentSchema = new Schema<IOrderPayment>(
   {
-    method: { type: String, default: 'card' },
+    method: { type: String, enum: ['card'], default: 'card' },
     status: {
       type: String,
       enum: ['pending', 'paid', 'failed', 'canceled', 'chargedback'],
@@ -147,16 +138,6 @@ const OrderPaymentSchema = new Schema<IOrderPayment>(
     cardBrand: { type: String, default: '' },
     cardLastDigits: { type: String, default: '' },
     paidAt: { type: Date },
-    // Legado
-    pagarmeOrderId: { type: String, default: '' },
-    pagarmeChargeId: { type: String, default: '' },
-    installments: { type: Number, default: 1 },
-    boletoUrl: { type: String, default: '' },
-    boletoBarcode: { type: String, default: '' },
-    boletoDueDate: { type: Date },
-    pixQrCode: { type: String, default: '' },
-    pixQrCodeUrl: { type: String, default: '' },
-    pixExpiresAt: { type: Date },
   },
   { _id: false },
 );
@@ -204,6 +185,7 @@ const OrderSchema = new Schema<IOrderDocument>(
 );
 
 // --- Indices ---
+// orderCode já indexado via `unique: true` no campo (não redeclarar).
 OrderSchema.index({ customerId: 1 });
 OrderSchema.index({ 'payment.stripeSessionId': 1 });
 OrderSchema.index({ status: 1 });

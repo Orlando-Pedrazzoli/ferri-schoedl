@@ -109,6 +109,56 @@ export function OrderStatusClient({
   const hasShipping = !!order.shipping;
   const isPaid = order.status === 'pago';
 
+  // --- Composição do pedido: define o destino certo para o cliente ---
+  const hasCourse = order.items.some(i => i.type === 'course');
+  const hasEbook = order.items.some(i => i.type === 'ebook');
+  const hasPhysical = order.items.some(i => i.type === 'physical');
+  const hasDigital = hasCourse || hasEbook;
+
+  const courseItems = order.items.filter(i => i.type === 'course');
+  const singleCourseSlug =
+    courseItems.length === 1 ? courseItems[0].slug : null;
+
+  // CTA principal + destino do redirect, conforme o que foi comprado.
+  // - Curso único  -> direto ao player do curso
+  // - Só cursos    -> lista de cursos
+  // - Só eBooks    -> lista de eBooks
+  // - Só físico    -> acompanhar pedido
+  // - Misto        -> área do cliente
+  const primaryCta: { label: string; href: string } = (() => {
+    if (hasDigital && !hasPhysical) {
+      if (hasCourse && !hasEbook) {
+        return singleCourseSlug
+          ? {
+              label: 'Começar o curso agora',
+              href: `/conta/cursos/${singleCourseSlug}`,
+            }
+          : { label: 'Acessar meus cursos', href: '/conta/cursos' };
+      }
+      if (hasEbook && !hasCourse) {
+        return { label: 'Acessar meus eBooks', href: '/conta/ebooks' };
+      }
+      return { label: 'Acessar meus produtos', href: '/conta' };
+    }
+    if (hasPhysical && !hasDigital) {
+      return { label: 'Acompanhar meu pedido', href: '/conta/pedidos' };
+    }
+    return { label: 'Ir para a minha área', href: '/conta' };
+  })();
+
+  const redirectHref = primaryCta.href;
+
+  // Frase de agradecimento conforme a natureza dos itens.
+  const thankYouDetail = (() => {
+    if (hasDigital && !hasPhysical) {
+      return 'O seu acesso já está liberado na sua área de cliente.';
+    }
+    if (hasPhysical && !hasDigital) {
+      return 'Pode acompanhar o status da entrega a qualquer momento na sua área de cliente.';
+    }
+    return 'O acesso aos itens digitais já está liberado e o item físico será preparado para envio.';
+  })();
+
   // Redirecionamento automático para a área do cliente (só quando pago e
   // sem o banner de criação de senha aberto).
   // IMPORTANTE: usamos window.location.href (navegação completa) em vez de
@@ -124,12 +174,12 @@ export function OrderStatusClient({
   useEffect(() => {
     if (!countdownActive) return;
     if (seconds <= 0) {
-      window.location.href = '/conta';
+      window.location.href = redirectHref;
       return;
     }
     const t = setTimeout(() => setSeconds(s => s - 1), 1000);
     return () => clearTimeout(t);
-  }, [countdownActive, seconds]);
+  }, [countdownActive, seconds, redirectHref]);
 
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28'>
@@ -160,13 +210,13 @@ export function OrderStatusClient({
               Compra aprovada!
             </h2>
             <p className='mx-auto mt-2 max-w-md text-sm text-txt-muted'>
-              Obrigado pela sua compra. O seu acesso já está liberado na sua
-              área de cliente.
+              Obrigado pela sua compra. Você receberá um email com os detalhes
+              do seu pedido. {thankYouDetail}
             </p>
 
             {countdownActive ? (
               <p className='mt-3 text-xs text-txt-muted'>
-                Redirecionando para a sua área em{' '}
+                Redirecionando em{' '}
                 <span className='text-gold-500'>{seconds}s</span>…
               </p>
             ) : null}
@@ -175,11 +225,11 @@ export function OrderStatusClient({
               <button
                 type='button'
                 onClick={() => {
-                  window.location.href = '/conta';
+                  window.location.href = redirectHref;
                 }}
                 className='bg-gold-500 px-5 py-2.5 text-sm font-medium text-navy-950 transition-colors hover:bg-gold-400'
               >
-                Ir para a minha área agora
+                {primaryCta.label}
               </button>
               {countdownActive ? (
                 <button
