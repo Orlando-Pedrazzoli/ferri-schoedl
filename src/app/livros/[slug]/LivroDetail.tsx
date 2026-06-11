@@ -66,6 +66,12 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
   const [formato, setFormato] = useState<Formato>('physical');
   const isEbook = formato === 'ebook';
 
+  const ebookPrice =
+    typeof livro.ebookPrice === 'number' && livro.ebookPrice > 0
+      ? livro.ebookPrice
+      : livro.price;
+  const displayPrice = isEbook ? ebookPrice : livro.price;
+
   return (
     <section className='pb-16 pt-24 sm:pb-24 sm:pt-28 lg:pb-32'>
       <div className='mx-auto max-w-7xl px-4 sm:px-6 lg:px-8'>
@@ -189,7 +195,7 @@ export function LivroDetail({ livro, outrosLivros }: LivroDetailProps) {
                   </span>
                 )}
                 <span className='font-[family-name:var(--font-cormorant)] text-3xl text-gold-500 sm:text-4xl'>
-                  R$ {livro.price.toFixed(2).replace('.', ',')}
+                  R$ {displayPrice.toFixed(2).replace('.', ',')}
                 </span>
                 {hasEbook && (
                   <span className='pb-1 text-xs uppercase tracking-[1px] text-txt-muted'>

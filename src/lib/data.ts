@@ -685,6 +685,7 @@ export interface Livro {
   isbn?: string;
   edition: string;
   price: number;
+  ebookPrice?: number; // preço próprio do eBook; vazio = usa o preço do físico
   originalPrice?: number;
   description: string;
   longDescription: string;

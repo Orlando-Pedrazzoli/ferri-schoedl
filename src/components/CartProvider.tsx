@@ -33,6 +33,14 @@ interface CartContextType {
 
 const makeId = (slug: string, format: BookFormat) => `${slug}__${format}`;
 
+export function itemUnitPrice(item: CartItem): number {
+  if (item.format === 'ebook') {
+    const ep = item.livro.ebookPrice;
+    return typeof ep === 'number' && ep > 0 ? ep : item.livro.price;
+  }
+  return item.livro.price;
+}
+
 const CartContext = createContext<CartContextType>({
   items: [],
   isOpen: false,
@@ -104,7 +112,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const totalPrice = items.reduce(
-    (sum, i) => sum + i.livro.price * i.quantity,
+    (sum, i) => sum + itemUnitPrice(i) * i.quantity,
     0,
   );
   // Apenas itens físicos contam para o peso (frete). Ebook não tem peso.

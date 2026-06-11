@@ -31,6 +31,7 @@ export interface IBookDocument extends Document {
   saleNote?: string;
   // --- Ebook (mesmo preço do físico; arquivo privado) ---
   hasEbook: boolean;
+  ebookPrice?: number; // se vazio/0, usa o preço do físico
   ebookFileId?: string; // public_id do PDF privado no Cloudinary
   ebookFileName?: string; // nome original, usado no download
   ebookSize?: number; // bytes (opcional, só para exibição)
@@ -147,6 +148,10 @@ const BookSchema = new Schema<IBookDocument>(
     hasEbook: {
       type: Boolean,
       default: false,
+    },
+    ebookPrice: {
+      type: Number,
+      min: [0, 'Preço do eBook não pode ser negativo'],
     },
     ebookFileId: {
       type: String,

@@ -34,6 +34,7 @@ interface BookData {
   saleNote: string;
   // --- eBook ---
   hasEbook: boolean;
+  ebookPrice: number; // preço próprio do eBook; 0/vazio = usa o preço do físico
   ebookFileId: string;
   ebookFileName: string;
   ebookSize: number;
@@ -67,6 +68,7 @@ const defaultBook: BookData = {
   saleType: 'direto',
   saleNote: '',
   hasEbook: false,
+  ebookPrice: 0,
   ebookFileId: '',
   ebookFileName: '',
   ebookSize: 0,
@@ -94,6 +96,7 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
       pages: init.pages ? String(init.pages) : '',
       price: init.price ? String(init.price) : '',
       originalPrice: init.originalPrice ? String(init.originalPrice) : '',
+      ebookPrice: init.ebookPrice ? String(init.ebookPrice) : '',
       weight: init.weight ? String(init.weight) : '',
       width: String(init.dimensions.width),
       height: String(init.dimensions.height),
@@ -122,7 +125,14 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
 
   // Atualiza o texto exibido E o número no form
   const handleNum = (
-    field: 'year' | 'pages' | 'price' | 'originalPrice' | 'weight' | 'order',
+    field:
+      | 'year'
+      | 'pages'
+      | 'price'
+      | 'originalPrice'
+      | 'ebookPrice'
+      | 'weight'
+      | 'order',
     value: string,
     kind: 'int' | 'float',
   ) => {
@@ -493,10 +503,23 @@ export function BookForm({ initialData, isEditing = false }: BookFormProps) {
 
             {form.hasEbook && (
               <>
-                <p className='text-xs text-txt-muted'>
-                  Mesmo preço do físico. Entrega digital com download protegido
-                  após o pagamento.
-                </p>
+                <div>
+                  <label className={labelClass}>Preço do eBook (R$)</label>
+                  <input
+                    type='number'
+                    step='0.01'
+                    value={numbers.ebookPrice}
+                    onChange={e =>
+                      handleNum('ebookPrice', e.target.value, 'float')
+                    }
+                    placeholder='Ex: 59.90'
+                    className={inputClass}
+                  />
+                  <p className='mt-1 text-xs text-txt-muted'>
+                    Deixe vazio (ou 0) para usar o mesmo preço do livro físico.
+                    Entrega digital com download protegido após o pagamento.
+                  </p>
+                </div>
                 <EbookUpload
                   fileId={form.ebookFileId}
                   fileName={form.ebookFileName}

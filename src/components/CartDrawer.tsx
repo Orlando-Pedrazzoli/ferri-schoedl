@@ -12,7 +12,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCart } from './CartProvider';
+import { useCart, itemUnitPrice } from './CartProvider';
 
 export function CartDrawer() {
   const router = useRouter();
@@ -134,7 +134,7 @@ export function CartDrawer() {
                 <div className='space-y-4'>
                   {items.map(item => (
                     <div
-                      key={item.livro.slug}
+                      key={item.id}
                       className='flex gap-4 border-b border-gold-500/8 pb-4'
                     >
                       <div className='h-24 w-16 shrink-0 overflow-hidden border border-gold-500/10 bg-navy-800/60'>
@@ -151,17 +151,19 @@ export function CartDrawer() {
                         <p className='text-[13px] text-txt-muted'>
                           {item.livro.publisher}, {item.livro.year}
                         </p>
+                        <p className='text-[11px] uppercase tracking-[1px] text-gold-600'>
+                          {item.format === 'ebook'
+                            ? 'eBook (PDF)'
+                            : 'Livro físico'}
+                        </p>
                         <p className='mt-1 text-sm text-gold-500'>
-                          R$ {item.livro.price.toFixed(2).replace('.', ',')}
+                          R$ {itemUnitPrice(item).toFixed(2).replace('.', ',')}
                         </p>
                         <div className='mt-2 flex items-center gap-3'>
                           <div className='flex items-center border border-gold-500/15'>
                             <button
                               onClick={() =>
-                                updateQuantity(
-                                  item.livro.slug,
-                                  item.quantity - 1,
-                                )
+                                updateQuantity(item.id, item.quantity - 1)
                               }
                               className='px-2 py-1 text-txt-muted transition-colors hover:text-cream-100'
                             >
@@ -172,10 +174,7 @@ export function CartDrawer() {
                             </span>
                             <button
                               onClick={() =>
-                                updateQuantity(
-                                  item.livro.slug,
-                                  item.quantity + 1,
-                                )
+                                updateQuantity(item.id, item.quantity + 1)
                               }
                               className='px-2 py-1 text-txt-muted transition-colors hover:text-cream-100'
                             >
@@ -183,7 +182,7 @@ export function CartDrawer() {
                             </button>
                           </div>
                           <button
-                            onClick={() => removeItem(item.livro.slug)}
+                            onClick={() => removeItem(item.id)}
                             className='text-txt-muted transition-colors hover:text-red-400'
                           >
                             <Trash2 size={14} />

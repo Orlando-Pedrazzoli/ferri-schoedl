@@ -70,6 +70,7 @@ function dbBookToLivro(book: Record<string, unknown>) {
     isbn: (book.isbn as string) || undefined,
     edition: book.edition as string,
     price: book.price as number,
+    ebookPrice: (book.ebookPrice as number) || undefined,
     originalPrice: (book.originalPrice as number) || undefined,
     description: book.description as string,
     longDescription: book.longDescription as string,

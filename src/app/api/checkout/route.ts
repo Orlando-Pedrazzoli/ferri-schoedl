@@ -179,12 +179,16 @@ export async function POST(request: NextRequest) {
               { status: 400 },
             );
           }
+          const ebookUnitPrice =
+            typeof book.ebookPrice === 'number' && book.ebookPrice > 0
+              ? book.ebookPrice
+              : book.price;
           orderItems.push({
             type: 'ebook',
             bookId: book._id as Types.ObjectId,
             slug: book.slug,
             title: book.title,
-            price: book.price,
+            price: ebookUnitPrice,
             quantity: 1,
             weight: 0,
           });
@@ -192,7 +196,7 @@ export async function POST(request: NextRequest) {
             quantity: 1,
             price_data: {
               currency: 'brl',
-              unit_amount: toCents(book.price),
+              unit_amount: toCents(ebookUnitPrice),
               product_data: {
                 name: `${book.title} (eBook)`,
                 ...safeImages(book.image),

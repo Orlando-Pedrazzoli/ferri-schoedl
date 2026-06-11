@@ -15,7 +15,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useCart } from '@/components/CartProvider';
+import { useCart, itemUnitPrice } from '@/components/CartProvider';
 import { CheckoutLoginGate } from '@/components/CheckoutLoginGate';
 import toast from 'react-hot-toast';
 
@@ -708,7 +708,7 @@ export function CheckoutForm() {
                         </p>
                       </div>
                       <p className='shrink-0 text-sm text-cream-100'>
-                        R$ {formatCurrency(item.livro.price * item.quantity)}
+                        R$ {formatCurrency(itemUnitPrice(item) * item.quantity)}
                       </p>
                     </div>
                   );

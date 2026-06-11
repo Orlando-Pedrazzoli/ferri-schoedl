@@ -28,8 +28,9 @@ export interface IBook {
   featured: boolean;
   saleType: 'direto' | 'editora';
   saleNote?: string;
-  // --- Ebook (mesmo preço do físico) ---
+  // --- Ebook (preço próprio opcional) ---
   hasEbook: boolean;
+  ebookPrice?: number;
   ebookFileId?: string;
   ebookFileName?: string;
   ebookSize?: number;
